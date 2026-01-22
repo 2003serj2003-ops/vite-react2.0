@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { supabase } from "./supabase";
+// import { supabase } from "./supabase";
 import "./App.css";
 
 type Lang = "ru" | "uz";
