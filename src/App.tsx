@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { supabase } from "./supabase";
+import { supabase } from "./supabase.ts";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 import "./App.css";
