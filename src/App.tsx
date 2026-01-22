@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabase";
 import "./App.css";
 
@@ -138,7 +138,7 @@ function TopBar(props: {
   setSearch: (v: string) => void;
   onBack: () => void;
   onHome: () => void;
-  rightSlot?: React.ReactNode;
+  rightSlot?: ReactNode;
 }) {
   const { t, lang, setLang, showSearch, search, setSearch, onBack, onHome, rightSlot } = props;
 
@@ -196,7 +196,8 @@ export default function App() {
   const [cards, setCards] = useState<CardRow[]>([]);
   const [news, setNews] = useState<NewsRow[]>([]);
 
-  const [adminSession, setAdminSession] = useState<any>(null);
+  const [adminSession, setAdminSession] = useState<any>(null);const isAdmin = !!adminSession;
+  
 
   // keep lang
   useEffect(() => {
