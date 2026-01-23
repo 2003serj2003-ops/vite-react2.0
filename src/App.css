@@ -23,7 +23,7 @@
 
 @font-face{
   font-family:"iCielCrocante";
-  src:url("/assets/fonts/iCielCrocante.woff2") format("woff2");
+  src:url("/assets/fonts/iCielCrocante") format("woff2");
   font-weight:400;
   font-style:normal;
   font-display:swap;
