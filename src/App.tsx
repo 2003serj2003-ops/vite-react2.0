@@ -242,44 +242,61 @@ export default function App() {
     const extractUserData = () => {
       const tg = (window as any).Telegram?.WebApp;
       if (!tg) {
-        console.log("Telegram WebApp not available (development mode)");
+        console.log("[TG] WebApp not available");
         return;
       }
       
       try {
-        // Get init data
+        // Логирование полного initDataUnsafe
+        console.log("[TG] initDataUnsafe:", tg.initDataUnsafe);
+        
         const initData = tg.initDataUnsafe;
         const user = initData?.user;
         
-        if (user && user.first_name) {
+        console.log("[TG] user object:", user);
+        
+        if (user) {
           const firstName = user.first_name || "";
           const lastName = user.last_name || "";
           const fullName = `${firstName} ${lastName}`.trim();
           
-          setUserName(fullName);
-          localStorage.setItem("user_name", fullName);
+          console.log("[TG] Setting user:", { firstName, lastName, fullName, photo_url: user.photo_url });
+          
+          if (fullName) {
+            setUserName(fullName);
+            localStorage.setItem("user_name", fullName);
+          }
           
           if (user.photo_url) {
             setUserPhoto(user.photo_url);
             localStorage.setItem("user_photo", user.photo_url);
           }
-          
-          console.log("✓ Telegram user loaded:", fullName);
         } else {
-          console.log("⚠ Telegram user data not available");
+          console.log("[TG] ⚠ No user data");
         }
       } catch (err) {
-        console.error("Error extracting Telegram user:", err);
+        console.error("[TG] Error:", err);
       }
     };
 
-    // Try immediately
+    // Try multiple times with delays
     extractUserData();
+    setTimeout(() => extractUserData(), 100);
+    setTimeout(() => extractUserData(), 300);
+    setTimeout(() => extractUserData(), 800);
     
-    // Try again after a short delay in case WebApp wasn't ready
-    const timer = setTimeout(extractUserData, 500);
-    
-    return () => clearTimeout(timer);
+    // Also listen to viewportChanged
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg) {
+      const handler = () => {
+        console.log("[TG] viewportChanged event");
+        extractUserData();
+      };
+      tg.onEvent("viewportChanged", handler);
+      return () => {
+        tg.offEvent("viewportChanged", handler);
+      };
+    }
   }, []);
 
   // toast helper
@@ -291,6 +308,7 @@ export default function App() {
 
   // Load public content
   const loadPublic = async () => {
+    console.log("[DATA] Loading public content...");
     const s = await supabase.from("sections").select("*").order("sort", { ascending: true });
     const c = await supabase.from("cards").select("*").order("sort", { ascending: true });
     const n = await supabase
@@ -298,6 +316,10 @@ export default function App() {
       .select("*")
       .order("pinned", { ascending: false })
       .order("published_at", { ascending: false });
+
+    console.log("[DATA] Sections:", s.error ? `✗ ${s.error.message}` : `✓ ${s.data?.length || 0}`);
+    console.log("[DATA] Cards:", c.error ? `✗ ${c.error.message}` : `✓ ${c.data?.length || 0}`);
+    console.log("[DATA] News:", n.error ? `✗ ${n.error.message}` : `✓ ${n.data?.length || 0}`);
 
     if (!s.error) setSections((s.data ?? []) as SectionRow[]);
     if (!c.error) setCards((c.data ?? []) as CardRow[]);
@@ -337,9 +359,11 @@ export default function App() {
     if (!canContinue) return;
 
     const entered = code.trim().toUpperCase();
+    console.log("[CODE] Checking code:", entered);
 
     // ADMIN: open admin immediately, no button needed
     if (entered === ADMIN_CODE) {
+      console.log("[CODE] Admin code matched");
       setError("");
       localStorage.setItem("access_ok", "1");
       localStorage.setItem("admin_ok", "1");
@@ -349,33 +373,45 @@ export default function App() {
     }
 
     // user access codes via Supabase
-    const resp = await supabase
-      .from("access_codes")
-      .select("code,is_active,expires_at")
-      .eq("code", entered)
-      .limit(1);
+    try {
+      const resp = await supabase
+        .from("access_codes")
+        .select("code,is_active,expires_at")
+        .eq("code", entered)
+        .limit(1);
 
-    if (resp.error || !resp.data || resp.data.length === 0) {
+      console.log("[CODE] Supabase response:", resp);
+
+      if (resp.error || !resp.data || resp.data.length === 0) {
+        console.log("[CODE] Code not found or error");
+        setError(t.invalidCode);
+        return;
+      }
+
+      const row = resp.data[0] as { is_active: boolean; expires_at: string | null };
+      console.log("[CODE] Code found:", row);
+
+      if (!row.is_active) {
+        console.log("[CODE] Code is inactive");
+        setError(t.invalidCode);
+        return;
+      }
+      if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
+        console.log("[CODE] Code expired");
+        setError(t.invalidCode);
+        return;
+      }
+
+      console.log("[CODE] Code valid, granting access");
+      setError("");
+      localStorage.setItem("access_ok", "1");
+      localStorage.removeItem("admin_ok");
+      setAdminOk(false);
+      setRoute({ name: "home" });
+    } catch (err) {
+      console.error("[CODE] Exception:", err);
       setError(t.invalidCode);
-      return;
     }
-
-    const row = resp.data[0] as { is_active: boolean; expires_at: string | null };
-
-    if (!row.is_active) {
-      setError(t.invalidCode);
-      return;
-    }
-    if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
-      setError(t.invalidCode);
-      return;
-    }
-
-    setError("");
-    localStorage.setItem("access_ok", "1");
-    localStorage.removeItem("admin_ok");
-    setAdminOk(false);
-    setRoute({ name: "home" });
   };
 
   const copyText = async (text: string) => {
