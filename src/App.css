@@ -72,6 +72,7 @@ body{
   overflow-y:auto;
   overflow-x:hidden;
   padding-bottom:88px;
+  position:relative;
 }
 
 .topbar{
@@ -107,7 +108,7 @@ body{
   height:40px;
   border-radius:var(--r-md);
   border:2px solid var(--accent);
-  background:#16213e;
+  background:rgba(111,0,255,.08);
   color:var(--accent);
   cursor:pointer;
   display:flex;
@@ -115,13 +116,14 @@ body{
   justify-content:center;
   font-size:16px;
   font-weight:900;
-  transition:transform .12s ease, box-shadow .12s ease;
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
   flex-shrink:0;
 }
 .smallIconBtn:active{
   transform:scale(.92);
 }
 .smallIconBtn:hover{
+  background:rgba(111,0,255,.15);
   box-shadow:0 2px 6px rgba(111,0,255,.2);
 }
 
@@ -304,10 +306,14 @@ body{
   font-size:14px;
   font-weight:950;
   color:var(--accent);
-  background:transparent;
+  background:rgba(111,0,255,.08);
   cursor:pointer;
   padding:0 14px;
   white-space:nowrap;
+  transition: transform .12s ease, background .12s ease;
+}
+.btnGhost:hover{
+  background:rgba(111,0,255,.15);
 }
 .btnGhost:active{ transform: scale(.99); }
 
@@ -483,11 +489,11 @@ body{
 
 /* нижняя панель с информацией пользователя */
 .bottombar{
-  position:fixed;
+  position:absolute;
+  bottom:0;
   left:0;
   right:0;
-  bottom:0;
-  width:360px;
+  width:100%;
   height:72px;
   display:flex;
   align-items:center;
@@ -497,9 +503,7 @@ body{
   border-top:1px solid rgba(111,0,255,.3);
   z-index:40;
   box-shadow:0 -6px 30px rgba(111,0,255,.10);
-  margin:auto;
-  left:50%;
-  transform:translateX(-50%);
+  box-sizing:border-box;
 }
 
 .userPhoto{
