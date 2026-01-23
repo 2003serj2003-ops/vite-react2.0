@@ -1,14 +1,34 @@
 # ✅ Чек-лист для исправления проблем
 
+## 🚨 ЕСЛИ ОШИБКА: "Environment Variable references Secret which does not exist"
+
+**Решение:** Удалите и пересоздайте переменные правильно!
+
+1. Vercel → Settings → Environment Variables
+2. **Удалите** все `VITE_` переменные (нажмите на каждую и Delete)
+3. **Добавьте заново:**
+   - `VITE_SUPABASE_URL` = `https://ykbouygdeqrohizeqlmc.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY` = `sb_publishable_6sJ_KOewkD5zRln2HVDWXw_vjILs-kD`
+   - `VITE_TELEGRAM_BOT_TOKEN` = `8274387256:AAENRm4uxyQ91s4g8RfmEhq3SxnKzH8Kzvs`
+   - `VITE_TELEGRAM_CHAT_ID` = `-1001234567890`
+
+⚠️ **Важно:** Добавляйте как обычные переменные, НЕ как Secrets!
+
+4. Deployments → Redeploy последнего деплоя
+
+**Подробнее:** [VERCEL_ENV_FIX.md](./VERCEL_ENV_FIX.md)
+
+---
+
 ## Что именно проверить на Vercel:
 
-### 1. Environment Variables на Vercel
+### 1. Environment Variables на Vercel ✓
 ```
 Settings → Environment Variables → должно быть:
 - VITE_SUPABASE_URL = https://xxx.supabase.co
 - VITE_SUPABASE_ANON_KEY = eyJ...xxx
 ```
-**Если их нет - добавьте и нажмите "Redeploy"**
+**Если их нет или ошибка - смотрите выше!**
 
 ### 2. Supabase RLS Policies (ОЧЕНЬ ВАЖНО)
 ```
