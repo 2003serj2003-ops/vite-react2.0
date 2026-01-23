@@ -220,6 +220,7 @@ export default function App() {
 
   const [code, setCode] = useState("");
   const [rules, setRules] = useState(false);
+  const [rulesExpanded, setRulesExpanded] = useState(false);
   const [error, setError] = useState("");
 
   const [toast, setToast] = useState("");
@@ -606,12 +607,15 @@ export default function App() {
   return (
     <div className="app">
       <div className="phone">
-        <div className="floating-logos">
-          <img src="/assets/uzum-logo.png" alt="" className="floating-logo floating-logo-1" />
-          <img src="/assets/uzum-logo.png" alt="" className="floating-logo floating-logo-2" />
-          <img src="/assets/uzum-logo.png" alt="" className="floating-logo floating-logo-3" />
-          <img src="/assets/uzum-logo.png" alt="" className="floating-logo floating-logo-4" />
-          <img src="/assets/uzum-logo.png" alt="" className="floating-logo floating-logo-5" />
+        <div className="floating-grapes">
+          <div className="grape grape-1">🍇</div>
+          <div className="grape grape-2">🍇</div>
+          <div className="grape grape-3">🍇</div>
+          <div className="grape grape-4">🍇</div>
+          <div className="grape grape-5">🍇</div>
+          <div className="grape grape-6">🍇</div>
+          <div className="grape grape-7">🍇</div>
+          <div className="grape grape-8">🍇</div>
         </div>
 
         {route.name === "welcome" && (
@@ -638,6 +642,55 @@ export default function App() {
                   }}
                 />
 
+                {/* Правила пользования - accordion */}
+                <div style={{ marginTop: 12 }}>
+                  <button 
+                    className="rulesToggle"
+                    onClick={() => setRulesExpanded(!rulesExpanded)}
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      border: "2px solid rgba(111,0,255,.3)",
+                      borderRadius: "12px",
+                      background: "transparent",
+                      color: "rgba(20,18,26,.8)",
+                      fontWeight: 900,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      fontSize: 13,
+                      transition: "all .3s ease"
+                    }}
+                  >
+                    <span>📋 Правила пользования</span>
+                    <span style={{ 
+                      fontSize: 16, 
+                      transition: "transform .3s ease", 
+                      transform: rulesExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                      display: "inline-block"
+                    }}>▼</span>
+                  </button>
+                  
+                  {rulesExpanded && (
+                    <div className="rulesContent" style={{
+                      marginTop: 10,
+                      padding: "10px",
+                      background: "rgba(111,0,255,.05)",
+                      borderRadius: 8,
+                      animation: "slideDown 0.3s ease"
+                    }}>
+                      <ul style={{ margin: "0 0 0 20px", paddingLeft: 0, fontSize: 12, color: "rgba(20,18,26,.7)", lineHeight: 1.8 }}>
+                        <li>Соблюдайте законодательство Узбекистана</li>
+                        <li>Не распространяйте коды доступа третьим лицам</li>
+                        <li>Используйте информацию только в личных целях</li>
+                        <li>Не копируйте и не воспроизводите контент</li>
+                        <li>Администратор имеет право отключить доступ в любой момент</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
                 <label className="row" style={{ marginTop: 12, color: "rgba(20,18,26,.88)" }}>
                   <input
                     type="checkbox"
@@ -648,7 +701,7 @@ export default function App() {
                     }}
                     style={{ width: 20, height: 20, accentColor: "#6F00FF" }}
                   />
-                  <span style={{ fontWeight: 900 }}>{t.acceptRules}</span>
+                  <span style={{ fontWeight: 900 }}>Согласен с правилами</span>
                 </label>
 
                 {error ? (
