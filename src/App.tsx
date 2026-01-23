@@ -397,6 +397,56 @@ export default function App() {
     return { sections: sec, cards: cds, news: nws };
   }, [search, sections, cards, news, lang]);
 
+  const renderSearchResults = () => {
+    if (!searchResults) return null;
+    return (
+      <div className="list">
+        {searchResults.sections.length > 0 && (
+          <div>
+            <div style={{ fontWeight: 950, marginBottom: 8 }}>{t.sections}</div>
+            {searchResults.sections.map((s) => (
+              <button key={s.id} className="cardCream" style={{ textAlign: "left" }} onClick={() => setRoute({ name: "section", sectionId: s.id })}>
+                <div style={{ fontWeight: 900 }}>{getSectionTitle(s)}</div>
+                <div style={{ marginTop: 6, color: "rgba(0,0,0,.6)" }}>{cards.filter(c=>c.section_id===s.id).slice(0,2).map(c=>getCardTitle(c)).join(' • ') || '—'}</div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {searchResults.cards.length > 0 && (
+          <div>
+            <div style={{ fontWeight: 950, marginTop: 6, marginBottom: 8 }}>{t.cards}</div>
+            {searchResults.cards.map((c) => (
+              <div key={c.id} className="cardCream">
+                <div style={{ fontWeight: 900 }}>{getCardTitle(c)}</div>
+                <div style={{ marginTop: 6, color: "rgba(0,0,0,.6)" }}>{getCardBody(c).split('\n').slice(0,3).join('\n')}</div>
+                <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+                  <button className="btnGhost" onClick={() => setRoute({ name: 'card', cardId: c.id })}>{t.open}</button>
+                  <button className="btnPrimary" onClick={() => copyText(getCardBody(c))}>{t.copyAll}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {searchResults.news.length > 0 && (
+          <div>
+            <div style={{ fontWeight: 950, marginTop: 6, marginBottom: 8 }}>{t.news}</div>
+            {searchResults.news.map((n) => (
+              <div key={n.id} className="cardCream">
+                <div style={{ fontWeight: 900 }}>{lang === 'ru' ? n.title_ru : n.title_uz}</div>
+                <div style={{ marginTop: 6, color: 'rgba(0,0,0,.6)' }}>{(lang === 'ru' ? n.body_ru : n.body_uz).split('\n').slice(0,3).join('\n')}</div>
+                <div style={{ marginTop: 10 }}>
+                  <button className="btnGhost" onClick={() => setRoute({ name: 'news' })}>{t.open}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const getSectionTitle = (s: SectionRow) => (lang === "ru" ? s.title_ru : s.title_uz);
   const getCardTitle = (c: CardRow) => (lang === "ru" ? c.title_ru : c.title_uz);
   const getCardBody = (c: CardRow) => (lang === "ru" ? c.body_ru : c.body_uz);
@@ -1150,53 +1200,7 @@ export default function App() {
               ))}
             </div>
 
-            {/* Search results: show combined matches if query present */}
-            {searchResults ? (
-              <div className="list">
-                {searchResults.sections.length > 0 && (
-                  <div>
-                    <div style={{ fontWeight: 950, marginBottom: 8 }}>{t.sections}</div>
-                    {searchResults.sections.map((s) => (
-                      <button key={s.id} className="cardCream" style={{ textAlign: "left" }} onClick={() => setRoute({ name: "section", sectionId: s.id })}>
-                        <div style={{ fontWeight: 900 }}>{getSectionTitle(s)}</div>
-                        <div style={{ marginTop: 6, color: "rgba(0,0,0,.6)" }}>{cards.filter(c=>c.section_id===s.id).slice(0,2).map(c=>getCardTitle(c)).join(' • ') || '—'}</div>
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-
-                {searchResults.cards.length > 0 && (
-                  <div>
-                    <div style={{ fontWeight: 950, marginTop: 6, marginBottom: 8 }}>{t.cards}</div>
-                    {searchResults.cards.map((c) => (
-                      <div key={c.id} className="cardCream">
-                        <div style={{ fontWeight: 900 }}>{getCardTitle(c)}</div>
-                        <div style={{ marginTop: 6, color: "rgba(0,0,0,.6)" }}>{getCardBody(c).split('\n').slice(0,3).join('\n')}</div>
-                        <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
-                          <button className="btnGhost" onClick={() => setRoute({ name: 'card', cardId: c.id })}>{t.open}</button>
-                          <button className="btnPrimary" onClick={() => copyText(getCardBody(c))}>{t.copyAll}</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {searchResults.news.length > 0 && (
-                  <div>
-                    <div style={{ fontWeight: 950, marginTop: 6, marginBottom: 8 }}>{t.news}</div>
-                    {searchResults.news.map((n) => (
-                      <div key={n.id} className="cardCream">
-                        <div style={{ fontWeight: 900 }}>{lang === 'ru' ? n.title_ru : n.title_uz}</div>
-                        <div style={{ marginTop: 6, color: 'rgba(0,0,0,.6)' }}>{(lang === 'ru' ? n.body_ru : n.body_uz).split('\n').slice(0,3).join('\n')}</div>
-                        <div style={{ marginTop: 10 }}>
-                          <button className="btnGhost" onClick={() => setRoute({ name: 'news' })}>{t.open}</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : null}
+            {renderSearchResults()}
 
             {/* кнопка под каруселью — визуально поднята ближе к элементам */}
             <div className="allSectionsContainer" style={{ display: "flex", justifyContent: "center" }}>
