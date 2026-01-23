@@ -47,7 +47,7 @@ const T = {
     enterCode: "Введите код доступа",
     acceptRules: "Принимаю правила пользования",
     continue: "Продолжить",
-    search: "Поиск по разделам",
+    search: "Поиск",
     hello: "Здравствуйте",
     sections: "РАЗДЕЛЫ",
     news: "НОВОСТИ",
@@ -89,7 +89,7 @@ const T = {
     enterCode: "Kirish kodini kiriting",
     acceptRules: "Foydalanish qoidalarini qabul qilaman",
     continue: "Davom etish",
-    search: "Bo‘limlar bo‘yicha qidirish",
+    search: "Qidirish",
     hello: "Salom",
     sections: "BO‘LIMLAR",
     news: "YANGILIKLAR",
@@ -810,10 +810,10 @@ export default function App() {
                       animation: "slideDown 0.3s ease"
                     }}>
                       <ul style={{ margin: "0 0 0 20px", paddingLeft: 0, fontSize: 12, color: "rgba(20,18,26,.7)", lineHeight: 1.8 }}>
-                        <li>Соблюдайте законодательство Узбекистана</li>
+                        <li>Используйте помощника исключительно в рабочих целях.</li>
                         <li>Не распространяйте коды доступа третьим лицам</li>
-                        <li>Используйте информацию только в личных целях</li>
-                        <li>Не копируйте и не воспроизводите контент</li>
+                        <li>Чего-то не хватает поделитесь</li>
+                        <li>Пользуйтесь и наслаждайтесь!</li>
                         <li>Администратор имеет право отключить доступ в любой момент</li>
                       </ul>
                     </div>
