@@ -1,3 +1,4 @@
+// src/App.tsx
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabase";
 import "./App.css";
@@ -33,7 +34,7 @@ type NewsRow = {
   pinned: boolean;
 };
 
-const ADMIN_CODE = "SANYA4565"; // можно вводить Sanya4565 / sanya4565 и т.д.
+const ADMIN_CODE = "SANYA4565"; // ввод: Sanya4565 / sanya4565 / SANYA4565
 
 const T = {
   ru: {
@@ -71,6 +72,8 @@ const T = {
     expiresAt: "Истекает (необяз.)",
     note: "Заметка",
     signOut: "Выйти",
+    allNews: "Все новости",
+    open: "Открыть",
   },
   uz: {
     welcome: "Xush\nkelibsiz",
@@ -107,6 +110,8 @@ const T = {
     expiresAt: "Tugash (ixtiyoriy)",
     note: "Izoh",
     signOut: "Chiqish",
+    allNews: "Barcha yangiliklar",
+    open: "Ochish",
   },
 } as const;
 
@@ -119,7 +124,7 @@ type Route =
   | { name: "admin" };
 
 function TopBar(props: {
-  t: any;
+  t: (typeof T)["ru"];
   lang: Lang;
   setLang: (l: Lang) => void;
   showSearch: boolean;
@@ -163,12 +168,21 @@ function TopBar(props: {
   );
 }
 
+function formatDDMM(iso: string) {
+  // iso: YYYY-MM-DD or ISO datetime
+  const d = iso.slice(0, 10).split("-");
+  if (d.length !== 3) return "";
+  return `${d[2]}.${d[1]}`;
+}
+
 export default function App() {
   const [lang, setLang] = useState<Lang>((localStorage.getItem("lang") as Lang) || "ru");
   const t = T[lang];
 
   const [route, setRoute] = useState<Route>(() => {
     const ok = localStorage.getItem("access_ok") === "1";
+    const adminOk = localStorage.getItem("admin_ok") === "1";
+    if (adminOk) return { name: "admin" };
     return ok ? { name: "home" } : { name: "welcome" };
   });
 
@@ -202,7 +216,11 @@ export default function App() {
   const loadPublic = async () => {
     const s = await supabase.from("sections").select("*").order("sort", { ascending: true });
     const c = await supabase.from("cards").select("*").order("sort", { ascending: true });
-    const n = await supabase.from("news").select("*").order("pinned", { ascending: false }).order("published_at", { ascending: false });
+    const n = await supabase
+      .from("news")
+      .select("*")
+      .order("pinned", { ascending: false })
+      .order("published_at", { ascending: false });
 
     if (!s.error) setSections((s.data ?? []) as SectionRow[]);
     if (!c.error) setCards((c.data ?? []) as CardRow[]);
@@ -213,11 +231,9 @@ export default function App() {
     loadPublic();
   }, []);
 
-  // защитим админку (если вручную попадут на route admin)
+  // protect admin route
   useEffect(() => {
-    if (route.name === "admin" && !adminOk) {
-      setRoute({ name: "home" });
-    }
+    if (route.name === "admin" && !adminOk) setRoute({ name: "home" });
   }, [route.name, adminOk]);
 
   const filteredSections = useMemo(() => {
@@ -237,7 +253,7 @@ export default function App() {
 
     const entered = code.trim().toUpperCase();
 
-    // ✅ Админ-код: сразу открываем админку
+    // ✅ Admin code — open admin immediately (no button)
     if (entered === ADMIN_CODE) {
       setError("");
       localStorage.setItem("access_ok", "1");
@@ -247,12 +263,8 @@ export default function App() {
       return;
     }
 
-    // Обычный пользователь — проверка через Supabase
-    const resp = await supabase
-      .from("access_codes")
-      .select("code,is_active,expires_at")
-      .eq("code", entered)
-      .limit(1);
+    // User code — verify in Supabase table access_codes
+    const resp = await supabase.from("access_codes").select("code,is_active,expires_at").eq("code", entered).limit(1);
 
     if (resp.error || !resp.data || resp.data.length === 0) {
       setError(t.invalidCode);
@@ -327,10 +339,7 @@ export default function App() {
 
   const adminSaveSection = async () => {
     const resp = await supabase.from("sections").insert(secForm as any);
-    if (resp.error) {
-      showToast("Ошибка");
-      return;
-    }
+    if (resp.error) return void showToast("Ошибка");
     showToast("Ок");
     setSecForm({ key: "", title_ru: "", title_uz: "", icon: "📄", sort: 100 });
     await loadPublic();
@@ -338,20 +347,14 @@ export default function App() {
 
   const adminDeleteSection = async (id: string) => {
     const resp = await supabase.from("sections").delete().eq("id", id);
-    if (resp.error) {
-      showToast("Ошибка");
-      return;
-    }
+    if (resp.error) return void showToast("Ошибка");
     showToast("Ок");
     await loadPublic();
   };
 
   const adminSaveCard = async () => {
     const resp = await supabase.from("cards").insert({ ...cardForm, updated_at: new Date().toISOString() } as any);
-    if (resp.error) {
-      showToast("Ошибка");
-      return;
-    }
+    if (resp.error) return void showToast("Ошибка");
     showToast("Ок");
     setCardForm({ section_id: "", title_ru: "", title_uz: "", body_ru: "", body_uz: "", sort: 100 });
     await loadPublic();
@@ -359,20 +362,14 @@ export default function App() {
 
   const adminDeleteCard = async (id: string) => {
     const resp = await supabase.from("cards").delete().eq("id", id);
-    if (resp.error) {
-      showToast("Ошибка");
-      return;
-    }
+    if (resp.error) return void showToast("Ошибка");
     showToast("Ок");
     await loadPublic();
   };
 
   const adminSaveNews = async () => {
     const resp = await supabase.from("news").insert(newsForm as any);
-    if (resp.error) {
-      showToast("Ошибка");
-      return;
-    }
+    if (resp.error) return void showToast("Ошибка");
     showToast("Ок");
     setNewsForm({
       title_ru: "",
@@ -387,10 +384,7 @@ export default function App() {
 
   const adminDeleteNews = async (id: string) => {
     const resp = await supabase.from("news").delete().eq("id", id);
-    if (resp.error) {
-      showToast("Ошибка");
-      return;
-    }
+    if (resp.error) return void showToast("Ошибка");
     showToast("Ок");
     await loadPublic();
   };
@@ -403,10 +397,7 @@ export default function App() {
       expires_at: codeForm.expires_at ? new Date(codeForm.expires_at).toISOString() : null,
     };
     const resp = await supabase.from("access_codes").upsert(payload as any);
-    if (resp.error) {
-      showToast("Ошибка");
-      return;
-    }
+    if (resp.error) return void showToast("Ошибка");
     showToast("Ок");
     setCodeForm({ code: "", is_active: true, expires_at: "", note: "" });
   };
@@ -415,6 +406,7 @@ export default function App() {
   return (
     <div className="app">
       <div className="phone">
+        {/* WELCOME */}
         {route.name === "welcome" && (
           <div className="page">
             <div className="center">
@@ -465,21 +457,15 @@ export default function App() {
           </div>
         )}
 
+        {/* HOME */}
         {route.name === "home" && (
           <div className="page">
-            <TopBar
-              t={t}
-              lang={lang}
-              setLang={setLang}
-              showSearch={true}
-              search={search}
-              setSearch={setSearch}
-              onBack={goBack}
-              onHome={goHome}
-            />
+            <TopBar t={t} lang={lang} setLang={setLang} showSearch={true} search={search} setSearch={setSearch} onBack={goBack} onHome={goHome} />
 
             <div className="headerBlock">
-              <div className="h2">{t.hello}, Авьясов А.</div>
+              <div className="h2">
+                {t.hello}, Авьясов А.
+              </div>
               <div className="sub">{t.sections}</div>
             </div>
 
@@ -500,9 +486,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="sectionMeta">
-                    {news[0]?.published_at ? news[0].published_at.split("-").reverse().slice(0, 2).join(".") : ""}
-                  </div>
+                  <div className="sectionMeta">{news[0]?.published_at ? formatDDMM(news[0].published_at) : ""}</div>
                 </button>
               ))}
 
@@ -512,45 +496,44 @@ export default function App() {
                   <div className="sectionTitle">{t.news}</div>
                   <div className="sectionSub">{news[0] ? (lang === "ru" ? news[0].title_ru : news[0].title_uz) : "—"}</div>
                 </div>
-                <div className="sectionMeta">
-                  {news[0]?.published_at ? news[0].published_at.split("-").reverse().slice(0, 2).join(".") : ""}
-                </div>
+                <div className="sectionMeta">{news[0]?.published_at ? formatDDMM(news[0].published_at) : ""}</div>
               </button>
             </div>
 
+            {/* NEWS on home: carousel, only last 4 */}
             <div className="blockTitle">{t.news}</div>
-            <div className="list">
-              {news.slice(0, 2).map((n) => (
-                <div key={n.id} className="cardCream">
-                  <div className="row" style={{ justifyContent: "space-between" }}>
-                    <div style={{ fontWeight: 950 }}>{lang === "ru" ? n.title_ru : n.title_uz}</div>
-                    <div style={{ opacity: 0.65, fontWeight: 950 }}>{n.published_at.split("-").reverse().slice(0, 2).join(".")}</div>
+            <div className="newsCarousel">
+              <div className="newsTrack">
+                {news.slice(0, 4).map((n) => (
+                  <div key={n.id} className="newsSlide">
+                    <div className="newsTop">
+                      <div className="newsTitle">{lang === "ru" ? n.title_ru : n.title_uz}</div>
+                      <div className="newsDate">{formatDDMM(n.published_at)}</div>
+                    </div>
+                    <div className="newsBody">{lang === "ru" ? n.body_ru : n.body_uz}</div>
                   </div>
-                  <div style={{ marginTop: 8, opacity: 0.85, lineHeight: 1.35 }}>{lang === "ru" ? n.body_ru : n.body_uz}</div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            <div className="bottomBar">
+              <div className="bottomBarIcon">👤</div>
+              АВЬЯСОВ А.
             </div>
           </div>
         )}
 
+        {/* SECTION */}
         {route.name === "section" && (
           <div className="page">
-            <TopBar
-              t={t}
-              lang={lang}
-              setLang={setLang}
-              showSearch={false}
-              search={search}
-              setSearch={setSearch}
-              onBack={goBack}
-              onHome={goHome}
-            />
+            <TopBar t={t} lang={lang} setLang={setLang} showSearch={false} search={search} setSearch={setSearch} onBack={goBack} onHome={goHome} />
+
             <div className="headerBlock">
               <div className="h2">{getSectionTitle(sections.find((s) => s.id === route.sectionId) as SectionRow)}</div>
               <div className="sub">Карточки</div>
             </div>
 
-            <div className="list">
+            <div className="list" style={{ paddingBottom: 70 }}>
               {cards
                 .filter((c) => c.section_id === route.sectionId)
                 .sort((a, b) => a.sort - b.sort)
@@ -564,7 +547,7 @@ export default function App() {
 
                     <div className="split" style={{ marginTop: 12 }}>
                       <button className="smallBtn" onClick={() => setRoute({ name: "card", cardId: c.id })}>
-                        Открыть
+                        {t.open}
                       </button>
                       <button className="btnPrimary" onClick={() => copyText(getCardBody(c))}>
                         {t.copyAll}
@@ -573,28 +556,25 @@ export default function App() {
                   </div>
                 ))}
             </div>
+
+            <div className="bottomBar">
+              <div className="bottomBarIcon">👤</div>
+              АВЬЯСОВ А.
+            </div>
           </div>
         )}
 
+        {/* CARD */}
         {route.name === "card" && (
           <div className="page">
-            <TopBar
-              t={t}
-              lang={lang}
-              setLang={setLang}
-              showSearch={false}
-              search={search}
-              setSearch={setSearch}
-              onBack={goBack}
-              onHome={goHome}
-            />
+            <TopBar t={t} lang={lang} setLang={setLang} showSearch={false} search={search} setSearch={setSearch} onBack={goBack} onHome={goHome} />
 
             {(() => {
               const c = cards.find((x) => x.id === route.cardId);
               if (!c) return null;
               const body = getCardBody(c);
               return (
-                <div style={{ padding: 14 }}>
+                <div style={{ padding: 14, paddingBottom: 70 }}>
                   <div className="h2">{getCardTitle(c)}</div>
                   <div className="cardCream" style={{ marginTop: 12 }}>
                     <pre style={{ margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{body}</pre>
@@ -605,27 +585,24 @@ export default function App() {
                 </div>
               );
             })()}
+
+            <div className="bottomBar">
+              <div className="bottomBarIcon">👤</div>
+              АВЬЯСОВ А.
+            </div>
           </div>
         )}
 
+        {/* NEWS (ALL) */}
         {route.name === "news" && (
           <div className="page">
-            <TopBar
-              t={t}
-              lang={lang}
-              setLang={setLang}
-              showSearch={false}
-              search={search}
-              setSearch={setSearch}
-              onBack={goBack}
-              onHome={goHome}
-            />
+            <TopBar t={t} lang={lang} setLang={setLang} showSearch={false} search={search} setSearch={setSearch} onBack={goBack} onHome={goHome} />
             <div className="headerBlock">
               <div className="h2">{t.news}</div>
-              <div className="sub">Все новости</div>
+              <div className="sub">{t.allNews}</div>
             </div>
 
-            <div className="list">
+            <div className="list" style={{ paddingBottom: 70 }}>
               {news.map((n) => (
                 <div key={n.id} className="cardCream">
                   <div className="row" style={{ justifyContent: "space-between" }}>
@@ -633,17 +610,21 @@ export default function App() {
                       {n.pinned ? "📌 " : ""}
                       {lang === "ru" ? n.title_ru : n.title_uz}
                     </div>
-                    <div style={{ opacity: 0.65, fontWeight: 950 }}>{n.published_at.split("-").reverse().slice(0, 2).join(".")}</div>
+                    <div style={{ opacity: 0.65, fontWeight: 950 }}>{formatDDMM(n.published_at)}</div>
                   </div>
-                  <div style={{ marginTop: 8, opacity: 0.85, lineHeight: 1.35, whiteSpace: "pre-wrap" }}>
-                    {lang === "ru" ? n.body_ru : n.body_uz}
-                  </div>
+                  <div style={{ marginTop: 8, opacity: 0.85, lineHeight: 1.35, whiteSpace: "pre-wrap" }}>{lang === "ru" ? n.body_ru : n.body_uz}</div>
                 </div>
               ))}
+            </div>
+
+            <div className="bottomBar">
+              <div className="bottomBarIcon">👤</div>
+              АВЬЯСОВ А.
             </div>
           </div>
         )}
 
+        {/* ADMIN */}
         {route.name === "admin" && (
           <div className="page">
             <TopBar
@@ -662,7 +643,7 @@ export default function App() {
               }
             />
 
-            <div style={{ padding: 14 }}>
+            <div style={{ padding: 14, paddingBottom: 70 }}>
               <div className="h2">{t.admin}</div>
 
               <div className="row" style={{ marginTop: 12 }}>
@@ -686,37 +667,17 @@ export default function App() {
                   <div style={{ fontWeight: 950, marginBottom: 10 }}>{t.manageSections}</div>
 
                   <div className="split">
-                    <input
-                      className="input"
-                      placeholder="key (например docs)"
-                      value={secForm.key}
-                      onChange={(e) => setSecForm({ ...secForm, key: e.target.value })}
-                    />
+                    <input className="input" placeholder="key (например docs)" value={secForm.key} onChange={(e) => setSecForm({ ...secForm, key: e.target.value })} />
                     <input className="input" placeholder={t.icon} value={secForm.icon} onChange={(e) => setSecForm({ ...secForm, icon: e.target.value })} />
                   </div>
 
                   <div className="split" style={{ marginTop: 10 }}>
-                    <input
-                      className="input"
-                      placeholder={t.titleRu}
-                      value={secForm.title_ru}
-                      onChange={(e) => setSecForm({ ...secForm, title_ru: e.target.value })}
-                    />
-                    <input
-                      className="input"
-                      placeholder={t.titleUz}
-                      value={secForm.title_uz}
-                      onChange={(e) => setSecForm({ ...secForm, title_uz: e.target.value })}
-                    />
+                    <input className="input" placeholder={t.titleRu} value={secForm.title_ru} onChange={(e) => setSecForm({ ...secForm, title_ru: e.target.value })} />
+                    <input className="input" placeholder={t.titleUz} value={secForm.title_uz} onChange={(e) => setSecForm({ ...secForm, title_uz: e.target.value })} />
                   </div>
 
                   <div className="split" style={{ marginTop: 10 }}>
-                    <input
-                      className="input"
-                      placeholder={t.sort}
-                      value={String(secForm.sort)}
-                      onChange={(e) => setSecForm({ ...secForm, sort: Number(e.target.value || 100) })}
-                    />
+                    <input className="input" placeholder={t.sort} value={String(secForm.sort)} onChange={(e) => setSecForm({ ...secForm, sort: Number(e.target.value || 100) })} />
                     <button className="btnPrimary" onClick={adminSaveSection}>
                       {t.add}
                     </button>
@@ -753,44 +714,17 @@ export default function App() {
                   </select>
 
                   <div className="split" style={{ marginTop: 10 }}>
-                    <input
-                      className="input"
-                      placeholder={t.titleRu}
-                      value={cardForm.title_ru}
-                      onChange={(e) => setCardForm({ ...cardForm, title_ru: e.target.value })}
-                    />
-                    <input
-                      className="input"
-                      placeholder={t.titleUz}
-                      value={cardForm.title_uz}
-                      onChange={(e) => setCardForm({ ...cardForm, title_uz: e.target.value })}
-                    />
+                    <input className="input" placeholder={t.titleRu} value={cardForm.title_ru} onChange={(e) => setCardForm({ ...cardForm, title_ru: e.target.value })} />
+                    <input className="input" placeholder={t.titleUz} value={cardForm.title_uz} onChange={(e) => setCardForm({ ...cardForm, title_uz: e.target.value })} />
                   </div>
 
                   <div className="split" style={{ marginTop: 10 }}>
-                    <textarea
-                      className="input"
-                      style={{ height: 120, paddingTop: 12 }}
-                      placeholder={t.bodyRu}
-                      value={cardForm.body_ru}
-                      onChange={(e) => setCardForm({ ...cardForm, body_ru: e.target.value })}
-                    />
-                    <textarea
-                      className="input"
-                      style={{ height: 120, paddingTop: 12 }}
-                      placeholder={t.bodyUz}
-                      value={cardForm.body_uz}
-                      onChange={(e) => setCardForm({ ...cardForm, body_uz: e.target.value })}
-                    />
+                    <textarea className="input" style={{ height: 120, paddingTop: 12 }} placeholder={t.bodyRu} value={cardForm.body_ru} onChange={(e) => setCardForm({ ...cardForm, body_ru: e.target.value })} />
+                    <textarea className="input" style={{ height: 120, paddingTop: 12 }} placeholder={t.bodyUz} value={cardForm.body_uz} onChange={(e) => setCardForm({ ...cardForm, body_uz: e.target.value })} />
                   </div>
 
                   <div className="split" style={{ marginTop: 10 }}>
-                    <input
-                      className="input"
-                      placeholder={t.sort}
-                      value={String(cardForm.sort)}
-                      onChange={(e) => setCardForm({ ...cardForm, sort: Number(e.target.value || 100) })}
-                    />
+                    <input className="input" placeholder={t.sort} value={String(cardForm.sort)} onChange={(e) => setCardForm({ ...cardForm, sort: Number(e.target.value || 100) })} />
                     <button className="btnPrimary" onClick={adminSaveCard}>
                       {t.add}
                     </button>
@@ -821,20 +755,8 @@ export default function App() {
                   </div>
 
                   <div className="split" style={{ marginTop: 10 }}>
-                    <textarea
-                      className="input"
-                      style={{ height: 120, paddingTop: 12 }}
-                      placeholder={t.bodyRu}
-                      value={newsForm.body_ru}
-                      onChange={(e) => setNewsForm({ ...newsForm, body_ru: e.target.value })}
-                    />
-                    <textarea
-                      className="input"
-                      style={{ height: 120, paddingTop: 12 }}
-                      placeholder={t.bodyUz}
-                      value={newsForm.body_uz}
-                      onChange={(e) => setNewsForm({ ...newsForm, body_uz: e.target.value })}
-                    />
+                    <textarea className="input" style={{ height: 120, paddingTop: 12 }} placeholder={t.bodyRu} value={newsForm.body_ru} onChange={(e) => setNewsForm({ ...newsForm, body_ru: e.target.value })} />
+                    <textarea className="input" style={{ height: 120, paddingTop: 12 }} placeholder={t.bodyUz} value={newsForm.body_uz} onChange={(e) => setNewsForm({ ...newsForm, body_uz: e.target.value })} />
                   </div>
 
                   <div className="split" style={{ marginTop: 10 }}>
@@ -891,6 +813,11 @@ export default function App() {
                   <div style={{ marginTop: 14, fontWeight: 950 }}>Примечание: список кодов видит только админ (это нормально).</div>
                 </div>
               )}
+            </div>
+
+            <div className="bottomBar">
+              <div className="bottomBarIcon">👤</div>
+              АВЬЯСОВ А.
             </div>
           </div>
         )}
