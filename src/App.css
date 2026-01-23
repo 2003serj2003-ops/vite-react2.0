@@ -661,6 +661,11 @@ body{
   transition: transform .18s cubic-bezier(.22,.1,.36,.9), box-shadow .12s ease !important;
 }
 
+.allSectionsContainer{
+  margin-top: -14px;
+  padding-bottom: 6px;
+}
+
 /* gentle depth for floating grapes - different speeds */
 .grape-1{ animation-duration:18s !important }
 .grape-2{ animation-duration:22s !important }
