@@ -1,6 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabase";
-import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import "./App.css";
 
 type Lang = "ru" | "uz";
@@ -34,6 +33,8 @@ type NewsRow = {
   pinned: boolean;
 };
 
+const ADMIN_CODE = "SANYA4565"; // можно вводить Sanya4565 / sanya4565 и т.д.
+
 const T = {
   ru: {
     welcome: "Добро\nпожаловать",
@@ -50,11 +51,6 @@ const T = {
     copied: "Скопировано",
     invalidCode: "Неверный код доступа",
     admin: "Админ",
-    adminLogin: "Вход в админку",
-    email: "Email",
-    password: "Пароль",
-    signIn: "Войти",
-    signOut: "Выйти",
     manageSections: "Разделы",
     manageCards: "Карточки",
     manageNews: "Новости",
@@ -62,7 +58,6 @@ const T = {
     save: "Сохранить",
     add: "Добавить",
     delete: "Удалить",
-    edit: "Редактировать",
     titleRu: "Заголовок (RU)",
     titleUz: "Заголовок (UZ)",
     bodyRu: "Текст (RU)",
@@ -75,7 +70,7 @@ const T = {
     active: "Активен",
     expiresAt: "Истекает (необяз.)",
     note: "Заметка",
-    openAdmin: "Открыть админку",
+    signOut: "Выйти",
   },
   uz: {
     welcome: "Xush\nkelibsiz",
@@ -92,11 +87,6 @@ const T = {
     copied: "Nusxalandi",
     invalidCode: "Kod noto‘g‘ri",
     admin: "Admin",
-    adminLogin: "Admin kirish",
-    email: "Email",
-    password: "Parol",
-    signIn: "Kirish",
-    signOut: "Chiqish",
     manageSections: "Bo‘limlar",
     manageCards: "Kartochkalar",
     manageNews: "Yangiliklar",
@@ -104,7 +94,6 @@ const T = {
     save: "Saqlash",
     add: "Qo‘shish",
     delete: "O‘chirish",
-    edit: "Tahrirlash",
     titleRu: "Sarlavha (RU)",
     titleUz: "Sarlavha (UZ)",
     bodyRu: "Matn (RU)",
@@ -117,7 +106,7 @@ const T = {
     active: "Faol",
     expiresAt: "Tugash (ixtiyoriy)",
     note: "Izoh",
-    openAdmin: "Adminni ochish",
+    signOut: "Chiqish",
   },
 } as const;
 
@@ -127,7 +116,6 @@ type Route =
   | { name: "section"; sectionId: string }
   | { name: "card"; cardId: string }
   | { name: "news" }
-  | { name: "adminLogin" }
   | { name: "admin" };
 
 function TopBar(props: {
@@ -151,12 +139,7 @@ function TopBar(props: {
 
       {showSearch ? (
         <div className="searchWrap">
-          <input
-            className="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t.search}
-          />
+          <input className="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t.search} />
         </div>
       ) : (
         <div className="searchWrap" style={{ justifyContent: "center" }}>
@@ -201,9 +184,7 @@ export default function App() {
   const [cards, setCards] = useState<CardRow[]>([]);
   const [news, setNews] = useState<NewsRow[]>([]);
 
-  // Admin session (ОДНО объявление!)
-  const [adminSession, setAdminSession] = useState<Session | null>(null);
-  const isAdmin = !!adminSession;
+  const [adminOk, setAdminOk] = useState<boolean>(() => localStorage.getItem("admin_ok") === "1");
 
   // keep lang
   useEffect(() => {
@@ -221,11 +202,7 @@ export default function App() {
   const loadPublic = async () => {
     const s = await supabase.from("sections").select("*").order("sort", { ascending: true });
     const c = await supabase.from("cards").select("*").order("sort", { ascending: true });
-    const n = await supabase
-      .from("news")
-      .select("*")
-      .order("pinned", { ascending: false })
-      .order("published_at", { ascending: false });
+    const n = await supabase.from("news").select("*").order("pinned", { ascending: false }).order("published_at", { ascending: false });
 
     if (!s.error) setSections((s.data ?? []) as SectionRow[]);
     if (!c.error) setCards((c.data ?? []) as CardRow[]);
@@ -236,27 +213,12 @@ export default function App() {
     loadPublic();
   }, []);
 
-  // Admin session watch (без "({ data })" и с типами event/session)
+  // защитим админку (если вручную попадут на route admin)
   useEffect(() => {
-    let alive = true;
-
-    (async () => {
-      const resp = await supabase.auth.getSession();
-      if (!alive) return;
-      setAdminSession(resp.data.session);
-    })();
-
-    const { data } = supabase.auth.onAuthStateChange(
-      (_event: AuthChangeEvent, session: Session | null) => {
-        setAdminSession(session);
-      }
-    );
-
-    return () => {
-      alive = false;
-      data.subscription.unsubscribe();
-    };
-  }, []);
+    if (route.name === "admin" && !adminOk) {
+      setRoute({ name: "home" });
+    }
+  }, [route.name, adminOk]);
 
   const filteredSections = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -265,7 +227,6 @@ export default function App() {
   }, [sections, search, lang]);
 
   const getSectionTitle = (s: SectionRow) => (lang === "ru" ? s.title_ru : s.title_uz);
-
   const getCardTitle = (c: CardRow) => (lang === "ru" ? c.title_ru : c.title_uz);
   const getCardBody = (c: CardRow) => (lang === "ru" ? c.body_ru : c.body_uz);
 
@@ -276,18 +237,29 @@ export default function App() {
 
     const entered = code.trim().toUpperCase();
 
-    const { data, error } = await supabase
+    // ✅ Админ-код: сразу открываем админку
+    if (entered === ADMIN_CODE) {
+      setError("");
+      localStorage.setItem("access_ok", "1");
+      localStorage.setItem("admin_ok", "1");
+      setAdminOk(true);
+      setRoute({ name: "admin" });
+      return;
+    }
+
+    // Обычный пользователь — проверка через Supabase
+    const resp = await supabase
       .from("access_codes")
       .select("code,is_active,expires_at")
       .eq("code", entered)
       .limit(1);
 
-    if (error || !data || data.length === 0) {
+    if (resp.error || !resp.data || resp.data.length === 0) {
       setError(t.invalidCode);
       return;
     }
 
-    const row = data[0] as { is_active: boolean; expires_at: string | null };
+    const row = resp.data[0] as { is_active: boolean; expires_at: string | null };
 
     if (!row.is_active) {
       setError(t.invalidCode);
@@ -300,6 +272,8 @@ export default function App() {
 
     setError("");
     localStorage.setItem("access_ok", "1");
+    localStorage.removeItem("admin_ok");
+    setAdminOk(false);
     setRoute({ name: "home" });
   };
 
@@ -326,24 +300,14 @@ export default function App() {
       return setRoute({ name: "section", sectionId: secId });
     }
     if (route.name === "section" || route.name === "news" || route.name === "admin") return setRoute({ name: "home" });
-    if (route.name === "adminLogin") return setRoute({ name: "home" });
     if (route.name === "home") return setRoute({ name: "welcome" });
   };
 
   // ---------- Admin UI helpers ----------
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPass, setAdminPass] = useState("");
   const [adminTab, setAdminTab] = useState<"sections" | "cards" | "news" | "codes">("sections");
 
   const [secForm, setSecForm] = useState({ key: "", title_ru: "", title_uz: "", icon: "📄", sort: 100 });
-  const [cardForm, setCardForm] = useState({
-    section_id: "",
-    title_ru: "",
-    title_uz: "",
-    body_ru: "",
-    body_uz: "",
-    sort: 100,
-  });
+  const [cardForm, setCardForm] = useState({ section_id: "", title_ru: "", title_uz: "", body_ru: "", body_uz: "", sort: 100 });
   const [newsForm, setNewsForm] = useState({
     title_ru: "",
     title_uz: "",
@@ -354,19 +318,9 @@ export default function App() {
   });
   const [codeForm, setCodeForm] = useState({ code: "", is_active: true, expires_at: "", note: "" });
 
-  const adminSignIn = async () => {
-    const resp = await supabase.auth.signInWithPassword({ email: adminEmail, password: adminPass });
-    if (resp.error) {
-      showToast("Ошибка входа");
-      return;
-    }
-    showToast("Ок");
-    await loadPublic();
-    setRoute({ name: "admin" });
-  };
-
   const adminSignOut = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem("admin_ok");
+    setAdminOk(false);
     showToast("Ок");
     setRoute({ name: "home" });
   };
@@ -457,12 +411,6 @@ export default function App() {
     setCodeForm({ code: "", is_active: true, expires_at: "", note: "" });
   };
 
-  // helper: без setRoute({name: union})
-  const openAdmin = () => {
-    if (isAdmin) setRoute({ name: "admin" });
-    else setRoute({ name: "adminLogin" });
-  };
-
   // ---------- UI ----------
   return (
     <div className="app">
@@ -507,21 +455,11 @@ export default function App() {
 
                 <button
                   className="btnPrimary"
-                  style={{
-                    marginTop: 12,
-                    opacity: canContinue ? 1 : 0.5,
-                    cursor: canContinue ? "pointer" : "not-allowed",
-                  }}
+                  style={{ marginTop: 12, opacity: canContinue ? 1 : 0.5, cursor: canContinue ? "pointer" : "not-allowed" }}
                   onClick={submitCode}
                 >
                   {t.continue}
                 </button>
-
-                <div style={{ marginTop: 12, display: "flex", justifyContent: "center" }}>
-                  <button className="pillBtn" onClick={openAdmin}>
-                    {t.openAdmin}
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -538,11 +476,6 @@ export default function App() {
               setSearch={setSearch}
               onBack={goBack}
               onHome={goHome}
-              rightSlot={
-                <button className="pillBtn" onClick={openAdmin}>
-                  {t.openAdmin}
-                </button>
-              }
             />
 
             <div className="headerBlock">
@@ -591,9 +524,7 @@ export default function App() {
                 <div key={n.id} className="cardCream">
                   <div className="row" style={{ justifyContent: "space-between" }}>
                     <div style={{ fontWeight: 950 }}>{lang === "ru" ? n.title_ru : n.title_uz}</div>
-                    <div style={{ opacity: 0.65, fontWeight: 950 }}>
-                      {n.published_at.split("-").reverse().slice(0, 2).join(".")}
-                    </div>
+                    <div style={{ opacity: 0.65, fontWeight: 950 }}>{n.published_at.split("-").reverse().slice(0, 2).join(".")}</div>
                   </div>
                   <div style={{ marginTop: 8, opacity: 0.85, lineHeight: 1.35 }}>{lang === "ru" ? n.body_ru : n.body_uz}</div>
                 </div>
@@ -702,51 +633,13 @@ export default function App() {
                       {n.pinned ? "📌 " : ""}
                       {lang === "ru" ? n.title_ru : n.title_uz}
                     </div>
-                    <div style={{ opacity: 0.65, fontWeight: 950 }}>
-                      {n.published_at.split("-").reverse().slice(0, 2).join(".")}
-                    </div>
+                    <div style={{ opacity: 0.65, fontWeight: 950 }}>{n.published_at.split("-").reverse().slice(0, 2).join(".")}</div>
                   </div>
                   <div style={{ marginTop: 8, opacity: 0.85, lineHeight: 1.35, whiteSpace: "pre-wrap" }}>
                     {lang === "ru" ? n.body_ru : n.body_uz}
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {route.name === "adminLogin" && (
-          <div className="page">
-            <TopBar
-              t={t}
-              lang={lang}
-              setLang={setLang}
-              showSearch={false}
-              search={search}
-              setSearch={setSearch}
-              onBack={goBack}
-              onHome={goHome}
-            />
-
-            <div style={{ padding: 14 }}>
-              <div className="h2">{t.adminLogin}</div>
-
-              <div className="cardCream" style={{ marginTop: 12 }}>
-                <div style={{ fontWeight: 950 }}>{t.email}</div>
-                <input className="input" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} />
-
-                <div style={{ fontWeight: 950, marginTop: 12 }}>{t.password}</div>
-                <input
-                  className="input"
-                  type="password"
-                  value={adminPass}
-                  onChange={(e) => setAdminPass(e.target.value)}
-                />
-
-                <button className="btnPrimary" style={{ marginTop: 12 }} onClick={adminSignIn}>
-                  {t.signIn}
-                </button>
-              </div>
             </div>
           </div>
         )}
@@ -799,12 +692,7 @@ export default function App() {
                       value={secForm.key}
                       onChange={(e) => setSecForm({ ...secForm, key: e.target.value })}
                     />
-                    <input
-                      className="input"
-                      placeholder={t.icon}
-                      value={secForm.icon}
-                      onChange={(e) => setSecForm({ ...secForm, icon: e.target.value })}
-                    />
+                    <input className="input" placeholder={t.icon} value={secForm.icon} onChange={(e) => setSecForm({ ...secForm, icon: e.target.value })} />
                   </div>
 
                   <div className="split" style={{ marginTop: 10 }}>
@@ -855,11 +743,7 @@ export default function App() {
                 <div className="cardCream" style={{ marginTop: 12 }}>
                   <div style={{ fontWeight: 950, marginBottom: 10 }}>{t.manageCards}</div>
 
-                  <select
-                    className="input"
-                    value={cardForm.section_id}
-                    onChange={(e) => setCardForm({ ...cardForm, section_id: e.target.value })}
-                  >
+                  <select className="input" value={cardForm.section_id} onChange={(e) => setCardForm({ ...cardForm, section_id: e.target.value })}>
                     <option value="">Выбери раздел</option>
                     {sections.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -932,18 +816,8 @@ export default function App() {
                   <div style={{ fontWeight: 950, marginBottom: 10 }}>{t.manageNews}</div>
 
                   <div className="split">
-                    <input
-                      className="input"
-                      placeholder={t.titleRu}
-                      value={newsForm.title_ru}
-                      onChange={(e) => setNewsForm({ ...newsForm, title_ru: e.target.value })}
-                    />
-                    <input
-                      className="input"
-                      placeholder={t.titleUz}
-                      value={newsForm.title_uz}
-                      onChange={(e) => setNewsForm({ ...newsForm, title_uz: e.target.value })}
-                    />
+                    <input className="input" placeholder={t.titleRu} value={newsForm.title_ru} onChange={(e) => setNewsForm({ ...newsForm, title_ru: e.target.value })} />
+                    <input className="input" placeholder={t.titleUz} value={newsForm.title_uz} onChange={(e) => setNewsForm({ ...newsForm, title_uz: e.target.value })} />
                   </div>
 
                   <div className="split" style={{ marginTop: 10 }}>
@@ -964,18 +838,9 @@ export default function App() {
                   </div>
 
                   <div className="split" style={{ marginTop: 10 }}>
-                    <input
-                      className="input"
-                      placeholder={t.date}
-                      value={newsForm.published_at}
-                      onChange={(e) => setNewsForm({ ...newsForm, published_at: e.target.value })}
-                    />
+                    <input className="input" placeholder={t.date} value={newsForm.published_at} onChange={(e) => setNewsForm({ ...newsForm, published_at: e.target.value })} />
                     <label className="row" style={{ color: "rgba(20,18,26,.85)" }}>
-                      <input
-                        type="checkbox"
-                        checked={newsForm.pinned}
-                        onChange={(e) => setNewsForm({ ...newsForm, pinned: e.target.checked })}
-                      />
+                      <input type="checkbox" checked={newsForm.pinned} onChange={(e) => setNewsForm({ ...newsForm, pinned: e.target.checked })} />
                       <span style={{ fontWeight: 950 }}>{t.pinned}</span>
                     </label>
                   </div>
@@ -1007,33 +872,14 @@ export default function App() {
                   <div style={{ fontWeight: 950, marginBottom: 10 }}>{t.manageCodes}</div>
 
                   <div className="split">
-                    <input
-                      className="input"
-                      placeholder={t.code}
-                      value={codeForm.code}
-                      onChange={(e) => setCodeForm({ ...codeForm, code: e.target.value })}
-                    />
-                    <input
-                      className="input"
-                      placeholder={t.note}
-                      value={codeForm.note}
-                      onChange={(e) => setCodeForm({ ...codeForm, note: e.target.value })}
-                    />
+                    <input className="input" placeholder={t.code} value={codeForm.code} onChange={(e) => setCodeForm({ ...codeForm, code: e.target.value })} />
+                    <input className="input" placeholder={t.note} value={codeForm.note} onChange={(e) => setCodeForm({ ...codeForm, note: e.target.value })} />
                   </div>
 
                   <div className="split" style={{ marginTop: 10 }}>
-                    <input
-                      className="input"
-                      placeholder={t.expiresAt}
-                      value={codeForm.expires_at}
-                      onChange={(e) => setCodeForm({ ...codeForm, expires_at: e.target.value })}
-                    />
+                    <input className="input" placeholder={t.expiresAt} value={codeForm.expires_at} onChange={(e) => setCodeForm({ ...codeForm, expires_at: e.target.value })} />
                     <label className="row" style={{ color: "rgba(20,18,26,.85)" }}>
-                      <input
-                        type="checkbox"
-                        checked={codeForm.is_active}
-                        onChange={(e) => setCodeForm({ ...codeForm, is_active: e.target.checked })}
-                      />
+                      <input type="checkbox" checked={codeForm.is_active} onChange={(e) => setCodeForm({ ...codeForm, is_active: e.target.checked })} />
                       <span style={{ fontWeight: 950 }}>{t.active}</span>
                     </label>
                   </div>
@@ -1042,9 +888,7 @@ export default function App() {
                     {t.save}
                   </button>
 
-                  <div style={{ marginTop: 14, fontWeight: 950 }}>
-                    Примечание: список кодов видит только админ (это нормально).
-                  </div>
+                  <div style={{ marginTop: 14, fontWeight: 950 }}>Примечание: список кодов видит только админ (это нормально).</div>
                 </div>
               )}
             </div>
