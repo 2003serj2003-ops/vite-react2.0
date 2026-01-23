@@ -1088,6 +1088,10 @@ export default function App() {
           </div>
         )}
 
+        {route.name !== "welcome" ? (
+          <BottomBar userName={userName} userPhoto={userPhoto} onSignOut={signOut} />
+        ) : null}
+
         {toast ? <div className="toast">{toast}</div> : null}
       </div>
     </div>
