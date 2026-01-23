@@ -407,6 +407,7 @@ export default function App() {
     pinned: false,
   });
   const [codeForm, setCodeForm] = useState({ code: "", is_active: true, expires_at: "", note: "" });
+  const [accessCodes, setAccessCodes] = useState<any[]>([]);
 
   const adminSignOut = async () => {
     localStorage.removeItem("admin_ok");
@@ -485,6 +486,36 @@ export default function App() {
     await loadPublic();
   };
 
+  const loadAccessCodes = async () => {
+    const resp = await supabase.from("access_codes").select("code,is_active,expires_at,note").order("expires_at", { ascending: false });
+    if (resp.error) return;
+    setAccessCodes((resp.data ?? []) as any[]);
+  };
+
+  useEffect(() => {
+    if (adminTab === "codes") loadAccessCodes();
+  }, [adminTab]);
+
+  const updateAccessCode = async (codeKey: string, patch: any) => {
+    const resp = await supabase.from("access_codes").update(patch).eq("code", codeKey);
+    if (resp.error) {
+      showToast(t.error);
+      return;
+    }
+    showToast(t.ok);
+    await loadAccessCodes();
+  };
+
+  const deleteAccessCode = async (codeKey: string) => {
+    const resp = await supabase.from("access_codes").delete().eq("code", codeKey);
+    if (resp.error) {
+      showToast(t.error);
+      return;
+    }
+    showToast(t.ok);
+    await loadAccessCodes();
+  };
+
   const adminSaveCode = async () => {
     const payload: any = {
       code: codeForm.code.trim().toUpperCase(),
@@ -499,6 +530,7 @@ export default function App() {
     }
     showToast(t.ok);
     setCodeForm({ code: "", is_active: true, expires_at: "", note: "" });
+    await loadAccessCodes();
   };
 
   const fmtDM = (iso: string) => {
@@ -1061,6 +1093,7 @@ export default function App() {
                   <div className="split" style={{ marginTop: 10, alignItems: "center" }}>
                     <input
                       className="input"
+                      type="datetime-local"
                       placeholder={t.expiresAt}
                       value={codeForm.expires_at}
                       onChange={(e) => setCodeForm({ ...codeForm, expires_at: e.target.value })}
@@ -1081,6 +1114,32 @@ export default function App() {
 
                   <div style={{ marginTop: 14, fontWeight: 950, color: "rgba(0,0,0,.70)" }}>
                     Примечание: список кодов видит только админ (это нормально).
+                  </div>
+
+                  <div style={{ marginTop: 16, fontWeight: 950 }}>Список кодов</div>
+                  <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                    {accessCodes.map((ac) => (
+                      <div key={ac.code} className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                          <div style={{ fontWeight: 900, color: "#111", minWidth: 80 }}>{ac.code}</div>
+                          <input
+                            className="input"
+                            type="datetime-local"
+                            value={ac.expires_at ? new Date(ac.expires_at).toISOString().slice(0,16) : ""}
+                            onChange={(e) => updateAccessCode(ac.code, { expires_at: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                            style={{ width: 220 }}
+                          />
+                          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <input type="checkbox" checked={ac.is_active} onChange={() => updateAccessCode(ac.code, { is_active: !ac.is_active })} />
+                            <span style={{ fontWeight: 700 }}>{t.active}</span>
+                          </label>
+                        </div>
+
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button className="btnGhost" onClick={() => deleteAccessCode(ac.code)}>{t.delete}</button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
