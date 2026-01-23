@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { supabase } from "./supabase.ts";
+import { supabase } from "./supabase";
+
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 import "./App.css";
@@ -230,13 +231,7 @@ export default function App() {
   }, []);
 
   // Admin session watch
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setAdminSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAdminSession(session);
-    });
-    return () => sub.subscription.unsubscribe();
-  }, []);
+  supabase.auth.getSession
 
   const filteredSections = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -334,8 +329,9 @@ export default function App() {
     showToast("Ок");
     setRoute({ name: "home" });
   };
-
-  const isAdmin = !!adminSession;
+  const [adminSession, setAdminSession] = useState<Session | null>(null);
+  const isAdmin = !!adminSession; 
+  
 
   const adminSaveSection = async () => {
     const { error } = await supabase.from("sections").insert(secForm as any);
@@ -442,10 +438,10 @@ export default function App() {
   className="pillBtn"
   onClick={() => {
     if (isAdmin) {
-      setRoute({ name: "admin" });
-    } else {
-      setRoute({ name: "adminLogin" });
-    }
+  setRoute({ name: "admin" });
+} else {
+  setRoute({ name: "adminLogin" });
+}
   }}
 >                      
   {t.openAdmin}
