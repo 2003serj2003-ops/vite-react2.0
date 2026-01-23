@@ -522,14 +522,17 @@ export default function App() {
 
   const sendTelegramNotification = async (title: string, body: string, imageUrl?: string) => {
     const botToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
-    const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID;
+    
+    // Получаем ID пользователя из Telegram WebApp
+    const tg = (window as any).Telegram?.WebApp;
+    const userId = tg?.initDataUnsafe?.user?.id;
     
     console.log("[TELEGRAM] Проверка переменных:");
     console.log("[TELEGRAM] botToken:", botToken ? "✓ установлен" : "✗ НЕ установлен");
-    console.log("[TELEGRAM] chatId:", chatId ? "✓ установлен" : "✗ НЕ установлен");
+    console.log("[TELEGRAM] userId:", userId ? `✓ установлен (${userId})` : "✗ НЕ установлен");
     
-    if (!botToken || !chatId) {
-      console.error("[TELEGRAM] ✗ Bot token или chat ID не установлены!");
+    if (!botToken || !userId) {
+      console.error("[TELEGRAM] ✗ Bot token или user ID не установлены!");
       return;
     }
 
@@ -537,12 +540,12 @@ export default function App() {
       const message = `📰 *Новая новость*\n\n*${title}*\n\n${body}`;
       const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
       
-      console.log("[TELEGRAM] Отправка сообщения...");
+      console.log("[TELEGRAM] Отправка сообщения пользователю:", userId);
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id: chatId,
+          chat_id: userId,
           text: message,
           parse_mode: "Markdown",
         }),
@@ -551,10 +554,12 @@ export default function App() {
       const data = await response.json();
       console.log("[TELEGRAM] Ответ сервера:", data);
 
-      if (!response.ok) {
-        console.error("[TELEGRAM] ✗ Ошибка отправки сообщения:", data);
+      if (!response.ok || !data.ok) {
+        console.error("[TELEGRAM] ✗ Ошибка отправки сообщения (статус: " + response.status + "):", data.description || data);
         return;
       }
+
+      console.log("[TELEGRAM] ✓ Сообщение отправлено!");
 
       if (imageUrl) {
         console.log("[TELEGRAM] Отправка фото...");
@@ -563,7 +568,7 @@ export default function App() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            chat_id: chatId,
+            chat_id: userId,
             photo: imageUrl,
             caption: title,
           }),
@@ -571,9 +576,15 @@ export default function App() {
         
         const photoData = await photoResponse.json();
         console.log("[TELEGRAM] Ответ при отправке фото:", photoData);
+        
+        if (!photoResponse.ok || !photoData.ok) {
+          console.error("[TELEGRAM] ⚠️ Фото не отправлено:", photoData.description || photoData);
+        } else {
+          console.log("[TELEGRAM] ✓ Фото отправлено!");
+        }
       }
 
-      console.log("[TELEGRAM] ✓ Уведомление отправлено успешно!");
+      console.log("[TELEGRAM] ✓✓✓ Уведомление отправлено успешно!");
     } catch (err) {
       console.error("[TELEGRAM] ✗ Ошибка отправки:", err);
     }
