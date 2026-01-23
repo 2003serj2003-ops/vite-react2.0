@@ -202,11 +202,26 @@ export default function App() {
   const [news, setNews] = useState<NewsRow[]>([]);
 
   const [adminOk, setAdminOk] = useState<boolean>(() => localStorage.getItem("admin_ok") === "1");
+  const [userName, setUserName] = useState<string>(() => localStorage.getItem("user_name") || "");
 
   // keep lang
   useEffect(() => {
     localStorage.setItem("lang", lang);
   }, [lang]);
+
+  // Get Telegram user info
+  useEffect(() => {
+    if ((window as any).Telegram?.WebApp) {
+      const user = (window as any).Telegram.WebApp.initDataUnsafe?.user;
+      if (user) {
+        const firstName = user.first_name || "";
+        const lastName = user.last_name || "";
+        const fullName = `${firstName} ${lastName}`.trim();
+        setUserName(fullName);
+        localStorage.setItem("user_name", fullName);
+      }
+    }
+  }, []);
 
   // toast helper
   const showToast = (msg: string) => {
@@ -329,6 +344,13 @@ export default function App() {
     if (route.name === "section" || route.name === "news" || route.name === "admin") {
       return setRoute({ name: "home" });
     }
+  };
+
+  const signOut = () => {
+    localStorage.setItem("access_ok", "0");
+    localStorage.setItem("admin_ok", "0");
+    setAdminOk(false);
+    setRoute({ name: "welcome" });
   };
 
   // ---------- Admin UI helpers ----------
@@ -526,10 +548,15 @@ export default function App() {
               setSearch={setSearch}
               onBack={goBack}
               onHome={goHome}
+              rightSlot={
+                <button className="iconBtn" onClick={signOut} aria-label={t.signOut}>
+                  ✕
+                </button>
+              }
             />
 
             <div className="headerBlock">
-              <div className="h2">{t.sections}</div>
+              <div className="h2">{t.hello} {userName || "Гость"}</div>
             </div>
 
             <div className="sectionList">
