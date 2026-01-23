@@ -1160,7 +1160,7 @@ export default function App() {
                             <div style={{ display: "flex", gap: 10, fontSize: 13, color: "rgba(0,0,0,.6)" }}>
                               <div style={{ flex: 1 }}>
                                 <div style={{ fontWeight: 700, marginBottom: 2 }}>Срок:</div>
-                                {expiresDate ? expiresDate.toLocaleString("ru-RU") : "Неограничен"}
+                                {expiresDate ? expiresDate.toLocaleDateString("ru-RU") : "Неограничен"}
                                 {daysLeft !== null && daysLeft > 0 && (
                                   <div style={{ fontSize: 11, color: "rgba(0,0,0,.5)", marginTop: 2 }}>
                                     ({daysLeft} дн. осталось)
