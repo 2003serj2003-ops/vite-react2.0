@@ -518,48 +518,6 @@ export default function App() {
     await loadPublic();
   };
 
-  const sendTelegramNotification = async (title: string, body: string, imageUrl?: string) => {
-    const botToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
-    const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID;
-    
-    if (!botToken || !chatId) {
-      console.log("[TELEGRAM] Bot token или chat ID не установлены");
-      return;
-    }
-
-    try {
-      const message = `📰 *Новая новость*\n\n*${title}*\n\n${body}`;
-      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-      
-      await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: message,
-          parse_mode: "Markdown",
-        }),
-      });
-
-      if (imageUrl) {
-        const photoUrl = `https://api.telegram.org/bot${botToken}/sendPhoto`;
-        await fetch(photoUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: chatId,
-            photo: imageUrl,
-            caption: title,
-          }),
-        });
-      }
-
-      console.log("[TELEGRAM] ✓ Уведомление отправлено");
-    } catch (err) {
-      console.log("[TELEGRAM] ✗ Ошибка отправки:", err);
-    }
-  };
-
   const adminSaveNews = async () => {
     const resp = await supabase.from("news").insert(newsForm as any);
     if (resp.error) {
@@ -567,13 +525,6 @@ export default function App() {
       return;
     }
     showToast(t.ok);
-    
-    // Отправляем уведомление в Telegram
-    await sendTelegramNotification(
-      newsForm.title_ru || newsForm.title_uz,
-      newsForm.body_ru || newsForm.body_uz,
-      newsForm.image_url
-    );
     
     setNewsForm({
       title_ru: "",
