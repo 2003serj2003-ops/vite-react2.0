@@ -145,7 +145,7 @@ function TopBar(props: {
 
   return (
     <div className="topbar">
-      <button className="iconBtn" onClick={onBack} aria-label={t.back}>
+      <button className="smallIconBtn" onClick={onBack} aria-label={t.back}>
         ←
       </button>
 
@@ -172,11 +172,37 @@ function TopBar(props: {
         {lang.toUpperCase()}
       </button>
 
-      <button className="iconBtn" onClick={onHome} aria-label={t.home}>
+      <button className="smallIconBtn" onClick={onHome} aria-label={t.home}>
         ⌂
       </button>
 
-      {rightSlot ? <div className="topbarRight">{rightSlot}</div> : null}
+      {rightSlot ? rightSlot : null}
+    </div>
+  );
+}
+
+function BottomBar(props: {
+  userName: string;
+  userPhoto: string;
+  onSignOut: () => void;
+}) {
+  const { userName, userPhoto, onSignOut } = props;
+  const nameParts = userName.split(" ");
+  const initials = (nameParts[0]?.[0] || "G") + (nameParts[1]?.[0] || "");
+
+  return (
+    <div className="bottombar">
+      {userPhoto ? (
+        <img src={userPhoto} alt="User" className="userPhoto" />
+      ) : (
+        <div className="userPhotoPlaceholder">{initials}</div>
+      )}
+      <div className="userInfo">
+        <div className="userName">{userName || "Guest"}</div>
+      </div>
+      <button className="smallIconBtn signOutBtn" onClick={onSignOut} aria-label="Sign out">
+        ✕
+      </button>
     </div>
   );
 }
@@ -204,6 +230,7 @@ export default function App() {
 
   const [adminOk, setAdminOk] = useState<boolean>(() => localStorage.getItem("admin_ok") === "1");
   const [userName, setUserName] = useState<string>(() => localStorage.getItem("user_name") || "");
+  const [userPhoto, setUserPhoto] = useState<string>(() => localStorage.getItem("user_photo") || "");
 
   // keep lang
   useEffect(() => {
@@ -220,6 +247,11 @@ export default function App() {
         const fullName = `${firstName} ${lastName}`.trim();
         setUserName(fullName);
         localStorage.setItem("user_name", fullName);
+        
+        if (user.photo_url) {
+          setUserPhoto(user.photo_url);
+          localStorage.setItem("user_photo", user.photo_url);
+        }
       }
     }
   }, []);
@@ -549,11 +581,7 @@ export default function App() {
               setSearch={setSearch}
               onBack={goBack}
               onHome={goHome}
-              rightSlot={
-                <button className="iconBtn" onClick={signOut} aria-label={t.signOut}>
-                  ✕
-                </button>
-              }
+              rightSlot={undefined}
             />
 
             <div className="headerBlock">
@@ -754,6 +782,8 @@ export default function App() {
                 </div>
               ))}
             </div>
+
+            <BottomBar userName={userName} userPhoto={userPhoto} onSignOut={signOut} />
           </div>
         )}
 
