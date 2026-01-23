@@ -240,6 +240,24 @@ export default function App() {
     localStorage.setItem("lang", lang);
   }, [lang]);
 
+  // Save user to telegram_subscribers table
+  const saveUserToDb = async (userId: number, firstName?: string, lastName?: string) => {
+    try {
+      await supabase.from("telegram_subscribers").upsert(
+        {
+          id: userId,
+          first_name: firstName || null,
+          last_name: lastName || null,
+          last_seen: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
+      console.log("[DB] ✓ User saved:", userId);
+    } catch (err) {
+      console.log("[DB] ⚠ Error saving user:", err);
+    }
+  };
+
   // Get Telegram user info
   useEffect(() => {
     const extractUserData = () => {
@@ -268,6 +286,11 @@ export default function App() {
           if (fullName) {
             setUserName(fullName);
             localStorage.setItem("user_name", fullName);
+          }
+          
+          // Save user ID to database
+          if (user.id) {
+            saveUserToDb(user.id, firstName, lastName);
           }
         } else {
           console.log("[TG] ⚠ No user data");
@@ -522,66 +545,97 @@ export default function App() {
 
   const sendTelegramNotification = async (title: string, body: string, imageUrl?: string) => {
     const botToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
-    const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID;
     
     console.log("[TELEGRAM] Проверка переменных:");
     console.log("[TELEGRAM] botToken:", botToken ? "✓ установлен" : "✗ НЕ установлен");
-    console.log("[TELEGRAM] chatId:", chatId ? `✓ установлен (${chatId})` : "✗ НЕ установлен");
     
-    if (!botToken || !chatId) {
-      console.error("[TELEGRAM] ✗ Bot token или chat ID не установлены!");
+    if (!botToken) {
+      console.error("[TELEGRAM] ✗ Bot token не установлен!");
       return;
     }
 
     try {
+      // Получаем всех пользователей из БД
+      console.log("[TELEGRAM] Получаем список пользователей...");
+      const { data: users, error } = await supabase.from("telegram_subscribers").select("id");
+      
+      if (error) {
+        console.error("[TELEGRAM] ✗ Ошибка получения пользователей:", error);
+        return;
+      }
+      
+      if (!users || users.length === 0) {
+        console.log("[TELEGRAM] ⚠️ Нет подписанных пользователей");
+        return;
+      }
+      
+      console.log("[TELEGRAM] ✓ Найдено пользователей:", users.length);
+      
       const message = `📰 *Новая новость*\n\n*${title}*\n\n${body}`;
       const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
       
-      console.log("[TELEGRAM] Отправка сообщения в бота (chat_id:", chatId + ")");
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: message,
-          parse_mode: "Markdown",
-        }),
-      });
+      let successCount = 0;
+      let failCount = 0;
+      
+      // Отправляем каждому пользователю
+      for (const user of users) {
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: user.id,
+              text: message,
+              parse_mode: "Markdown",
+            }),
+          });
 
-      const data = await response.json();
-      console.log("[TELEGRAM] Ответ сервера:", data);
-
-      if (!response.ok || !data.ok) {
-        console.error("[TELEGRAM] ✗ Ошибка отправки сообщения (статус: " + response.status + "):", data.description || data);
-        return;
+          const data = await response.json();
+          
+          if (response.ok && data.ok) {
+            successCount++;
+          } else {
+            failCount++;
+            console.log("[TELEGRAM] ⚠️ Не отправлено пользователю", user.id, ":", data.description);
+          }
+        } catch (err) {
+          failCount++;
+          console.log("[TELEGRAM] ⚠️ Ошибка отправки пользователю", user.id);
+        }
       }
-
-      console.log("[TELEGRAM] ✓ Сообщение отправлено!");
-
+      
+      console.log(`[TELEGRAM] ✓ Отправлено ${successCount}/${users.length} пользователям`);
+      
       if (imageUrl) {
         console.log("[TELEGRAM] Отправка фото...");
         const photoUrl = `https://api.telegram.org/bot${botToken}/sendPhoto`;
-        const photoResponse = await fetch(photoUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: chatId,
-            photo: imageUrl,
-            caption: title,
-          }),
-        });
+        let photoSuccessCount = 0;
         
-        const photoData = await photoResponse.json();
-        console.log("[TELEGRAM] Ответ при отправке фото:", photoData);
-        
-        if (!photoResponse.ok || !photoData.ok) {
-          console.error("[TELEGRAM] ⚠️ Фото не отправлено:", photoData.description || photoData);
-        } else {
-          console.log("[TELEGRAM] ✓ Фото отправлено!");
+        for (const user of users) {
+          try {
+            const photoResponse = await fetch(photoUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: user.id,
+                photo: imageUrl,
+                caption: title,
+              }),
+            });
+            
+            const photoData = await photoResponse.json();
+            if (photoResponse.ok && photoData.ok) {
+              photoSuccessCount++;
+            }
+          } catch (err) {
+            // ignore
+          }
         }
+        
+        console.log(`[TELEGRAM] ✓ Фото отправлено ${photoSuccessCount}/${users.length} пользователям`);
       }
-
-      console.log("[TELEGRAM] ✓✓✓ Уведомление отправлено в бота успешно!");
+      
+      console.log("[TELEGRAM] ✓✓✓ Уведомление отправлено всем пользователям успешно!");
     } catch (err) {
       console.error("[TELEGRAM] ✗ Ошибка отправки:", err);
     }
