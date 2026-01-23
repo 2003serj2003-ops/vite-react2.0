@@ -602,6 +602,28 @@ body{
 .sectionRow{ scroll-snap-align: center; animation: popIn .9s cubic-bezier(.22,.1,.36,.9) both; }
 .sectionRow:hover{ transform: translateY(-8px) scale(1.03); box-shadow:0 12px 28px rgba(0,0,0,.08); transition:transform .3s cubic-bezier(.22,.1,.36,.9), box-shadow .3s ease; }
 
+/* center / side scaling for carousel */
+.sectionRow{
+  transition: transform .28s cubic-bezier(.22,.1,.36,.9), box-shadow .28s ease, opacity .28s ease;
+  will-change: transform;
+}
+.sectionRow.is-center{
+  transform: translateY(-10px) scale(1.08) !important;
+  box-shadow:0 20px 48px rgba(0,0,0,.12) !important;
+  z-index: 6;
+}
+.sectionRow.is-near{
+  transform: translateY(-6px) scale(0.98) !important;
+  box-shadow:0 10px 28px rgba(0,0,0,.06) !important;
+  z-index: 4;
+}
+.sectionRow.is-far{
+  transform: translateY(0px) scale(0.94) !important;
+  box-shadow:0 6px 18px rgba(0,0,0,.04) !important;
+  z-index: 1;
+  opacity: 0.96;
+}
+
 /* Cards and lists */
 .cardCream{ animation: fadeUp .75s cubic-bezier(.22,.1,.36,.9) both; transition: transform .25s cubic-bezier(.22,.1,.36,.9), box-shadow .25s ease; }
 .cardCream:hover{ transform: translateY(-8px); box-shadow:0 16px 40px rgba(0,0,0,.1); }
