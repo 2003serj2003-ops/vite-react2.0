@@ -36,6 +36,10 @@ type NewsRow = {
 
 const ADMIN_CODE = "SANYA4565"; // ввод без учета регистра: Sanya4565 / sanya4565 / SANYA4565
 
+const FACE_EMOJIS = ["😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😚", "😙", "🥲", "😋", "😛", "😜", "🤪", "😝", "😑", "😐", "😶", "😏", "😒", "🙄", "😬", "🤥", "😌", "😔", "😪", "🤤", "😴", "😷", "🤒", "🤕", "🤮", "🤢", "🤮", "🤮", "🤮", "🤮", "🤮", "😵", "🤯", "🤠", "🥳", "😎", "🤓", "🧐", "😕", "😟", "🙁", "☹️", "😮", "😯", "😲", "😳", "🥺", "😦", "😧", "😨", "😰", "😥", "😢", "😭", "😱", "😖", "😣", "😞", "😓", "😩", "😫", "🥱", "😤", "😡", "😠", "🤬", "😈", "👿", "💀", "☠️", "💩", "🤡", "👹", "👺", "👻", "👽", "👾"];
+
+const getRandomEmoji = () => FACE_EMOJIS[Math.floor(Math.random() * FACE_EMOJIS.length)];
+
 const T = {
   ru: {
     welcome: "Добро\nпожаловать",
@@ -187,17 +191,14 @@ function BottomBar(props: {
   userPhoto: string;
   onSignOut: () => void;
 }) {
-  const { userName, userPhoto, onSignOut } = props;
-  const nameParts = userName.split(" ");
-  const initials = (nameParts[0]?.[0] || "G") + (nameParts[1]?.[0] || "");
+  const { userName, onSignOut } = props;
+  const userEmoji = useMemo(() => getRandomEmoji(), []); // Фиксируем смайлик при загрузке
 
   return (
     <div className="bottombar">
-      {userPhoto ? (
-        <img src={userPhoto} alt="User" className="userPhoto" />
-      ) : (
-        <div className="userPhotoPlaceholder">{initials}</div>
-      )}
+      <div className="userPhotoPlaceholder" style={{ fontSize: "32px" }}>
+        {userEmoji}
+      </div>
       <div className="userInfo">
         <div className="userName">{userName || "Guest"}</div>
       </div>
@@ -232,7 +233,6 @@ export default function App() {
 
   const [adminOk, setAdminOk] = useState<boolean>(() => localStorage.getItem("admin_ok") === "1");
   const [userName, setUserName] = useState<string>(() => localStorage.getItem("user_name") || "");
-  const [userPhoto, setUserPhoto] = useState<string>(() => localStorage.getItem("user_photo") || "");
 
   // keep lang
   useEffect(() => {
@@ -262,16 +262,11 @@ export default function App() {
           const lastName = user.last_name || "";
           const fullName = `${firstName} ${lastName}`.trim();
           
-          console.log("[TG] Setting user:", { firstName, lastName, fullName, photo_url: user.photo_url });
+          console.log("[TG] Setting user:", { firstName, lastName, fullName });
           
           if (fullName) {
             setUserName(fullName);
             localStorage.setItem("user_name", fullName);
-          }
-          
-          if (user.photo_url) {
-            setUserPhoto(user.photo_url);
-            localStorage.setItem("user_photo", user.photo_url);
           }
         } else {
           console.log("[TG] ⚠ No user data");
@@ -1007,7 +1002,7 @@ export default function App() {
               ))}
             </div>
 
-            <BottomBar userName={userName} userPhoto={userPhoto} onSignOut={signOut} />
+            <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
           </div>
         )}
 
@@ -1397,7 +1392,7 @@ export default function App() {
         )}
 
         {route.name !== "welcome" ? (
-          <BottomBar userName={userName} userPhoto={userPhoto} onSignOut={signOut} />
+          <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
         ) : null}
 
         {toast ? <div className="toast">{toast}</div> : null}
