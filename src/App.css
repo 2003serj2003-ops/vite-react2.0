@@ -296,25 +296,11 @@ body{
   overflow-y:hidden;
   scroll-behavior:smooth;
   -webkit-overflow-scrolling:touch;
-  scrollbar-width:thin;
-  scrollbar-color:rgba(111,0,255,.3) transparent;
+  scrollbar-width:none;
 }
 
 .sectionList::-webkit-scrollbar{
-  height:4px;
-}
-
-.sectionList::-webkit-scrollbar-track{
-  background:transparent;
-}
-
-.sectionList::-webkit-scrollbar-thumb{
-  background:rgba(111,0,255,.3);
-  border-radius:2px;
-}
-
-.sectionList::-webkit-scrollbar-thumb:hover{
-  background:rgba(111,0,255,.5);
+  display:none;
 }
 
 /* строка раздела — как в макете */

@@ -244,8 +244,14 @@ export default function App() {
   const filteredSections = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return sections;
-    return sections.filter((s) => (lang === "ru" ? s.title_ru : s.title_uz).toLowerCase().includes(q));
-  }, [sections, search, lang]);
+    return sections.filter((s) => {
+      const sectionTitle = (lang === "ru" ? s.title_ru : s.title_uz).toLowerCase();
+      const hasMatchingCard = cards.some(
+        (c) => c.section_id === s.id && (lang === "ru" ? c.title_ru : c.title_uz).toLowerCase().includes(q)
+      );
+      return sectionTitle.includes(q) || hasMatchingCard;
+    });
+  }, [sections, cards, search, lang]);
 
   const getSectionTitle = (s: SectionRow) => (lang === "ru" ? s.title_ru : s.title_uz);
   const getCardTitle = (c: CardRow) => (lang === "ru" ? c.title_ru : c.title_uz);
@@ -524,11 +530,8 @@ export default function App() {
             />
 
             <div className="headerBlock">
-              <div className="h2">{t.hello} Авьясов А.</div>
-              <div className="sub">{t.sections}</div>
+              <div className="h2">{t.sections}</div>
             </div>
-
-            <div className="blockTitle">{t.sections}</div>
 
             <div className="sectionList">
               {filteredSections.map((s) => (
