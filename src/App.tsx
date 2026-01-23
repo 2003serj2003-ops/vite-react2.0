@@ -1125,7 +1125,14 @@ export default function App() {
                     {accessCodes.length === 0 ? (
                       <div style={{ textAlign: "center", padding: 20, color: "rgba(0,0,0,.5)", fontStyle: "italic" }}>Нет кодов</div>
                     ) : (
-                      accessCodes.map((ac) => {
+                      (() => {
+                        // Группируем коды: активные → истёкшие → неактивные
+                        const active = accessCodes.filter(ac => ac.is_active && (!ac.expires_at || new Date(ac.expires_at) >= new Date()));
+                        const expired = accessCodes.filter(ac => ac.is_active && ac.expires_at && new Date(ac.expires_at) < new Date());
+                        const inactive = accessCodes.filter(ac => !ac.is_active);
+                        const sorted = [...active, ...expired, ...inactive];
+                        
+                        return sorted.map((ac) => {
                         const expiresDate = ac.expires_at ? new Date(ac.expires_at) : null;
                         const isExpired = expiresDate && expiresDate < new Date();
                         const daysLeft = expiresDate ? Math.ceil((expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
@@ -1186,7 +1193,8 @@ export default function App() {
                             </div>
                           </div>
                         );
-                      })
+                      });
+                      })()
                     )}
                   </div>
                 </div>
