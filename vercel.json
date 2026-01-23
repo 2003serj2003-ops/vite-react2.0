@@ -3,7 +3,7 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "env": {
-    "VITE_SUPABASE_URL": "@vite_supabase_url",
-    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key"
+    "VITE_SUPABASE_URL": "https://ykbouygdeqrohizeqlmc.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "sb_publishable_6sJ_KOewkD5zRln2HVDWXw_vjILs-kD"
   }
 }
