@@ -557,6 +557,7 @@ export default function App() {
 
             <div className="headerBlock">
               <div className="h2">{t.hello} {userName || "Гость"}</div>
+              <div className="sub">{t.sections}</div>
             </div>
 
             <div className="sectionList">
