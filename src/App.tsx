@@ -1142,8 +1142,9 @@ export default function App() {
                   )}
                 </div>
 
-                <label className="row" style={{ marginTop: 12, color: "rgba(20,18,26,.88)" }}>
+                <label htmlFor="rules-checkbox" className="row" style={{ marginTop: 12, color: "rgba(20,18,26,.88)", cursor: "pointer" }}>
                   <input
+                    id="rules-checkbox"
                     type="checkbox"
                     checked={rules}
                     onChange={(e) => {
