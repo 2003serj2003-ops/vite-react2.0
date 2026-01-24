@@ -247,19 +247,21 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
         style={{
           width: "100%",
           textAlign: "left",
-          background: "none",
+          background: "#f9f9f9",
           border: "none",
           padding: "15px",
           cursor: "pointer",
           fontSize: "16px",
-          fontWeight: "bold"
+          fontWeight: "bold",
+          borderRadius: "8px",
+          color: "#333"
         }}
       >
         {question}
-        <span style={{ float: "right" }}>{isOpen ? "−" : "+"}</span>
+        <span style={{ float: "right", fontSize: "18px" }}>{isOpen ? "−" : "+"}</span>
       </button>
       {isOpen && (
-        <div style={{ padding: "0 15px 15px 15px", color: "#666" }}>
+        <div style={{ padding: "0 15px 15px 15px", color: "#555", background: "#fafafa", borderRadius: "0 0 8px 8px" }}>
           {answer}
         </div>
       )}
@@ -637,23 +639,6 @@ export default function App() {
   const [codeForm, setCodeForm] = useState({ code: "", is_active: true, expires_at: "", note: "" });
   const [accessCodes, setAccessCodes] = useState<any[]>([]);
 
-  const [particles, setParticles] = useState<Array<{x: number, y: number, vx: number, vy: number, life: number, maxLife: number}>>([]);
-
-  const addParticles = (x: number, y: number) => {
-    const newParticles: Array<{x: number, y: number, vx: number, vy: number, life: number, maxLife: number}> = [];
-    for (let i = 0; i < 10; i++) {
-      newParticles.push({
-        x,
-        y,
-        vx: (Math.random() - 0.5) * 4,
-        vy: (Math.random() - 0.5) * 4 - 2,
-        life: 60,
-        maxLife: 60,
-      });
-    }
-    setParticles(prev => [...prev, ...newParticles]);
-  };
-
   const adminSignOut = async () => {
     localStorage.removeItem("admin_ok");
     setAdminOk(false);
@@ -968,7 +953,6 @@ export default function App() {
 
   // auto-snap to nearest item after scroll stops
   const snapTimerRef = useRef<number | null>(null);
-  const particlesCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const snapToClosest = () => {
     const el = sectionListRef.current;
@@ -1083,42 +1067,6 @@ export default function App() {
     };
   }, [sections, filteredSections]);
 
-  // particles animation
-  useEffect(() => {
-    const canvas = particlesCanvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      setParticles(prev => prev.map(p => ({ ...p, x: p.x + p.vx, y: p.y + p.vy, vy: p.vy + 0.1, life: p.life - 1 })).filter(p => p.life > 0));
-      particles.forEach(p => {
-        const alpha = p.life / p.maxLife;
-        ctx.fillStyle = `rgba(111, 0, 255, ${alpha})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      requestAnimationFrame(animate);
-    };
-    animate();
-  }, [particles]);
-
-  // click to add particles
-  useEffect(() => {
-    const phone = document.querySelector(".phone");
-    if (!phone) return;
-    const onClick = (e: Event) => {
-      const rect = phone.getBoundingClientRect();
-      const x = (e as MouseEvent).clientX - rect.left;
-      const y = (e as MouseEvent).clientY - rect.top;
-      addParticles(x, y);
-    };
-    phone.addEventListener("click", onClick);
-    return () => phone.removeEventListener("click", onClick);
-  }, []);
-
   // debounce snap on scroll
   useEffect(() => {
     const el = sectionListRef.current;
@@ -1148,20 +1096,6 @@ export default function App() {
           <div className="grape grape-7">🍇</div>
           <div className="grape grape-8">🍇</div>
         </div>
-
-        <canvas
-          ref={particlesCanvasRef}
-          className="particles-canvas"
-          width="360"
-          height="800"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            pointerEvents: "none",
-            zIndex: 1,
-          }}
-        />
 
         {route.name === "welcome" && (
           <div className="page">
