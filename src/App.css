@@ -678,11 +678,11 @@ body{
 
 /* smaller CTA and smooth motion */
 .allSectionsBtn{
-  width:140px !important;
-  height:40px !important;
+  width:120px !important;
+  height:36px !important;
   border-radius:12px !important;
-  font-size:13px !important;
-  padding:0 12px !important;
+  font-size:12px !important;
+  padding:0 10px !important;
   transition: transform .18s cubic-bezier(.22,.1,.36,.9), box-shadow .12s ease !important;
 }
 
