@@ -1261,7 +1261,7 @@ export default function App() {
             </div>
 
             {/* кнопка над блоком новостей — с улучшенными анимациями */}
-            <div className="allSectionsContainer" style={{ display: "flex", justifyContent: "center", marginTop: "20px", marginBottom: "10px" }}>
+            <div className="allSectionsContainer" style={{ display: "flex", justifyContent: "center", marginTop: "5px", marginBottom: "5px" }}>
               <button className="btnGhost allSectionsBtn enhancedBtn" onClick={() => setRoute({ name: "sections_all" })}>
                 {t.allSections}
               </button>
