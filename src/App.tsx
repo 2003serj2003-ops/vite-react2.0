@@ -605,7 +605,7 @@ export default function App() {
   };
 
   // ---------- Admin UI helpers ----------
-  const [adminTab, setAdminTab] = useState<"sections" | "cards" | "news" | "codes">("sections");
+  const [adminTab, setAdminTab] = useState<"" | "sections" | "cards" | "news" | "faq" | "codes">("sections");
 
   const [secForm, setSecForm] = useState({ key: "", title_ru: "", title_uz: "", icon: "📄", sort: 100 });
   const [cardForm, setCardForm] = useState({
