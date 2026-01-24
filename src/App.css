@@ -691,6 +691,44 @@ body{
   padding-bottom: 6px;
 }
 
+/* Enhanced button animations */
+.enhancedBtn {
+  position: relative;
+  overflow: hidden;
+  animation: gentlePulse 3s ease-in-out infinite;
+}
+
+.enhancedBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(111,0,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.enhancedBtn:hover::before {
+  left: 100%;
+}
+
+.enhancedBtn:hover {
+  animation: glowPulse 1.5s ease-in-out infinite alternate;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(111,0,255,0.4);
+}
+
+@keyframes gentlePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.02); opacity: 0.95; }
+}
+
+@keyframes glowPulse {
+  0% { box-shadow: 0 8px 25px rgba(111,0,255,0.4); }
+  100% { box-shadow: 0 8px 35px rgba(111,0,255,0.6), 0 0 20px rgba(111,0,255,0.3); }
+}
+
 /* gentle depth for floating grapes - different speeds */
 .grape-1{ animation-duration:18s !important }
 .grape-2{ animation-duration:22s !important }
