@@ -177,7 +177,7 @@ function TopBar(props: {
   const { t, lang, setLang, showSearch, search, setSearch, onBack, onHome, rightSlot } = props;
 
   return (
-    <div className="topbar">
+    <div className="topbar" style={{ padding: "8px 16px" }}>
       <button className="smallIconBtn" onClick={onBack} aria-label={t.back}>
         ←
       </button>
@@ -223,7 +223,7 @@ function BottomBar(props: {
   const userEmoji = useMemo(() => getRandomEmoji(), []); // Фиксируем смайлик при загрузке
 
   return (
-    <div className="bottombar">
+    <div className="bottombar" style={{ padding: "8px 16px" }}>
       <div className="userPhotoPlaceholder" style={{ fontSize: "32px" }}>
         {userEmoji}
       </div>
@@ -1672,7 +1672,7 @@ export default function App() {
               showSearch={false}
               search={search}
               setSearch={setSearch}
-              onBack={goBack}
+              onBack={() => setAdminTab("")}
               onHome={goHome}
               rightSlot={
                 <button className="btnGhost" onClick={adminSignOut}>
