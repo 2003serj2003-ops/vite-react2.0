@@ -35,6 +35,15 @@ type NewsRow = {
   image_url?: string;
 };
 
+type FaqRow = {
+  id: string;
+  question_ru: string;
+  question_uz: string;
+  answer_ru: string;
+  answer_uz: string;
+  sort: number;
+};
+
 const ADMIN_CODE = "SANYA4565"; // ввод без учета регистра: Sanya4565 / sanya4565 / SANYA4565
 
 const FACE_EMOJIS = ["😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😚", "😙", "🥲", "😋", "😛", "😜", "🤪", "😝", "😑", "😐", "😶", "😏", "😒", "🙄", "😬", "🤥", "😌", "😔", "😪", "🤤", "😴", "😷", "🤒", "🤕", "🤮", "🤢", "🤮", "🤮", "🤮", "🤮", "🤮", "😵", "🤯", "🤠", "🥳", "😎", "🤓", "🧐", "😕", "😟", "🙁", "☹️", "😮", "😯", "😲", "😳", "🥺", "😦", "😧", "😨", "😰", "😥", "😢", "😭", "😱", "😖", "😣", "😞", "😓", "😩", "😫", "🥱", "😤", "😡", "😠", "🤬", "😈", "👿", "💀", "☠️", "💩", "🤡", "👹", "👺", "👻", "👽", "👾"];
@@ -45,7 +54,7 @@ const T = {
   ru: {
     welcome: "Добро\nпожаловать",
     enterCode: "Введите код доступа",
-    acceptRules: "Принимаю правила",
+    acceptRules: "Принимаю правила пользования",
     continue: "Продолжить",
     search: "Поиск",
     hello: "Здравствуйте",
@@ -53,6 +62,7 @@ const T = {
     news: "НОВОСТИ",
     back: "Назад",
     home: "Домой",
+    faq: "FAQ",
     open: "Открыть",
     copyAll: "Скопировать всё",
     copied: "Скопировано",
@@ -61,6 +71,7 @@ const T = {
     manageSections: "Разделы",
     manageCards: "Карточки",
     manageNews: "Новости",
+    manageFaq: "FAQ",
     manageCodes: "Коды доступа",
     save: "Сохранить",
     add: "Добавить",
@@ -69,6 +80,10 @@ const T = {
     titleUz: "Заголовок (UZ)",
     bodyRu: "Текст (RU)",
     bodyUz: "Текст (UZ)",
+    questionRu: "Вопрос (RU)",
+    questionUz: "Вопрос (UZ)",
+    answerRu: "Ответ (RU)",
+    answerUz: "Ответ (UZ)",
     icon: "Иконка",
     sort: "Порядок",
     pinned: "Закреп",
@@ -96,6 +111,7 @@ const T = {
     news: "YANGILIKLAR",
     back: "Orqaga",
     home: "Bosh sahifa",
+    faq: "FAQ",
     open: "Ochish",
     copyAll: "Hammasini nusxalash",
     copied: "Nusxalandi",
@@ -104,6 +120,7 @@ const T = {
     manageSections: "Bo‘limlar",
     manageCards: "Kartochkalar",
     manageNews: "Yangiliklar",
+    manageFaq: "FAQ",
     manageCodes: "Kirish kodlari",
     save: "Saqlash",
     add: "Qo‘shish",
@@ -112,6 +129,10 @@ const T = {
     titleUz: "Sarlavha (UZ)",
     bodyRu: "Matn (RU)",
     bodyUz: "Matn (UZ)",
+    questionRu: "Savol (RU)",
+    questionUz: "Savol (UZ)",
+    answerRu: "Javob (RU)",
+    answerUz: "Javob (UZ)",
     icon: "Belgi",
     sort: "Tartib",
     pinned: "Mahkamlash",
@@ -133,6 +154,7 @@ const T = {
 type Route =
   | { name: "welcome" }
   | { name: "home" }
+  | { name: "faq" }
   | { name: "section"; sectionId: string }
   | { name: "card"; cardId: string }
   | { name: "news" }
@@ -215,6 +237,36 @@ function BottomBar(props: {
   );
 }
 
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="cardCream" style={{ marginBottom: "10px" }}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: "100%",
+          textAlign: "left",
+          background: "none",
+          border: "none",
+          padding: "15px",
+          cursor: "pointer",
+          fontSize: "16px",
+          fontWeight: "bold"
+        }}
+      >
+        {question}
+        <span style={{ float: "right" }}>{isOpen ? "−" : "+"}</span>
+      </button>
+      {isOpen && (
+        <div style={{ padding: "0 15px 15px 15px", color: "#666" }}>
+          {answer}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const [lang, setLang] = useState<Lang>((localStorage.getItem("lang") as Lang) || "ru");
   const t: (typeof T)[Lang] = T[lang];
@@ -236,6 +288,7 @@ export default function App() {
   const [sections, setSections] = useState<SectionRow[]>([]);
   const [cards, setCards] = useState<CardRow[]>([]);
   const [news, setNews] = useState<NewsRow[]>([]);
+  const [faq, setFaq] = useState<FaqRow[]>([]);
 
   const [adminOk, setAdminOk] = useState<boolean>(() => localStorage.getItem("admin_ok") === "1");
   const [userName, setUserName] = useState<string>(() => localStorage.getItem("user_name") || "");
@@ -342,14 +395,17 @@ export default function App() {
       .select("*")
       .order("pinned", { ascending: false })
       .order("published_at", { ascending: false });
+    const f = await supabase.from("faq").select("*").order("sort", { ascending: true });
 
     console.log("[DATA] Sections:", s.error ? `✗ ${s.error.message}` : `✓ ${s.data?.length || 0}`);
     console.log("[DATA] Cards:", c.error ? `✗ ${c.error.message}` : `✓ ${c.data?.length || 0}`);
     console.log("[DATA] News:", n.error ? `✗ ${n.error.message}` : `✓ ${n.data?.length || 0}`);
+    console.log("[DATA] FAQ:", f.error ? `✗ ${f.error.message}` : `✓ ${f.data?.length || 0}`);
 
     if (!s.error) setSections((s.data ?? []) as SectionRow[]);
     if (!c.error) setCards((c.data ?? []) as CardRow[]);
     if (!n.error) setNews((n.data ?? []) as NewsRow[]);
+    if (!f.error) setFaq((f.data ?? []) as FaqRow[]);
   };
 
   useEffect(() => {
@@ -536,7 +592,7 @@ export default function App() {
       const secId = cards.find((x) => x.id === route.cardId)?.section_id || "";
       return setRoute({ name: "section", sectionId: secId });
     }
-    if (route.name === "section" || route.name === "news" || route.name === "news_item" || route.name === "news_card" || route.name === "admin") {
+    if (route.name === "section" || route.name === "news" || route.name === "news_item" || route.name === "news_card" || route.name === "faq" || route.name === "admin") {
       return setRoute({ name: "home" });
     }
   };
@@ -570,6 +626,13 @@ export default function App() {
     published_at: new Date().toISOString().slice(0, 10),
     pinned: false,
     image_url: "",
+  });
+  const [faqForm, setFaqForm] = useState({
+    question_ru: "",
+    question_uz: "",
+    answer_ru: "",
+    answer_uz: "",
+    sort: 0,
   });
   const [codeForm, setCodeForm] = useState({ code: "", is_active: true, expires_at: "", note: "" });
   const [accessCodes, setAccessCodes] = useState<any[]>([]);
@@ -777,6 +840,37 @@ export default function App() {
 
   const adminDeleteNews = async (id: string) => {
     const resp = await supabase.from("news").delete().eq("id", id);
+    if (resp.error) {
+      showToast(t.error);
+      return;
+    }
+    showToast(t.ok);
+    await loadPublic();
+  };
+
+  const adminSaveFaq = async () => {
+    if (!faqForm.question_ru.trim() || !faqForm.question_uz.trim() || !faqForm.answer_ru.trim() || !faqForm.answer_uz.trim()) {
+      showToast("Заполните все поля");
+      return;
+    }
+    const resp = await supabase.from("faq").insert(faqForm as any);
+    if (resp.error) {
+      showToast(t.error);
+      return;
+    }
+    showToast(t.ok);
+    setFaqForm({
+      question_ru: "",
+      question_uz: "",
+      answer_ru: "",
+      answer_uz: "",
+      sort: 0,
+    });
+    await loadPublic();
+  };
+
+  const adminDeleteFaq = async (id: string) => {
+    const resp = await supabase.from("faq").delete().eq("id", id);
     if (resp.error) {
       showToast(t.error);
       return;
@@ -1249,6 +1343,16 @@ export default function App() {
                 </button>
               ))}
 
+              <button className="sectionRow" onClick={() => setRoute({ name: "faq" })}>
+                <div className="sectionIconBox">
+                  <div className="sectionIcon">❓</div>
+                </div>
+                <div className="sectionText">
+                  <div className="sectionTitle">{t.faq}</div>
+                  <div className="sectionSub">{faq[0] ? (lang === "ru" ? faq[0].question_ru : faq[0].question_uz) : "—"}</div>
+                </div>
+              </button>
+
               <button className="sectionRow" onClick={() => setRoute({ name: "news" })}>
                 <div className="sectionIconBox">
                   <div className="sectionIcon">📰</div>
@@ -1285,6 +1389,34 @@ export default function App() {
             </div>
 
             {renderSearchResults()}
+
+            <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
+          </div>
+        )}
+
+        {route.name === "faq" && (
+          <div className="page">
+            <TopBar
+              t={t}
+              lang={lang}
+              setLang={setLang}
+              showSearch={false}
+              search={search}
+              setSearch={setSearch}
+              onBack={goBack}
+              onHome={goHome}
+            />
+
+            <div className="headerBlock">
+              <div className="h2">{t.faq}</div>
+              <div className="sub">Часто задаваемые вопросы</div>
+            </div>
+
+            <div className="list">
+              {faq.map((item) => (
+                <FaqItem key={item.id} question={lang === "ru" ? item.question_ru : item.question_uz} answer={lang === "ru" ? item.answer_ru : item.answer_uz} />
+              ))}
+            </div>
 
             <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
           </div>
@@ -1632,6 +1764,9 @@ export default function App() {
                   </button>
                   <button className="btnGhost" onClick={() => setAdminTab("news")}>
                     {t.manageNews}
+                  </button>
+                  <button className="btnGhost" onClick={() => setAdminTab("faq")}>
+                    {t.manageFaq}
                   </button>
                   <button className="btnGhost" onClick={() => setAdminTab("codes")}>
                     {t.manageCodes}
@@ -2018,6 +2153,94 @@ export default function App() {
                     )}
                   </div>
                 </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {adminTab === "faq" && (
+          <div className="page">
+            <TopBar
+              t={t}
+              lang={lang}
+              setLang={setLang}
+              showSearch={false}
+              search={search}
+              setSearch={setSearch}
+              onBack={() => setAdminTab("")}
+              onHome={goHome}
+            />
+
+            <div className="headerBlock">
+              <div className="h2">{t.manageFaq}</div>
+            </div>
+
+            <div className="cardCream">
+              <div style={{ fontWeight: 950, marginBottom: 12 }}>{t.add}</div>
+              <div className="split">
+                <input
+                  className="input"
+                  placeholder={t.questionRu}
+                  value={faqForm.question_ru}
+                  onChange={(e) => setFaqForm({ ...faqForm, question_ru: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder={t.questionUz}
+                  value={faqForm.question_uz}
+                  onChange={(e) => setFaqForm({ ...faqForm, question_uz: e.target.value })}
+                />
+              </div>
+              <div className="split">
+                <textarea
+                  className="input"
+                  placeholder={t.answerRu}
+                  value={faqForm.answer_ru}
+                  onChange={(e) => setFaqForm({ ...faqForm, answer_ru: e.target.value })}
+                  rows={3}
+                />
+                <textarea
+                  className="input"
+                  placeholder={t.answerUz}
+                  value={faqForm.answer_uz}
+                  onChange={(e) => setFaqForm({ ...faqForm, answer_uz: e.target.value })}
+                  rows={3}
+                />
+              </div>
+              <div className="split">
+                <input
+                  className="input"
+                  type="number"
+                  placeholder={t.sort}
+                  value={faqForm.sort}
+                  onChange={(e) => setFaqForm({ ...faqForm, sort: parseInt(e.target.value) || 0 })}
+                />
+                <button className="btnPrimary" onClick={adminSaveFaq}>
+                  {t.save}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 16, fontWeight: 950, fontSize: 14 }}>Список FAQ ({faq.length})</div>
+            <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
+              {faq.length === 0 ? (
+                <div style={{ textAlign: "center", padding: 20, color: "rgba(0,0,0,.5)", fontStyle: "italic" }}>Нет FAQ</div>
+              ) : (
+                faq.map((f) => (
+                  <div key={f.id} className="cardCream">
+                    <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 900, marginBottom: 4 }}>{f.question_ru}</div>
+                        <div style={{ color: "#666", marginBottom: 8 }}>{f.answer_ru}</div>
+                        <div style={{ fontWeight: 900, marginBottom: 4 }}>{f.question_uz}</div>
+                        <div style={{ color: "#666" }}>{f.answer_uz}</div>
+                      </div>
+                      <button className="btnGhost" onClick={() => adminDeleteFaq(f.id)}>
+                        {t.delete}
+                      </button>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </div>
