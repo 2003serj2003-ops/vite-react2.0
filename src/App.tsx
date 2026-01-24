@@ -1148,10 +1148,16 @@ export default function App() {
                     type="checkbox"
                     checked={rules}
                     onChange={(e) => {
+                      console.log("Checkbox changed:", e.target.checked);
                       setRules(e.target.checked);
                       if (error) setError("");
                     }}
-                    style={{ width: 20, height: 20, accentColor: "#6F00FF" }}
+                    onClick={(e) => {
+                      console.log("Checkbox clicked");
+                      setRules(!rules);
+                      if (error) setError("");
+                    }}
+                    style={{ width: 20, height: 20, accentColor: "#6F00FF", cursor: "pointer" }}
                   />
                   <span style={{ fontWeight: 900 }}>{t.acceptRules}</span>
                 </label>
