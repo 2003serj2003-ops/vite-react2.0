@@ -1152,7 +1152,7 @@ export default function App() {
                       setRules(e.target.checked);
                       if (error) setError("");
                     }}
-                    onClick={(e) => {
+                    onClick={() => {
                       console.log("Checkbox clicked");
                       setRules(!rules);
                       if (error) setError("");
