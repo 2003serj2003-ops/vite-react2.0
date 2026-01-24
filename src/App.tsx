@@ -247,13 +247,12 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
         style={{
           width: "100%",
           textAlign: "left",
-          background: "#f9f9f9",
+          background: "none",
           border: "none",
           padding: "15px",
           cursor: "pointer",
           fontSize: "16px",
           fontWeight: "bold",
-          borderRadius: "8px",
           color: "#333"
         }}
       >
@@ -261,7 +260,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
         <span style={{ float: "right", fontSize: "18px" }}>{isOpen ? "−" : "+"}</span>
       </button>
       {isOpen && (
-        <div style={{ padding: "0 15px 15px 15px", color: "#555", background: "#fafafa", borderRadius: "0 0 8px 8px" }}>
+        <div style={{ padding: "0 15px 15px 15px", color: "#555" }}>
           {answer}
         </div>
       )}
@@ -2093,17 +2092,7 @@ export default function App() {
         )}
 
         {adminTab === "faq" && (
-          <div className="page">
-            <TopBar
-              t={t}
-              lang={lang}
-              setLang={setLang}
-              showSearch={false}
-              search={search}
-              setSearch={setSearch}
-              onBack={() => setAdminTab("")}
-              onHome={goHome}
-            />
+          <div>
 
             <div className="headerBlock">
               <div className="h2">{t.manageFaq}</div>
@@ -2177,7 +2166,6 @@ export default function App() {
                 ))
               )}
             </div>
-          </div>
         )}
 
         {route.name !== "welcome" ? (
