@@ -1436,6 +1436,8 @@ export default function App() {
                   );
                 })}
             </div>
+
+            <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
           </div>
         )}
 
@@ -1581,6 +1583,8 @@ export default function App() {
                 </>
               );
             })()}
+
+            <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
           </div>
         )}
 
