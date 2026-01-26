@@ -111,6 +111,9 @@ MUHIM QOIDALAR:
 
 ${manualContext ? `HUJJATLAR:\n${manualContext}` : 'DIQQAT: Ushbu so\'rov bo\'yicha tegishli hujjatlar topilmadi. Foydalanuvchiga operator bilan bog\'lanishni taklif qiling.'}`;
 
+      console.log('🔍 Sending request to OpenAI...');
+      console.log('📋 Manual context length:', manualContext.length);
+      
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
@@ -120,6 +123,8 @@ ${manualContext ? `HUJJATLAR:\n${manualContext}` : 'DIQQAT: Ushbu so\'rov bo\'yi
         temperature: 0.7,
         max_tokens: 500
       });
+
+      console.log('✅ OpenAI response received');
 
       const responseText = completion.choices[0].message.content || '';
       
@@ -137,13 +142,36 @@ ${manualContext ? `HUJJATLAR:\n${manualContext}` : 'DIQQAT: Ushbu so\'rov bo\'yi
       };
       
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('Error generating response:', error);
+    } catch (error: any) {
+      console.error('❌ Error generating response:', error);
+      console.error('Error details:', {
+        message: error?.message,
+        status: error?.status,
+        type: error?.type
+      });
+      
+      let errorText = lang === 'ru'
+        ? 'Извините, произошла ошибка при обработке вашего запроса.'
+        : 'Kechirasiz, so\'rovingizni qayta ishlashda xatolik yuz berdi.';
+      
+      // Более специфичные сообщения об ошибках
+      if (error?.status === 401) {
+        errorText = lang === 'ru'
+          ? '🔑 Ошибка авторизации OpenAI. Проверьте API ключ.'
+          : '🔑 OpenAI avtorizatsiya xatosi. API kalitini tekshiring.';
+      } else if (error?.status === 429) {
+        errorText = lang === 'ru'
+          ? '⏱️ Превышен лимит запросов. Попробуйте через минуту.'
+          : '⏱️ So\'rovlar limiti oshib ketdi. Bir daqiqadan keyin urinib ko\'ring.';
+      } else if (error?.message?.includes('fetch')) {
+        errorText = lang === 'ru'
+          ? '🌐 Проблема с подключением к интернету. Проверьте соединение.'
+          : '🌐 Internet bilan bog\'lanishda muammo. Ulanishni tekshiring.';
+      }
+      
       const errorMessage: Message = { 
         role: 'assistant', 
-        content: lang === 'ru'
-          ? 'Извините, произошла ошибка при обработке вашего запроса. Попробуйте позже или свяжитесь с оператором.'
-          : 'Kechirasiz, so\'rovingizni qayta ishlashda xatolik yuz berdi. Keyinroq urinib ko\'ring yoki operator bilan bog\'laning.',
+        content: errorText,
         showOperatorButton: true
       };
       setMessages(prev => [...prev, errorMessage]);
