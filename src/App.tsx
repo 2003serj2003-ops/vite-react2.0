@@ -2,6 +2,7 @@ import { type ReactNode, useEffect, useMemo, useState, useRef } from "react";
 import { supabase } from "./supabase";
 import "./App.css";
 import Chat from "./Chat";
+import { runCrawl } from "../scripts/crawl.js";
 
 type Lang = "ru" | "uz";
 
@@ -1722,6 +1723,9 @@ export default function App() {
                   </button>
                   <button className="btnGhost" onClick={() => setAdminTab("codes")}>
                     {t.manageCodes}
+                  </button>
+                  <button className="btnGhost" onClick={async () => { await runCrawl(); alert('Краулинг завершён'); }}>
+                    Запустить краулинг
                   </button>
                 </div>
               </div>
