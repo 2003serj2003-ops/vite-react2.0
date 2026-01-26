@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useMemo, useState, useRef } from "react";
 import { supabase } from "./supabase";
 import "./App.css";
+import Chat from "./Chat";
 
 type Lang = "ru" | "uz";
 
@@ -161,7 +162,8 @@ type Route =
   | { name: "news_item"; newsId: string }
   | { name: "news_card"; newsId: string }
   | { name: "admin" }
-  | { name: "sections_all" };
+  | { name: "sections_all" }
+  | { name: "chat" };
 
 function TopBar(props: {
   t: (typeof T)[Lang];
@@ -172,9 +174,10 @@ function TopBar(props: {
   setSearch: (v: string) => void;
   onBack: () => void;
   onHome: () => void;
+  onChat: () => void;
   rightSlot?: ReactNode;
 }) {
-  const { t, lang, setLang, showSearch, search, setSearch, onBack, onHome, rightSlot } = props;
+  const { t, lang, setLang, showSearch, search, setSearch, onBack, onHome, onChat, rightSlot } = props;
 
   return (
     <div className="topbar" style={{ padding: "8px 16px" }}>
@@ -203,6 +206,10 @@ function TopBar(props: {
         aria-label="Change language"
       >
         {lang.toUpperCase()}
+      </button>
+
+      <button className="smallIconBtn" onClick={onChat} aria-label="Chat">
+        💬
       </button>
 
       <button className="smallIconBtn" onClick={onHome} aria-label={t.home}>
@@ -1237,6 +1244,7 @@ export default function App() {
               setSearch={setSearch}
               onBack={goBack}
               onHome={goHome}
+              onChat={() => setRoute({ name: "chat" })}
               rightSlot={undefined}
             />
 
@@ -1338,6 +1346,7 @@ export default function App() {
               setSearch={setSearch}
               onBack={goBack}
               onHome={goHome}
+              onChat={() => setRoute({ name: "chat" })}
             />
 
             <div className="headerBlock">
@@ -1419,6 +1428,7 @@ export default function App() {
               setSearch={setSearch}
               onBack={goBack}
               onHome={goHome}
+              onChat={() => setRoute({ name: "chat" })}
             />
 
             <div className="headerBlock">
@@ -1463,6 +1473,7 @@ export default function App() {
               setSearch={setSearch}
               onBack={goBack}
               onHome={goHome}
+              onChat={() => setRoute({ name: "chat" })}
             />
 
             {(() => {
@@ -1545,6 +1556,7 @@ export default function App() {
               setSearch={setSearch}
               onBack={goBack}
               onHome={goHome}
+              onChat={() => setRoute({ name: "chat" })}
             />
 
             <div className="headerBlock">
@@ -1621,6 +1633,7 @@ export default function App() {
               setSearch={setSearch}
               onBack={goBack}
               onHome={goHome}
+              onChat={() => setRoute({ name: "chat" })}
             />
 
             {(() => {
@@ -1674,6 +1687,7 @@ export default function App() {
               setSearch={setSearch}
               onBack={() => setAdminTab("")}
               onHome={goHome}
+              onChat={() => setRoute({ name: "chat" })}
               rightSlot={
                 <button className="btnGhost" onClick={adminSignOut}>
                   {t.signOut}
@@ -2166,6 +2180,29 @@ export default function App() {
                 </>
               )}
             </div>
+          </div>
+        )}
+
+        {route.name === "chat" && (
+          <div className="page">
+            <TopBar
+              t={t}
+              lang={lang}
+              setLang={setLang}
+              showSearch={false}
+              search={search}
+              setSearch={setSearch}
+              onBack={goBack}
+              onHome={goHome}
+              onChat={() => setRoute({ name: "chat" })}
+            />
+
+            <div className="headerBlock">
+              <div className="h2">Чат поддержки</div>
+              <div className="sub">Задайте вопрос</div>
+            </div>
+
+            <Chat />
           </div>
         )}
 
