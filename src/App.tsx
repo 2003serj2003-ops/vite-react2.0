@@ -177,23 +177,27 @@ function TopBar(props: {
   onBack: () => void;
   onHome: () => void;
   rightSlot?: ReactNode;
+  searchDropdown?: ReactNode;
 }) {
-  const { t, lang, setLang, showSearch, search, setSearch, onBack, onHome, rightSlot } = props;
+  const { t, lang, setLang, showSearch, search, setSearch, onBack, onHome, rightSlot, searchDropdown } = props;
 
   return (
-    <div className="topbar" style={{ padding: "8px 16px" }}>
+    <div className="topbar" style={{ padding: "8px 16px", position: 'relative' }}>
       <button className="smallIconBtn" onClick={onBack} aria-label={t.back}>
         ←
       </button>
 
       {showSearch ? (
-        <div className="searchWrap">
-          <input
-            className="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t.search}
-          />
+        <div style={{ flex: 1, position: 'relative' }}>
+          <div className="searchWrap">
+            <input
+              className="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t.search}
+            />
+          </div>
+          {searchDropdown}
         </div>
       ) : (
         <div className="searchWrap" style={{ justifyContent: "center" }}>
@@ -462,30 +466,51 @@ export default function App() {
 
   const renderSearchResults = () => {
     if (!searchResults) return null;
+    if (searchResults.sections.length === 0 && searchResults.cards.length === 0 && searchResults.news.length === 0) return null;
+    
     return (
-      <div className="list">
+      <div className="searchDropdown">
         {searchResults.sections.length > 0 && (
-          <div>
-            <div style={{ fontWeight: 950, marginBottom: 8 }}>{t.sections}</div>
+          <div className="searchSection">
+            <div className="searchSectionTitle">{t.sections}</div>
             {searchResults.sections.map((s) => (
-              <button key={s.id} className="cardCream" style={{ textAlign: "left" }} onClick={() => setRoute({ name: "section", sectionId: s.id })}>
-                <div style={{ fontWeight: 900 }}>{getSectionTitle(s)}</div>
-                <div style={{ marginTop: 6, color: "rgba(0,0,0,.6)" }}>{cards.filter(c=>c.section_id===s.id).slice(0,2).map(c=>getCardTitle(c)).join(' • ') || '—'}</div>
+              <button 
+                key={s.id} 
+                className="searchItem" 
+                onClick={() => {
+                  setRoute({ name: "section", sectionId: s.id });
+                  setSearch("");
+                }}
+              >
+                <div className="searchItemIcon">{s.icon}</div>
+                <div className="searchItemContent">
+                  <div className="searchItemTitle">{getSectionTitle(s)}</div>
+                  <div className="searchItemSub">{cards.filter(c=>c.section_id===s.id).slice(0,2).map(c=>getCardTitle(c)).join(' • ') || '—'}</div>
+                </div>
               </button>
             ))}
           </div>
         )}
 
         {searchResults.cards.length > 0 && (
-          <div>
-            <div style={{ fontWeight: 950, marginTop: 6, marginBottom: 8 }}>{t.cards}</div>
+          <div className="searchSection">
+            <div className="searchSectionTitle">{t.cards}</div>
             {searchResults.cards.map((c) => (
-              <div key={c.id} className="cardCream">
-                <div style={{ fontWeight: 900 }}>{getCardTitle(c)}</div>
-                <div style={{ marginTop: 6, color: "rgba(0,0,0,.6)" }}>{getCardBody(c).split('\n').slice(0,3).join('\n')}</div>
-                <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
-                  <button className="btnGhost" onClick={() => setRoute({ name: 'card', cardId: c.id })}>{t.open}</button>
-                  <button className="btnPrimary" onClick={() => copyText(getCardBody(c))}>{t.copyAll}</button>
+              <div key={c.id} className="searchItem searchItemCard">
+                <div className="searchItemContent">
+                  <div className="searchItemTitle">{getCardTitle(c)}</div>
+                  <div className="searchItemSub">{getCardBody(c).split('\n').slice(0,2).join(' ').substring(0, 100)}...</div>
+                </div>
+                <div className="searchItemActions">
+                  <button className="searchActionBtn searchActionBtnPrimary" onClick={() => {
+                    setRoute({ name: 'card', cardId: c.id });
+                    setSearch("");
+                  }}>
+                    {t.open}
+                  </button>
+                  <button className="searchActionBtn searchActionBtnGhost" onClick={() => copyText(getCardBody(c))}>
+                    {t.copyAll}
+                  </button>
                 </div>
               </div>
             ))}
@@ -493,16 +518,23 @@ export default function App() {
         )}
 
         {searchResults.news.length > 0 && (
-          <div>
-            <div style={{ fontWeight: 950, marginTop: 6, marginBottom: 8 }}>{t.news}</div>
+          <div className="searchSection">
+            <div className="searchSectionTitle">{t.news}</div>
             {searchResults.news.map((n) => (
-              <div key={n.id} className="cardCream">
-                <div style={{ fontWeight: 900 }}>{lang === 'ru' ? n.title_ru : n.title_uz}</div>
-                <div style={{ marginTop: 6, color: 'rgba(0,0,0,.6)' }}>{(lang === 'ru' ? n.body_ru : n.body_uz).split('\n').slice(0,3).join('\n')}</div>
-                <div style={{ marginTop: 10 }}>
-                  <button className="btnGhost" onClick={() => setRoute({ name: 'news' })}>{t.open}</button>
+              <button 
+                key={n.id} 
+                className="searchItem"
+                onClick={() => {
+                  setRoute({ name: 'news_card', newsId: n.id });
+                  setSearch("");
+                }}
+              >
+                <div className="searchItemIcon">📰</div>
+                <div className="searchItemContent">
+                  <div className="searchItemTitle">{lang === 'ru' ? n.title_ru : n.title_uz}</div>
+                  <div className="searchItemSub">{(lang === 'ru' ? n.body_ru : n.body_uz).substring(0, 80)}...</div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -1243,6 +1275,7 @@ export default function App() {
               onBack={goBack}
               onHome={goHome}
               rightSlot={undefined}
+              searchDropdown={renderSearchResults()}
             />
 
             <div className="headerBlock">
@@ -1325,8 +1358,6 @@ export default function App() {
                 </div>
               ))}
             </div>
-
-            {renderSearchResults()}
 
             <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
           </div>
