@@ -209,10 +209,6 @@ function TopBar(props: {
         {lang.toUpperCase()}
       </button>
 
-      <button className="smallIconBtn" onClick={onChat} aria-label="Chat">
-        💬
-      </button>
-
       <button className="smallIconBtn" onClick={onHome} aria-label={t.home}>
         ⌂
       </button>
@@ -239,9 +235,6 @@ function BottomBar(props: {
       <div className="userInfo">
         <div className="userName">{userName || "Guest"}</div>
       </div>
-      <button className="smallIconBtn" onClick={onChat} aria-label="Chat">
-        💬
-      </button>
       <button className="smallIconBtn signOutBtn" onClick={onSignOut} aria-label="Sign out">
         ✕
       </button>
