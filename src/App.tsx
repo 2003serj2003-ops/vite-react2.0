@@ -1675,7 +1675,7 @@ export default function App() {
         )}
 
         {route.name === "home" && (
-          <div className="page">
+          <div className="page" style={{ overflow: "hidden" }}>
             {/* Боковое меню */}
             {menuOpen && (
               <>
