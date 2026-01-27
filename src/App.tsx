@@ -1874,8 +1874,9 @@ export default function App() {
             </div>
 
             <div className="list">
+              {/* Карточка профиля */}
               <div className="cardCream">
-                <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "20px" }}>
                   <div style={{ 
                     width: "80px", 
                     height: "80px", 
@@ -1884,35 +1885,143 @@ export default function App() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "40px"
+                    fontSize: "40px",
+                    boxShadow: "0 4px 16px rgba(111,0,255,.3)"
                   }}>
                     {getRandomEmoji()}
                   </div>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontSize: "20px", fontWeight: 900, color: "#111", marginBottom: "4px" }}>
                       {userName || "Гость"}
                     </div>
-                    <div style={{ fontSize: "14px", color: "rgba(0,0,0,.6)" }}>
-                      Пользователь
+                    <div style={{ 
+                      fontSize: "12px", 
+                      color: "#fff",
+                      background: userRole === "owner" ? "#6F00FF" : userRole === "admin" ? "#9d4edd" : userRole === "editor" ? "#c77dff" : "#e0aaff",
+                      padding: "4px 10px",
+                      borderRadius: "8px",
+                      display: "inline-block",
+                      fontWeight: 700
+                    }}>
+                      {userRole === "owner" ? "👑 Владелец" : userRole === "admin" ? "⚙️ Админ" : userRole === "editor" ? "✏️ Редактор" : "👁️ Зритель"}
                     </div>
                   </div>
                 </div>
 
+                {/* Редактирование имени */}
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ 
+                    fontSize: "12px", 
+                    fontWeight: 700, 
+                    color: "rgba(0,0,0,.6)", 
+                    marginBottom: "6px",
+                    display: "block"
+                  }}>
+                    Ваше имя
+                  </label>
+                  <input
+                    type="text"
+                    value={userName}
+                    onChange={(e) => {
+                      const newName = e.target.value;
+                      setUserName(newName);
+                      localStorage.setItem("user_name", newName);
+                    }}
+                    placeholder="Введите имя"
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "12px",
+                      border: "2px solid rgba(111,0,255,.2)",
+                      background: "#fff",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color: "#111",
+                      outline: "none",
+                      transition: "border-color .2s"
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = "#6F00FF"}
+                    onBlur={(e) => e.target.style.borderColor = "rgba(111,0,255,.2)"}
+                  />
+                </div>
+
+                {/* Выбор языка */}
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ 
+                    fontSize: "12px", 
+                    fontWeight: 700, 
+                    color: "rgba(0,0,0,.6)", 
+                    marginBottom: "8px",
+                    display: "block"
+                  }}>
+                    Язык интерфейса
+                  </label>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      onClick={() => setLang("ru")}
+                      style={{
+                        flex: 1,
+                        padding: "12px",
+                        borderRadius: "12px",
+                        border: lang === "ru" ? "3px solid #6F00FF" : "2px solid rgba(111,0,255,.2)",
+                        background: lang === "ru" ? "rgba(111,0,255,.1)" : "#fff",
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        color: lang === "ru" ? "#6F00FF" : "#666",
+                        cursor: "pointer",
+                        transition: "all .2s"
+                      }}
+                    >
+                      🇷🇺 Русский
+                    </button>
+                    <button
+                      onClick={() => setLang("uz")}
+                      style={{
+                        flex: 1,
+                        padding: "12px",
+                        borderRadius: "12px",
+                        border: lang === "uz" ? "3px solid #6F00FF" : "2px solid rgba(111,0,255,.2)",
+                        background: lang === "uz" ? "rgba(111,0,255,.1)" : "#fff",
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        color: lang === "uz" ? "#6F00FF" : "#666",
+                        cursor: "pointer",
+                        transition: "all .2s"
+                      }}
+                    >
+                      🇺🇿 O'zbek
+                    </button>
+                  </div>
+                </div>
+
+                {/* Информация */}
                 <div style={{ padding: "12px", background: "rgba(111,0,255,.05)", borderRadius: "12px", marginBottom: "12px" }}>
                   <div style={{ fontSize: "12px", color: "rgba(0,0,0,.6)", marginBottom: "4px" }}>
-                    ID пользователя
+                    Telegram ID
                   </div>
                   <div style={{ fontFamily: "monospace", fontSize: "14px", fontWeight: 700 }}>
                     {(window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id || "—"}
                   </div>
                 </div>
 
-                <div style={{ padding: "12px", background: "rgba(111,0,255,.05)", borderRadius: "12px", marginBottom: "12px" }}>
-                  <div style={{ fontSize: "12px", color: "rgba(0,0,0,.6)", marginBottom: "4px" }}>
-                    Язык интерфейса
+                {/* Статистика */}
+                <div style={{ 
+                  display: "grid", 
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: "8px",
+                  marginBottom: "16px"
+                }}>
+                  <div style={{ padding: "12px", background: "rgba(111,0,255,.05)", borderRadius: "12px", textAlign: "center" }}>
+                    <div style={{ fontSize: "20px", fontWeight: 900, color: "#6F00FF" }}>{sections.length}</div>
+                    <div style={{ fontSize: "11px", color: "rgba(0,0,0,.6)", marginTop: "4px" }}>Разделов</div>
                   </div>
-                  <div style={{ fontSize: "14px", fontWeight: 700 }}>
-                    {lang === "ru" ? "🇷🇺 Русский" : "🇺🇿 O'zbek"}
+                  <div style={{ padding: "12px", background: "rgba(111,0,255,.05)", borderRadius: "12px", textAlign: "center" }}>
+                    <div style={{ fontSize: "20px", fontWeight: 900, color: "#6F00FF" }}>{cards.length}</div>
+                    <div style={{ fontSize: "11px", color: "rgba(0,0,0,.6)", marginTop: "4px" }}>Карточек</div>
+                  </div>
+                  <div style={{ padding: "12px", background: "rgba(111,0,255,.05)", borderRadius: "12px", textAlign: "center" }}>
+                    <div style={{ fontSize: "20px", fontWeight: 900, color: "#6F00FF" }}>{news.length}</div>
+                    <div style={{ fontSize: "11px", color: "rgba(0,0,0,.6)", marginTop: "4px" }}>Новостей</div>
                   </div>
                 </div>
 
@@ -1929,6 +2038,7 @@ export default function App() {
                 </button>
               </div>
 
+              {/* Админ панель */}
               {adminOk && (
                 <div className="cardCream">
                   <div style={{ fontSize: "16px", fontWeight: 900, marginBottom: "12px", color: "#6F00FF" }}>
