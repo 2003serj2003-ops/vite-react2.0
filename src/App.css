@@ -57,7 +57,7 @@ html,body,#root{
 body{
   margin:0;
   padding:0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif, system-ui, Segoe UI, Roboto, Arial, sans-serif;
+  font-family: "iCielCrocante", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif, system-ui, Segoe UI, Roboto, Arial, sans-serif;
   color:#fff;
   background:
     radial-gradient(1200px 600px at 50% -200px, rgba(112,0,255,.28), transparent 68%),
@@ -462,13 +462,11 @@ body{
 }
 
 .adminListContainer {
-  max-height: 500px;
-  overflow-y: auto;
-  padding-right: 4px;
   margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, ui-sans-serif, system-ui, sans-serif;
 }
 
 .cardCream::before{
