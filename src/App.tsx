@@ -2271,6 +2271,71 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* Кнопка Кабинет UZUM */}
+                <button
+                  onClick={() => alert(lang === "ru" ? "СКОРО БУДЕТ" : "TEZDA BO'LADI")}
+                  style={{
+                    width: "100%",
+                    padding: "16px",
+                    marginBottom: "16px",
+                    borderRadius: "16px",
+                    border: "3px solid rgba(111,0,255,.2)",
+                    background: "linear-gradient(145deg, #ffffff, #fdfcff)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "14px",
+                    transition: "all .2s ease",
+                    boxShadow: "0 4px 12px rgba(111,0,255,.08)"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 6px 20px rgba(111,0,255,.15)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(111,0,255,.08)";
+                  }}
+                >
+                  <div style={{
+                    width: "50px",
+                    height: "50px",
+                    background: "linear-gradient(145deg, #ffffff, #f8f7ff)",
+                    borderRadius: "14px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 4px 12px rgba(111,0,255,.15)",
+                    border: "2px solid rgba(255,255,255,.9)",
+                    padding: "8px",
+                    flexShrink: 0
+                  }}>
+                    <img 
+                      src="/uzum-logo.png" 
+                      alt="Uzum" 
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain"
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1, textAlign: "left" }}>
+                    <div style={{ fontSize: "16px", fontWeight: 900, color: "#111", marginBottom: "2px" }}>
+                      {lang === "ru" ? "Кабинет UZUM" : "UZUM Kabinet"}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "rgba(0,0,0,.5)" }}>
+                      {lang === "ru" ? "Управление аккаунтом" : "Hisob boshqaruvi"}
+                    </div>
+                  </div>
+                  <div style={{ 
+                    fontSize: "20px",
+                    color: "#6F00FF"
+                  }}>
+                    →
+                  </div>
+                </button>
+
                 <button
                   className="btnPrimary"
                   onClick={signOut}
