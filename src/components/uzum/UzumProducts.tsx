@@ -4,10 +4,9 @@ import { getShops, getProducts } from '../../lib/uzum-api';
 interface UzumProductsProps {
   lang: 'ru' | 'uz';
   token: string;
-  onBack: () => void;
 }
 
-export default function UzumProducts({ lang, token, onBack }: UzumProductsProps) {
+export default function UzumProducts({ lang, token }: UzumProductsProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -191,64 +190,78 @@ export default function UzumProducts({ lang, token, onBack }: UzumProductsProps)
                 transition: 'all 0.2s',
               }}
             >
-            >
-              {/* Product Image Placeholder */}
-              <div style={{
-                width: '100%',
-                height: '200px',
-                backgroundColor: '#f3f4f6',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '48px',
-              }}>
-                📦
-              </div>
-
-              {/* Product Info */}
-              <div style={{ padding: '16px' }}>
-                <h3 style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  marginBottom: '8px',
-                  color: '#111827',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {product.title || product.name || 'Без названия'}
-                </h3>
+              {/* Product Image or Placeholder */}
+              {product.photo ? (
+                <img
+                  src={product.photo}
+                  alt={product.title || product.name}
+                  style={{
+                    width: '100%',
+                    height: '160px',
+                    objectFit: 'cover',
+                    borderRadius: '12px',
+                    marginBottom: '12px',
+                    backgroundColor: '#f9fafb',
+                  }}
+                />
+              ) : (
                 <div style={{
-                  fontSize: '14px',
-                  color: '#6b7280',
+                  width: '100%',
+                  height: '160px',
+                  backgroundColor: '#f3f4f6',
+                  borderRadius: '12px',
                   marginBottom: '12px',
-                }}>
-                  {t.sku}: {product.sku || 'N/A'}
-                </div>
-                <div style={{
                   display: 'flex',
-                  justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginBottom: '8px',
+                  justifyContent: 'center',
+                  fontSize: '48px',
                 }}>
+                  📦
+                </div>
+              )}
+
+              <div style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                marginBottom: '6px',
+                color: '#111',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {product.title || product.name || 'Без названия'}
+              </div>
+              <div style={{
+                fontSize: '12px',
+                color: '#666',
+                marginBottom: '8px',
+              }}>
+                {t.sku}: {product.sku || 'N/A'}
+              </div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+                <div style={{
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  color: '#7c3aed',
+                }}>
+                  {product.price ? formatPrice(product.price) : 'N/A'}
+                </div>
+                {product.stock !== undefined && (
                   <div style={{
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    color: '#7c3aed',
-                  }}>
-                    {product.price ? formatPrice(product.price) : 'N/A'}
-                  </div>
-                  <div style={{
-                    padding: '4px 12px',
+                    padding: '2px 8px',
                     backgroundColor: product.stock > 0 ? '#dcfce7' : '#fee2e2',
                     color: product.stock > 0 ? '#166534' : '#991b1b',
                     borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
+                    fontSize: '11px',
+                    fontWeight: 600,
                   }}>
-                    {t.stock}: {product.stock || 0}
+                    {product.stock}
                   </div>
-                </div>
+                )}
               </div>
             </div>
           ))}
@@ -258,9 +271,13 @@ export default function UzumProducts({ lang, token, onBack }: UzumProductsProps)
       {/* Product Detail Modal */}
       {selectedProduct && (
         <div
+          onClick={() => setSelectedProduct(null)}
           style={{
             position: 'fixed',
-            inset: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             backgroundColor: 'rgba(0,0,0,0.5)',
             display: 'flex',
             alignItems: 'center',
@@ -268,118 +285,69 @@ export default function UzumProducts({ lang, token, onBack }: UzumProductsProps)
             zIndex: 1000,
             padding: '20px',
           }}
-          onClick={() => setSelectedProduct(null)}
         >
           <div
+            onClick={(e) => e.stopPropagation()}
+            className="cardCream"
             style={{
-              backgroundColor: 'white',
-              borderRadius: '20px',
-              maxWidth: '600px',
-              width: '100%',
+              maxWidth: '500px',
               maxHeight: '90vh',
               overflow: 'auto',
-              padding: '32px',
+              width: '100%',
             }}
-            onClick={(e) => e.stopPropagation()}
           >
             <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              marginBottom: '24px',
+              fontSize: '18px',
+              fontWeight: 700,
+              marginBottom: '16px',
+              color: '#111',
             }}>
-              <h2 style={{
-                fontSize: '24px',
-                fontWeight: '700',
-                margin: 0,
-                flex: 1,
-              }}>
-                {selectedProduct.title || selectedProduct.name}
-              </h2>
-              <button
-                onClick={() => setSelectedProduct(null)}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#f3f4f6',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  marginLeft: '16px',
-                }}
-              >
-                {t.close}
-              </button>
+              {selectedProduct.title || selectedProduct.name}
             </div>
-
+            
             <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
+              display: 'grid',
+              gap: '8px',
+              marginBottom: '16px',
+              fontSize: '14px',
             }}>
-              <div>
-                <div style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#6b7280',
-                  marginBottom: '4px',
-                }}>
-                  {t.sku}
-                </div>
-                <div style={{ fontSize: '16px' }}>
-                  {selectedProduct.sku || 'N/A'}
-                </div>
+              <div style={{ color: '#666' }}>
+                <strong style={{ color: '#111' }}>{t.sku}:</strong> {selectedProduct.sku || 'N/A'}
               </div>
-
-              <div>
-                <div style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#6b7280',
-                  marginBottom: '4px',
-                }}>
-                  {t.price}
-                </div>
-                <div style={{
-                  fontSize: '24px',
-                  fontWeight: '700',
+              <div style={{ color: '#666' }}>
+                <strong style={{ color: '#111' }}>{t.price}:</strong>
+                <span style={{
+                  fontSize: '20px',
+                  fontWeight: 700,
                   color: '#7c3aed',
+                  marginLeft: '8px',
                 }}>
                   {selectedProduct.price ? formatPrice(selectedProduct.price) : 'N/A'}
-                </div>
+                </span>
               </div>
-
-              <div>
-                <div style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#6b7280',
-                  marginBottom: '4px',
-                }}>
-                  {t.stock}
+              {selectedProduct.stock !== undefined && (
+                <div style={{ color: '#666' }}>
+                  <strong style={{ color: '#111' }}>{t.stock}:</strong> {selectedProduct.stock}
                 </div>
-                <div style={{ fontSize: '16px' }}>
-                  {selectedProduct.stock || 0} шт.
+              )}
+              {selectedProduct.category && (
+                <div style={{ color: '#666' }}>
+                  <strong style={{ color: '#111' }}>{t.category}:</strong> {selectedProduct.category}
                 </div>
-              </div>
-
-              {selectedProduct.barcode && (
-                <div>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#6b7280',
-                    marginBottom: '4px',
-                  }}>
-                    Barcode
-                  </div>
-                  <div style={{ fontSize: '16px', fontFamily: 'monospace' }}>
-                    {selectedProduct.barcode}
-                  </div>
+              )}
+              {selectedProduct.description && (
+                <div style={{ color: '#666' }}>
+                  <strong style={{ color: '#111' }}>{t.description}:</strong> {selectedProduct.description}
                 </div>
               )}
             </div>
+
+            <button
+              onClick={() => setSelectedProduct(null)}
+              className="btnPrimary"
+            >
+              {t.close}
+            </button>
           </div>
         </div>
       )}
