@@ -1,14 +1,8 @@
 name = "vite-react2"
-# НЕ используем main для Cloudflare Pages Functions
-# main = "api/_worker.js"
 compatibility_date = "2025-01-27"
 
-[assets]
-directory = "./dist"
-binding = "ASSETS"
-not_found_handling = "single-page-application"
-# API routes обрабатываются Functions из папки /functions
-# run_worker_first = ["/api/*"]
+# Для Cloudflare Pages указываем директорию с build output
+pages_build_output_dir = "./dist"
 
 # Environment variables для Cloudflare Functions
 # Реальные значения устанавливаются в Cloudflare Dashboard
