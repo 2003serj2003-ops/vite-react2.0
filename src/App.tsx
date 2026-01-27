@@ -1164,21 +1164,19 @@ export default function App() {
                   alignItems: "center",
                   justifyContent: "center",
                   boxShadow: "0 8px 32px rgba(111,0,255,.25), 0 2px 8px rgba(0,0,0,.05)",
-                  border: "3px solid rgba(255,255,255,.9)"
+                  border: "3px solid rgba(255,255,255,.9)",
+                  padding: "16px"
                 }}>
-                  <div style={{
-                    width: "80px",
-                    height: "80px",
-                    background: "linear-gradient(135deg, #6F00FF, #9d4edd)",
-                    borderRadius: "24px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "48px",
-                    boxShadow: "inset 0 2px 8px rgba(0,0,0,.15)"
-                  }}>
-                    ⚡
-                  </div>
+                  <img 
+                    className="logoImg" 
+                    src="/uzum-logo.png" 
+                    alt="Uzum" 
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain"
+                    }}
+                  />
                 </div>
               </div>
 
