@@ -190,6 +190,81 @@ async function apiRequest<T>(
 }
 
 /**
+ * Diagnose API connectivity by testing different URL combinations
+ * Tests official base URL with different endpoints
+ */
+export async function diagnoseApi(token: string): Promise<{
+  success: boolean;
+  workingUrl?: string;
+  workingEndpoint?: string;
+  data?: any;
+  attempts: Array<{ url: string; endpoint: string; status: number; error?: string }>;
+}> {
+  console.log('🔬 Starting API diagnosis...');
+  
+  const baseUrls = [
+    'https://api-seller.uzum.uz/api/seller-openapi',
+    'https://api-seller.uzum.uz/api',
+    'https://api.uzum.uz/seller',
+    'https://seller-api.uzum.uz',
+  ];
+  
+  const endpoints = [
+    '/v1/shops',
+    '/shops',
+    '/v1/seller/shops',
+  ];
+  
+  const attempts: Array<{ url: string; endpoint: string; status: number; error?: string }> = [];
+  
+  for (const baseUrl of baseUrls) {
+    for (const endpoint of endpoints) {
+      const fullUrl = `${baseUrl}${endpoint}`;
+      console.log(`Testing: ${fullUrl}`);
+      
+      try {
+        const response = await fetch(fullUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': token,
+            'Accept': 'application/json',
+          },
+        });
+        
+        const status = response.status;
+        console.log(`  Status: ${status}`);
+        
+        if (status === 200) {
+          const data = await response.json();
+          console.log(`✅ SUCCESS! Working URL found:`, fullUrl);
+          console.log(`  Data:`, data);
+          
+          attempts.push({ url: baseUrl, endpoint, status, error: undefined });
+          
+          return {
+            success: true,
+            workingUrl: baseUrl,
+            workingEndpoint: endpoint,
+            data,
+            attempts,
+          };
+        } else {
+          const errorText = await response.text();
+          attempts.push({ url: baseUrl, endpoint, status, error: errorText.substring(0, 100) });
+          console.log(`  Error: ${errorText.substring(0, 100)}`);
+        }
+      } catch (error: any) {
+        console.log(`  Exception:`, error.message);
+        attempts.push({ url: baseUrl, endpoint, status: 0, error: error.message });
+      }
+    }
+  }
+  
+  console.log('❌ No working URL found');
+  return { success: false, attempts };
+}
+
+/**
  * Test if token is valid
  * Uses /v1/shops endpoint to verify token and get shop info
  * Based on official Swagger: GET /v1/shops - Получение списка собственных магазинов
@@ -213,6 +288,27 @@ export async function testToken(token: string): Promise<{
   
   if (result.error) {
     console.error('❌ Token validation failed:', result.error);
+    console.log('');
+    console.log('💡 Running full API diagnosis...');
+    
+    // Запускаем диагностику если основной эндпоинт не работает
+    const diagnosis = await diagnoseApi(token);
+    console.log('📊 Diagnosis complete:', diagnosis);
+    
+    if (diagnosis.success && diagnosis.data) {
+      console.log('✅ Found alternative working endpoint!');
+      return {
+        valid: true,
+        sellerInfo: {
+          shops: diagnosis.data,
+          shopId: diagnosis.data?.[0]?.id,
+          shopName: diagnosis.data?.[0]?.name,
+          workingUrl: diagnosis.workingUrl,
+          workingEndpoint: diagnosis.workingEndpoint,
+        }
+      };
+    }
+    
     return { valid: false, error: result.error };
   }
   
