@@ -427,6 +427,17 @@ body{
   flex-direction:column;
   gap:16px;
 }
+
+/* Разрешаем горизонтальный скролл для карусели */
+.cardCream:has(.adminCarousel) {
+  overflow: visible;
+}
+
+.adminCarousel {
+  margin: 0 -20px;
+  padding: 8px 20px 16px 20px;
+  overflow-x: auto;
+}
 .cardCream::before{
   content: '';
   position: absolute;
@@ -1775,15 +1786,28 @@ input[type="checkbox"]:checked::after {
   gap: 8px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 8px 4px 16px 4px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  scrollbar-width: thin;
   scroll-snap-type: x mandatory;
 }
 
 .adminCarousel::-webkit-scrollbar {
-  display: none;
+  height: 6px;
+}
+
+.adminCarousel::-webkit-scrollbar-track {
+  background: rgba(111,0,255,.08);
+  border-radius: 3px;
+}
+
+.adminCarousel::-webkit-scrollbar-thumb {
+  background: rgba(111,0,255,.3);
+  border-radius: 3px;
+}
+
+.adminCarousel::-webkit-scrollbar-thumb:hover {
+  background: rgba(111,0,255,.5);
 }
 
 .adminCarousel .btnGhost {
