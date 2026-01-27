@@ -1652,13 +1652,13 @@ export default function App() {
             {/* Компактное приветствие */}
             <div style={{ 
               padding: "12px 16px",
-              background: "linear-gradient(145deg, #FFF8E8, #FFECD2)",
-              borderBottom: "2px solid rgba(111,0,255,.15)"
+              background: "linear-gradient(135deg, #7000FF 0%, #9D4EFF 100%)",
+              borderBottom: "2px solid rgba(157,78,255,.4)"
             }}>
-              <div style={{ fontSize: "16px", fontWeight: 800, color: "#6F00FF", marginBottom: "2px" }}>
+              <div style={{ fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "2px" }}>
                 {t.hello} {userName || "Гость"} 👋
               </div>
-              <div style={{ fontSize: "12px", color: "rgba(0,0,0,.6)" }}>
+              <div style={{ fontSize: "12px", color: "rgba(255,255,255,.8)" }}>
                 {new Date().toLocaleDateString(lang === "ru" ? "ru-RU" : "uz-UZ", { weekday: "long", day: "numeric", month: "long" })}
               </div>
             </div>

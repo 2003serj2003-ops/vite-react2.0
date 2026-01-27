@@ -623,6 +623,7 @@ body{
   flex-wrap:nowrap;
   flex-shrink:0;
   width:100%;
+  background:transparent;
 }
 
 /* spotlight in center */
@@ -635,7 +636,7 @@ body{
   width:60%;
   height:100%;
   pointer-events:none;
-  background: radial-gradient(ellipse at center, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 10%, rgba(255,255,255,0.02) 28%, transparent 55%);
+  background: transparent;
   mix-blend-mode: normal;
   transition: opacity .3s ease;
 }
@@ -916,7 +917,7 @@ body{
   align-items:center;
   gap:14px;
   padding:14px 18px;
-  background: var(--gradient-primary);
+  background: linear-gradient(135deg, #7000FF 0%, #9D4EFF 100%);
   border-top:2px solid rgba(157,78,255,.4);
   z-index:40;
   box-shadow:
