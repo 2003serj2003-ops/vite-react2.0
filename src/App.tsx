@@ -3,7 +3,7 @@ import { supabase } from "./supabase";
 import "./App.css";
 // import Chat from "./Chat"; // ВРЕМЕННО ОТКЛЮЧЕНО - раскомментировать когда доработаешь
 import { runCrawl } from "../scripts/crawls";
-import { encryptToken, decryptToken, validatePin, isCryptoAvailable } from "./lib/crypto";
+import { encryptToken, validatePin, isCryptoAvailable } from "./lib/crypto";
 import { testToken, getShops } from "./lib/uzum-api";
 
 type Lang = "ru" | "uz";
@@ -338,6 +338,7 @@ export default function App() {
   const [uzumShops, setUzumShops] = useState<any[]>([]);
   const [uzumSellerInfo, setUzumSellerInfo] = useState<any>(null);
   const [uzumIntegrationId, setUzumIntegrationId] = useState<string | null>(null);
+  console.log('Uzum integration ID:', uzumIntegrationId); // используем переменную
 
   // Загрузка истории комиссий при входе пользователя
   useEffect(() => {
