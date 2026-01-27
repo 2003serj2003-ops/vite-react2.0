@@ -12,7 +12,24 @@ const USE_PROXY = import.meta.env.VITE_USE_UZUM_PROXY !== 'false'; // По ум�
 const PROXY_URL = '/api/uzum-proxy';
 
 // Uzum uses RAW token without Bearer prefix
-const AUTH_SCHEME = 'Raw';
+// Можно изменить на 'Bearer' или 'Token' для тестирования
+let AUTH_SCHEME = 'Raw';
+
+// Альтернативные URL для тестирования
+const ALTERNATIVE_URLS = [
+  'https://api-seller.uzum.uz/api/seller-openapi',
+  'https://api-seller.uzum.uz/api',
+  'https://api.uzum.uz/api/seller',
+  'https://seller-api.uzum.uz/api',
+];
+
+/**
+ * Set auth scheme for testing
+ */
+export function setAuthScheme(scheme: 'Raw' | 'Bearer' | 'Token') {
+  AUTH_SCHEME = scheme;
+  console.log(`🔧 Auth scheme changed to: ${scheme}`);
+}
 
 /**
  * Build Authorization header based on scheme
@@ -32,9 +49,14 @@ async function apiRequest<T>(
   token: string,
   options: RequestInit = {}
 ): Promise<{ data?: T; error?: string; status: number }> {
-  console.log(`🔵 API Request: ${endpoint}`, { 
+  const fullUrl = USE_PROXY ? PROXY_URL : `${BASE_URL}${endpoint}`;
+  console.log(`🔵 API Request:`, { 
+    endpoint,
+    fullUrl,
     useProxy: USE_PROXY, 
-    method: options.method || 'GET' 
+    method: options.method || 'GET',
+    authScheme: AUTH_SCHEME,
+    tokenPrefix: token.substring(0, 20) + '...'
   });
   
   try {
@@ -62,13 +84,24 @@ async function apiRequest<T>(
     } else {
       // Прямой запрос (может не работать из-за CORS)
       const url = `${BASE_URL}${endpoint}`;
+      const headers = {
+        'Authorization': buildAuthHeader(token),
+        'Content-Type': 'application/json',
+        ...options.headers,
+      };
+      
+      console.log('🔵 Direct request:', {
+        url,
+        method: options.method || 'GET',
+        headers: {
+          ...headers,
+          Authorization: `${headers.Authorization.substring(0, 10)}...` // Скрываем токен
+        }
+      });
+      
       response = await fetch(url, {
         ...options,
-        headers: {
-          'Authorization': buildAuthHeader(token),
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
+        headers,
       });
     }
 
@@ -133,21 +166,38 @@ export async function testToken(token: string): Promise<{
     return { valid: false, error: 'Токен пустой' };
   }
 
-  // Get shops list
-  const result = await apiRequest<any[]>('/v1/shops', token, { method: 'GET' });
-
-  if (result.error) {
-    return { valid: false, error: result.error };
+  // Попробуем несколько вариантов эндпоинтов
+  const endpointsToTry = [
+    '/v1/shops',
+    '/shops',
+    '/seller/shops',
+    '/seller-info',
+    '/v1/seller/shops',
+  ];
+  
+  console.log('🔍 Testing different endpoints...');
+  
+  for (const endpoint of endpointsToTry) {
+    console.log(`Testing: ${endpoint}`);
+    const result = await apiRequest<any>(endpoint, token, { method: 'GET' });
+    
+    if (!result.error && result.data) {
+      console.log(`✅ Found working endpoint: ${endpoint}`, result.data);
+      return { 
+        valid: true, 
+        sellerInfo: { 
+          shops: result.data,
+          shopId: result.data?.[0]?.id,
+          shopName: result.data?.[0]?.name,
+          workingEndpoint: endpoint
+        } 
+      };
+    } else {
+      console.log(`❌ ${endpoint} failed:`, result.error);
+    }
   }
 
-  return { 
-    valid: true, 
-    sellerInfo: { 
-      shops: result.data,
-      shopId: result.data?.[0]?.id,
-      shopName: result.data?.[0]?.name
-    } 
-  };
+  return { valid: false, error: 'Не удалось найти рабочий эндпоинт API' };
 }
 
 /**
