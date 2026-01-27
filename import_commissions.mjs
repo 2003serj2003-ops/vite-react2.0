@@ -46,7 +46,8 @@ async function importCommissions() {
     skip_empty_lines: true,
     relax_quotes: true,
     relax_column_count: true
-    // Убираем from_line - первая строка и есть заголовок
+    // ВАЖНО: В узбекском файле первая строка - это заголовки, не пропускаем строки!
+    // Несмотря на то, что колонки называются category1_ru и т.д., в них узбекский текст
   });
 
   console.log(`✅ Загружено ${ruRows.length} записей (RU)`);
