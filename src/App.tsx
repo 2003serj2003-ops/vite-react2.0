@@ -988,44 +988,67 @@ export default function App() {
 
   const adminSaveCode = async () => {
     try {
-      // Генерация кода
+      // Генерация уникального кода с повторными попытками
       let plainCode = codeForm.code.trim();
-      if (!plainCode) {
-        plainCode = Math.floor(100000 + Math.random() * 900000).toString();
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      while (attempts < maxAttempts) {
+        if (!plainCode || attempts > 0) {
+          plainCode = Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // Проверка формата
+        if (!/^\d{6}$/.test(plainCode)) {
+          showToast("Код должен быть 6 цифр");
+          return;
+        }
+
+        // Хешируем код
+        const codeHash = await hashCode(plainCode);
+
+        // Проверяем, существует ли уже такой хеш
+        const { data: existing } = await supabase
+          .from('access_codes')
+          .select('id')
+          .eq('code_hash', codeHash)
+          .maybeSingle();
+
+        if (!existing) {
+          // Уникальный код найден, создаем запись
+          const displayCode = '****' + plainCode.slice(-2);
+
+          const payload = {
+            code_hash: codeHash,
+            role: codeForm.role || 'viewer',
+            max_uses: codeForm.max_uses || null,
+            expires_at: codeForm.expires_at ? new Date(codeForm.expires_at).toISOString() : null,
+            note: codeForm.note || null,
+            display_code: displayCode,
+          };
+
+          const { error } = await supabase
+            .from('access_codes')
+            .insert(payload);
+
+          if (error) {
+            showToast(t.error + ": " + error.message);
+            return;
+          }
+
+          setGeneratedCode(plainCode);
+          showToast("Код создан: " + plainCode);
+          await loadAccessCodes();
+          setCodeForm({ code: "", role: "viewer", max_uses: null, expires_at: "", note: "" });
+          return;
+        }
+
+        // Код уже существует, пробуем еще раз
+        attempts++;
+        plainCode = ""; // Сбросить для следующей попытки
       }
 
-      // Проверка формата
-      if (!/^\d{6}$/.test(plainCode)) {
-        showToast("Код должен быть 6 цифр");
-        return;
-      }
-
-      // Хешируем код
-      const codeHash = await hashCode(plainCode);
-      const displayCode = '****' + plainCode.slice(-2);
-
-      const payload = {
-        code_hash: codeHash,
-        role: codeForm.role || 'viewer',
-        max_uses: codeForm.max_uses || null,
-        expires_at: codeForm.expires_at ? new Date(codeForm.expires_at).toISOString() : null,
-        note: codeForm.note || null,
-        display_code: displayCode,
-      };
-
-      const { error } = await supabase
-        .from('access_codes')
-        .insert(payload);
-
-      if (error) {
-        showToast(t.error + ": " + error.message);
-        return;
-      }
-
-      setGeneratedCode(plainCode);
-      showToast("Код создан: " + plainCode);
-      await loadAccessCodes();
-      setCodeForm({ code: "", role: "viewer", max_uses: null, expires_at: "", note: "" });
+      showToast("Не удалось сгенерировать уникальный код");
     } catch (err) {
       console.error("Error creating access code:", err);
       showToast(t.error);
