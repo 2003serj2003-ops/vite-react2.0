@@ -11,7 +11,6 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
   const [orders, setOrders] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [shopId, setShopId] = useState<number | null>(null);
   
   // Даты: с 1 января 2026 по сегодняшний день
   const dateFromMs = new Date('2026-01-01T00:00:00').getTime();
@@ -80,7 +79,6 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
       }
 
       const currentShopId = shopsResult.shops[0].id;
-      setShopId(currentShopId);
 
       // Затем загружаем данные с датами
       if (activeTab === 'orders') {
@@ -255,80 +253,17 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
         </button>
       </div>
 
-      {/* Date Filter */}
+      {/* Info message about date filter */}
       <div style={{
-        display: 'flex',
-        gap: '12px',
+        backgroundColor: '#f0f9ff',
+        border: '1px solid #bae6fd',
+        borderRadius: '8px',
+        padding: '12px 16px',
         marginBottom: '24px',
-        flexWrap: 'wrap',
-        alignItems: 'flex-end',
+        fontSize: '14px',
+        color: '#0369a1',
       }}>
-        <div style={{ flex: 1, minWidth: '200px' }}>
-          <label style={{
-            display: 'block',
-            fontSize: '14px',
-            fontWeight: '600',
-            color: '#6b7280',
-            marginBottom: '6px',
-          }}>
-            {t.dateFrom}
-          </label>
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '10px 14px',
-              border: '2px solid #e5e7eb',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-            }}
-          />
-        </div>
-        <div style={{ flex: 1, minWidth: '200px' }}>
-          <label style={{
-            display: 'block',
-            fontSize: '14px',
-            fontWeight: '600',
-            color: '#6b7280',
-            marginBottom: '6px',
-          }}>
-            {t.dateTo}
-          </label>
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '10px 14px',
-              border: '2px solid #e5e7eb',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-            }}
-          />
-        </div>
-        <button
-          onClick={() => {
-            setDateFrom('');
-            setDateTo('');
-          }}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#f3f4f6',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '600',
-            color: '#374151',
-          }}
-        >
-          Сбросить
-        </button>
+        📅 Фильтр: с 1 января 2026 по текущий день
       </div>
 
       {/* Content */}
