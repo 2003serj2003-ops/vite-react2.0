@@ -356,19 +356,34 @@ export default function App() {
     try {
       const searchTerm = query.trim().toLowerCase();
       
-      // Ищем по всем уровням категорий
+      // Получаем все записи для фильтрации
       const { data, error } = await supabase
         .from('product_categories')
         .select('*')
-        .or(`category1_${lang}.ilike.%${searchTerm}%,category2_${lang}.ilike.%${searchTerm}%,category3_${lang}.ilike.%${searchTerm}%,category4_${lang}.ilike.%${searchTerm}%,category5_${lang}.ilike.%${searchTerm}%,category6_${lang}.ilike.%${searchTerm}%`)
-        .limit(20);
+        .limit(1000);
 
       if (error) {
         console.error('Commission search error:', error);
         return;
       }
 
-      setCommissionResults(data || []);
+      // Фильтруем по последнему заполненному уровню категории
+      const filtered = (data || []).filter((item: any) => {
+        // Находим последний заполненный уровень (с 6 до 1)
+        let lastCategory = null;
+        for (let i = 6; i >= 1; i--) {
+          const cat = item[`category${i}_${lang}`];
+          if (cat && cat.trim()) {
+            lastCategory = cat.toLowerCase();
+            break;
+          }
+        }
+        
+        // Ищем только в последнем заполненном уровне
+        return lastCategory && lastCategory.includes(searchTerm);
+      }).slice(0, 20);
+
+      setCommissionResults(filtered);
     } catch (err) {
       console.error('Commission search error:', err);
     }
