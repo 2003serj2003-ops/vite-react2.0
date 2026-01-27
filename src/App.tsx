@@ -1206,7 +1206,7 @@ export default function App() {
                   )}
                 </div>
 
-                <label htmlFor="rules-checkbox" className="row" style={{ marginTop: 12, color: "rgba(20,18,26,.88)", cursor: "pointer" }}>
+                <label htmlFor="rules-checkbox" className="row" style={{ marginTop: 16, color: "rgba(20,18,26,.88)", cursor: "pointer", gap: 12, alignItems: "center" }}>
                   <input
                     id="rules-checkbox"
                     type="checkbox"
@@ -1216,14 +1216,9 @@ export default function App() {
                       setRules(e.target.checked);
                       if (error) setError("");
                     }}
-                    onClick={() => {
-                      console.log("Checkbox clicked");
-                      setRules(!rules);
-                      if (error) setError("");
-                    }}
-                    style={{ width: 20, height: 20, accentColor: "#6F00FF", cursor: "pointer" }}
+                    style={{ cursor: "pointer", flexShrink: 0 }}
                   />
-                  <span style={{ fontWeight: 900 }}>{t.acceptRules}</span>
+                  <span style={{ fontWeight: 900, fontSize: 15 }}>{t.acceptRules}</span>
                 </label>
 
                 {error ? (
