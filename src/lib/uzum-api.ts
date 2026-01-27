@@ -87,10 +87,11 @@ export async function getProducts(
 ): Promise<{
   success: boolean;
   products?: any[];
+  total?: number;
   error?: string;
 }> {
-  const result = await apiRequest<any[]>(
-    `/v1/product/shop/${shopId}`,
+  const result = await apiRequest<any>(
+    `/v1/product/shop/${shopId}?size=100&page=0`,
     token,
     { method: 'GET' }
   );
@@ -99,8 +100,10 @@ export async function getProducts(
     return { success: false, error: result.error };
   }
 
-  const products = Array.isArray(result.data) ? result.data : [];
-  return { success: true, products };
+  // API возвращает объект { products: [...], totalProductsAmount: number }
+  const products = result.data?.products || [];
+  const total = result.data?.totalProductsAmount || 0;
+  return { success: true, products, total };
 }
 
 /**
@@ -203,7 +206,9 @@ export async function getFbsOrdersCount(
     return { success: false, error: result.error };
   }
 
-  return { success: true, count: result.data };
+  // API может возвращать число напрямую или объект { count: number }
+  const count = typeof result.data === 'number' ? result.data : (result.data?.count || 0);
+  return { success: true, count };
 }
 
 /**
