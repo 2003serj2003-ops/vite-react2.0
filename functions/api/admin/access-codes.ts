@@ -23,7 +23,7 @@ export async function onRequestGet(context: { env: Env }) {
 
     const { data, error } = await supabase
       .from('access_codes')
-      .select('code_hash,role,is_active,expires_at,max_uses,uses_count,note,display_code,created_at')
+      .select('id,code_hash,role,is_active,expires_at,max_uses,uses_count,note,display_code,created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -119,10 +119,10 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
 export async function onRequestDelete(context: { request: Request; env: Env }) {
   try {
     const url = new URL(context.request.url);
-    const codeHash = url.searchParams.get('hash');
+    const id = url.searchParams.get('id');
 
-    if (!codeHash) {
-      return new Response(JSON.stringify({ error: 'Missing hash parameter' }), {
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'Missing id parameter' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -136,7 +136,7 @@ export async function onRequestDelete(context: { request: Request; env: Env }) {
     const { error } = await supabase
       .from('access_codes')
       .update({ is_active: false })
-      .eq('code_hash', codeHash);
+      .eq('id', id);
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), {

@@ -33,7 +33,7 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
     // Получаем все активные коды
     const { data: codes, error: codesError } = await supabase
       .from('access_codes')
-      .select('code_hash,role,is_active,expires_at,max_uses,uses_count')
+      .select('id,code_hash,role,is_active,expires_at,max_uses,uses_count')
       .eq('is_active', true);
 
     if (codesError) {

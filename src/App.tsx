@@ -930,9 +930,9 @@ export default function App() {
     if (adminTab === "codes") loadAccessCodes();
   }, [adminTab]);
 
-  const deleteAccessCode = async (codeHash: string) => {
+  const deleteAccessCode = async (codeId: string) => {
     try {
-      const resp = await fetch(`/api/admin/access-codes?hash=${encodeURIComponent(codeHash)}`, {
+      const resp = await fetch(`/api/admin/access-codes?id=${encodeURIComponent(codeId)}`, {
         method: "DELETE",
       });
       
@@ -2651,10 +2651,10 @@ export default function App() {
                     ) : (
                       (() => {
                         // Группируем коды: активные → истёкшие → неактивные
-                        const active = accessCodes.filter(ac => !ac.is_disabled && (!ac.expires_at || new Date(ac.expires_at) >= new Date()));
-                        const expired = accessCodes.filter(ac => !ac.is_disabled && ac.expires_at && new Date(ac.expires_at) < new Date());
-                        const disabled = accessCodes.filter(ac => ac.is_disabled);
-                        const sorted = [...active, ...expired, ...disabled];
+                        const active = accessCodes.filter(ac => ac.is_active && (!ac.expires_at || new Date(ac.expires_at) >= new Date()));
+                        const expired = accessCodes.filter(ac => ac.is_active && ac.expires_at && new Date(ac.expires_at) < new Date());
+                        const inactive = accessCodes.filter(ac => !ac.is_active);
+                        const sorted = [...active, ...expired, ...inactive];
                         
                         return sorted.map((ac) => {
                         const expiresDate = ac.expires_at ? new Date(ac.expires_at) : null;
@@ -2662,10 +2662,10 @@ export default function App() {
                         const daysLeft = expiresDate ? Math.ceil((expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
                         
                         return (
-                          <div key={ac.id} className="cardCream" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 10, opacity: ac.is_disabled ? 0.5 : 1 }}>
+                          <div key={ac.id} className="cardCream" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 10, opacity: ac.is_active ? 1 : 0.5 }}>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                               <div style={{ fontSize: 13, color: "#666", fontFamily: "monospace" }}>
-                                🔑 ID: {ac.id.slice(0, 8)}...
+                                {ac.display_code || "🔑 " + ac.id.slice(0, 8) + "..."}
                               </div>
                               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                                 <span style={{ 
@@ -2676,17 +2676,17 @@ export default function App() {
                                   background: "#e3f2fd",
                                   color: "#1565c0"
                                 }}>
-                                  {ac.role_to_assign === "owner" ? "👑 OWNER" : ac.role_to_assign === "admin" ? "⚙️ ADMIN" : ac.role_to_assign === "editor" ? "✏️ EDITOR" : "👁️ VIEWER"}
+                                  {ac.role === "owner" ? "👑 OWNER" : ac.role === "admin" ? "⚙️ ADMIN" : ac.role === "editor" ? "✏️ EDITOR" : "👁️ VIEWER"}
                                 </span>
                                 <span style={{ 
                                   padding: "4px 10px", 
                                   borderRadius: 6, 
                                   fontSize: 11, 
                                   fontWeight: 900,
-                                  background: ac.is_disabled ? "#f8d7da" : (isExpired ? "#fff3cd" : "#d4edda"),
-                                  color: ac.is_disabled ? "#721c24" : (isExpired ? "#856404" : "#155724")
+                                  background: !ac.is_active ? "#f8d7da" : (isExpired ? "#fff3cd" : "#d4edda"),
+                                  color: !ac.is_active ? "#721c24" : (isExpired ? "#856404" : "#155724")
                                 }}>
-                                  {ac.is_disabled ? "ОТКЛЮЧЕН" : isExpired ? "ИСТЁК" : "АКТИВЕН"}
+                                  {!ac.is_active ? "ОТКЛЮЧЕН" : isExpired ? "ИСТЁК" : "АКТИВЕН"}
                                 </span>
                               </div>
                             </div>
@@ -2720,7 +2720,7 @@ export default function App() {
 
                             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                               <button className="btnGhost" onClick={() => deleteAccessCode(ac.id)} style={{ padding: "6px 10px", fontSize: 11 }}>
-                                🗑️ {ac.is_disabled ? "Удалить" : "Отключить"}
+                                🗑️ {ac.is_active ? "Отключить" : "Удалён"}
                               </button>
                             </div>
                           </div>
