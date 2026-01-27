@@ -32,7 +32,7 @@ async function apiRequest<T>(
     const status = response.status;
 
     if (!response.ok) {
-      const errorText = await response.text();
+      await response.text(); // Consume response body
       
       if (status === 401) return { error: 'Неверный токен', status };
       if (status === 403) return { error: 'Доступ запрещён', status };
