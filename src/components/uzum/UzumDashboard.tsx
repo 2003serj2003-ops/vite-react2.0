@@ -5,9 +5,10 @@ interface UzumDashboardProps {
   lang: 'ru' | 'uz';
   token: string;
   onNavigate: (page: 'products' | 'orders' | 'finance') => void;
+  onNavigateBack: () => void;
 }
 
-export default function UzumDashboard({ lang, token, onNavigate }: UzumDashboardProps) {
+export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack }: UzumDashboardProps) {
   const [shops, setShops] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -19,6 +20,7 @@ export default function UzumDashboard({ lang, token, onNavigate }: UzumDashboard
   const T = {
     ru: {
       title: 'Панель управления',
+      back: 'Назад',
       loading: 'Загрузка...',
       shops: 'Мои магазины',
       products: 'Товары',
@@ -33,6 +35,7 @@ export default function UzumDashboard({ lang, token, onNavigate }: UzumDashboard
     },
     uz: {
       title: 'Boshqaruv paneli',
+      back: 'Orqaga',
       loading: 'Yuklanmoqda...',
       shops: 'Mening dokonlarim',
       products: 'Mahsulotlar',
@@ -119,6 +122,40 @@ export default function UzumDashboard({ lang, token, onNavigate }: UzumDashboard
 
   return (
     <div className="list">
+      {/* Header with navigation */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        marginBottom: '20px',
+      }}>
+        <button
+          onClick={onNavigateBack}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#f3f4f6',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#374151',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          ← {t.back}
+        </button>
+        <div style={{
+          fontSize: '20px',
+          fontWeight: 700,
+          color: '#111',
+        }}>
+          🏪 {t.title}
+        </div>
+      </div>
+
       {/* Shops Section */}
       {shops.length > 0 && (
         <div style={{ marginBottom: '20px' }}>

@@ -2797,25 +2797,32 @@ export default function App() {
                     <UzumDashboard 
                       lang={lang} 
                       token={uzumToken} 
-                      onNavigate={(page) => setUzumCurrentPage(page)} 
+                      onNavigate={(page) => setUzumCurrentPage(page)}
+                      onNavigateBack={() => setRoute({ name: 'home' })}
                     />
                   )}
                   {uzumCurrentPage === 'products' && (
                     <UzumProducts 
                       lang={lang} 
-                      token={uzumToken} 
+                      token={uzumToken}
+                      onNavigateBack={() => setUzumCurrentPage('dashboard')}
+                      onNavigateHome={() => setRoute({ name: 'home' })}
                     />
                   )}
                   {uzumCurrentPage === 'orders' && (
                     <UzumOrders 
                       lang={lang} 
-                      token={uzumToken} 
+                      token={uzumToken}
+                      onNavigateBack={() => setUzumCurrentPage('dashboard')}
+                      onNavigateHome={() => setRoute({ name: 'home' })}
                     />
                   )}
                   {uzumCurrentPage === 'finance' && (
                     <UzumFinance 
                       lang={lang} 
-                      token={uzumToken} 
+                      token={uzumToken}
+                      onNavigateBack={() => setUzumCurrentPage('dashboard')}
+                      onNavigateHome={() => setRoute({ name: 'home' })}
                     />
                   )}
                 </div>

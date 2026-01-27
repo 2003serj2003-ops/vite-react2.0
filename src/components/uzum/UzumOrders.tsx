@@ -4,9 +4,11 @@ import { getFbsOrders, confirmFbsOrder, cancelFbsOrder } from '../../lib/uzum-ap
 interface UzumOrdersProps {
   lang: 'ru' | 'uz';
   token: string;
+  onNavigateBack: () => void;
+  onNavigateHome: () => void;
 }
 
-export default function UzumOrders({ lang, token }: UzumOrdersProps) {
+export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome }: UzumOrdersProps) {
   const [orders, setOrders] = useState<any[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -222,11 +224,47 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
         marginBottom: '12px',
       }}>
         <div style={{
-          fontSize: '18px',
-          fontWeight: 700,
-          color: '#111',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
         }}>
-          📋 {t.title}
+          <button
+            onClick={onNavigateBack}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#f3f4f6',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#374151',
+            }}
+          >
+            ← {t.back}
+          </button>
+          <button
+            onClick={onNavigateHome}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#f3f4f6',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#374151',
+            }}
+          >
+            🏠
+          </button>
+          <div style={{
+            fontSize: '18px',
+            fontWeight: 700,
+            color: '#111',
+          }}>
+            📦 {t.title}
+          </div>
         </div>
         <div style={{
           padding: '6px 12px',
