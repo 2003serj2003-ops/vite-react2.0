@@ -294,6 +294,15 @@ export default function App() {
   const t: (typeof T)[Lang] = T[lang];
 
   const [route, setRoute] = useState<Route>(() => {
+    // Режим разработки - автоматический вход
+    const isDevelopment = import.meta.env.DEV && window.location.hostname === 'localhost';
+    if (isDevelopment) {
+      console.log("[DEV MODE] Auto-login enabled");
+      localStorage.setItem("access_ok", "1");
+      localStorage.setItem("user_role", "viewer");
+      return { name: "home" };
+    }
+    
     const ok = localStorage.getItem("access_ok") === "1";
     return ok ? { name: "home" } : { name: "welcome" };
   });
@@ -728,6 +737,40 @@ export default function App() {
 
   // Get Telegram user info
   useEffect(() => {
+    // Режим разработки для локального тестирования
+    const isDevelopment = import.meta.env.DEV && window.location.hostname === 'localhost';
+    
+    if (isDevelopment) {
+      console.log("[DEV MODE] Using mock Telegram data");
+      const mockUser = {
+        id: 123456789,
+        first_name: "Test",
+        last_name: "User",
+      };
+      
+      // Создаем фейковый Telegram WebApp объект
+      if (!(window as any).Telegram) {
+        (window as any).Telegram = {
+          WebApp: {
+            initDataUnsafe: {
+              user: mockUser
+            },
+            onEvent: () => {},
+            offEvent: () => {},
+            ready: () => {},
+            expand: () => {},
+          }
+        };
+      }
+      
+      const fullName = "Test User";
+      setUserName(fullName);
+      localStorage.setItem("user_name", fullName);
+      
+      // Пропускаем дальнейшую инициализацию для dev режима
+      return;
+    }
+    
     const extractUserData = () => {
       const tg = (window as any).Telegram?.WebApp;
       if (!tg) {
@@ -965,6 +1008,18 @@ export default function App() {
 
     const entered = code.trim().toUpperCase();
     console.log("[CODE] Checking code:", entered);
+    
+    // Режим разработки - автоматический вход
+    const isDevelopment = import.meta.env.DEV && window.location.hostname === 'localhost';
+    if (isDevelopment && !entered) {
+      console.log("[DEV MODE] Auto-login as viewer");
+      setError("");
+      localStorage.setItem("access_ok", "1");
+      localStorage.setItem("user_role", "viewer");
+      setUserRole("viewer");
+      setRoute({ name: "home" });
+      return;
+    }
 
     // ADMIN: open admin immediately
     if (entered === ADMIN_CODE) {
