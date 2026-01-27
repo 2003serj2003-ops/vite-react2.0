@@ -1,11 +1,2 @@
-name = "vite-react2"
-compatibility_date = "2025-01-27"
-
-# Для Cloudflare Pages указываем директорию с build output
+# Cloudflare Pages configuration
 pages_build_output_dir = "./dist"
-
-# Environment variables для Cloudflare Functions
-# Реальные значения устанавливаются в Cloudflare Dashboard
-[vars]
-# Эти переменные будут доступны в context.env
-# VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY задаются через Dashboard -> Settings -> Environment variables
