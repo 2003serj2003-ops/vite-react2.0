@@ -24,6 +24,24 @@ async function hashCode(code: string): Promise<string> {
 // GET: Список кодов
 export async function onRequestGet(context: { env: Env }) {
   try {
+    console.log('[ADMIN GET] Env check:', {
+      hasUrl: !!context.env.VITE_SUPABASE_URL,
+      hasKey: !!context.env.VITE_SUPABASE_ANON_KEY
+    });
+
+    if (!context.env.VITE_SUPABASE_URL || !context.env.VITE_SUPABASE_ANON_KEY) {
+      console.error('[ADMIN GET] Missing env variables');
+      return new Response(JSON.stringify({ 
+        error: 'Server configuration error: Missing environment variables' 
+      }), {
+        status: 500,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+
     const supabase = createClient(
       context.env.VITE_SUPABASE_URL,
       context.env.VITE_SUPABASE_ANON_KEY
@@ -35,20 +53,34 @@ export async function onRequestGet(context: { env: Env }) {
       .order('created_at', { ascending: false });
 
     if (error) {
+      console.error('[ADMIN GET] Supabase error:', error);
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       });
     }
 
     return new Response(JSON.stringify({ codes: data }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    console.error('[ADMIN GET] Exception:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : String(error)
+    }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     });
   }
 }
@@ -56,6 +88,24 @@ export async function onRequestGet(context: { env: Env }) {
 // POST: Создание нового кода
 export async function onRequestPost(context: { request: Request; env: Env }) {
   try {
+    console.log('[ADMIN POST] Env check:', {
+      hasUrl: !!context.env.VITE_SUPABASE_URL,
+      hasKey: !!context.env.VITE_SUPABASE_ANON_KEY
+    });
+
+    if (!context.env.VITE_SUPABASE_URL || !context.env.VITE_SUPABASE_ANON_KEY) {
+      console.error('[ADMIN POST] Missing env variables');
+      return new Response(JSON.stringify({ 
+        error: 'Server configuration error: Missing environment variables' 
+      }), {
+        status: 500,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+
     const body = await context.request.json();
     const { code, role, max_uses, expires_at, note } = body;
 
@@ -69,7 +119,10 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
     if (!/^\d{6}$/.test(plainCode)) {
       return new Response(JSON.stringify({ error: 'Code must be 6 digits' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       });
     }
 
@@ -80,7 +133,7 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
 
     // Хеширование на сервере с Web Crypto API
     const codeHash = await hashCode(plainCode);
-    console.log('[ADMIN] Hash generated for code:', plainCode.slice(-2));
+    console.log('[ADMIN POST] Hash generated for code:', plainCode.slice(-2));
 
     // Маскированный код для отображения
     const displayCode = '****' + plainCode.slice(-2);
@@ -99,9 +152,13 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       .insert(payload);
 
     if (error) {
+      console.error('[ADMIN POST] Supabase error:', error);
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       });
     }
 
@@ -111,14 +168,23 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       code: plainCode
     }), {
       status: 201,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     });
 
   } catch (error) {
-    console.error('[ADMIN] Error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    console.error('[ADMIN POST] Exception:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : String(error)
+    }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     });
   }
 }
@@ -126,13 +192,33 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
 // DELETE: Деактивация кода
 export async function onRequestDelete(context: { request: Request; env: Env }) {
   try {
+    console.log('[ADMIN DELETE] Env check:', {
+      hasUrl: !!context.env.VITE_SUPABASE_URL,
+      hasKey: !!context.env.VITE_SUPABASE_ANON_KEY
+    });
+
+    if (!context.env.VITE_SUPABASE_URL || !context.env.VITE_SUPABASE_ANON_KEY) {
+      return new Response(JSON.stringify({ 
+        error: 'Server configuration error: Missing environment variables' 
+      }), {
+        status: 500,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+
     const url = new URL(context.request.url);
     const id = url.searchParams.get('id');
 
     if (!id) {
       return new Response(JSON.stringify({ error: 'Missing id parameter' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       });
     }
 
@@ -147,21 +233,35 @@ export async function onRequestDelete(context: { request: Request; env: Env }) {
       .eq('id', id);
 
     if (error) {
+      console.error('[ADMIN DELETE] Supabase error:', error);
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       });
     }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     });
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    console.error('[ADMIN DELETE] Exception:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : String(error)
+    }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     });
   }
 }
