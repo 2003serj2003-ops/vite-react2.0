@@ -1876,12 +1876,12 @@ export default function App() {
             </div>
 
             {/* Карусель разделов */}
-            <div style={{ padding: "16px 0" }}>
+            <div style={{ padding: "12px 0" }}>
               <div style={{ 
-                fontSize: "14px", 
+                fontSize: "12px", 
                 fontWeight: 800, 
                 color: "rgba(0,0,0,.7)", 
-                padding: "0 16px 8px",
+                padding: "0 16px 6px",
                 textTransform: "uppercase",
                 letterSpacing: "0.5px"
               }}>

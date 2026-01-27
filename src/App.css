@@ -713,16 +713,16 @@ body{
 
 /* строка раздела — как в макете */
 .sectionRow{
-  min-width:140px;
-  width:140px;
-  border:3px solid var(--accent);
+  min-width:110px;
+  width:110px;
+  border:2px solid var(--accent);
   background: var(--gradient-secondary);
-  border-radius:var(--r-xl);
-  padding:14px;
+  border-radius:var(--r-lg);
+  padding:10px;
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:10px;
+  gap:6px;
   cursor:pointer;
   text-align:center;
   flex-shrink:0;
@@ -756,10 +756,10 @@ body{
 }
 
 .sectionIconBox{
-  width:52px;
-  height:52px;
-  border-radius:16px;
-  border:3px solid rgba(112,0,255,.3);
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  border:2px solid rgba(112,0,255,.3);
   background: linear-gradient(135deg, rgba(112,0,255,.12) 0%, rgba(157,78,255,.10) 100%);
   display:flex;
   align-items:center;
@@ -780,7 +780,7 @@ body{
 }
 
 .sectionIcon{
-  font-size:24px;
+  font-size:20px;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,.1));
   position: relative;
   z-index: 1;
@@ -793,7 +793,7 @@ body{
 }
 .sectionTitle{
   font-weight:950;
-  font-size:12px;
+  font-size:11px;
   line-height:1.15;
   color:#111;
   text-transform:uppercase;
@@ -804,9 +804,9 @@ body{
   -webkit-box-orient:vertical;
 }
 .sectionSub{
-  margin-top:4px;
+  margin-top:2px;
   color:rgba(0,0,0,.55);
-  font-size:11px;
+  font-size:10px;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
