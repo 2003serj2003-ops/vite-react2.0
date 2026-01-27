@@ -143,11 +143,9 @@ export async function updateProductPrices(
 export async function getFbsOrders(
   token: string,
   params?: {
-    limit?: number;
-    offset?: number;
+    size?: number;
+    page?: number;
     status?: string;
-    dateFrom?: string;
-    dateTo?: string;
   }
 ): Promise<{
   success: boolean;
@@ -155,11 +153,9 @@ export async function getFbsOrders(
   error?: string;
 }> {
   const queryParams = new URLSearchParams();
-  if (params?.limit) queryParams.append('limit', String(params.limit));
-  if (params?.offset) queryParams.append('offset', String(params.offset));
+  queryParams.append('size', String(params?.size || 20));
+  queryParams.append('page', String(params?.page || 0));
   if (params?.status) queryParams.append('status', params.status);
-  if (params?.dateFrom) queryParams.append('dateFrom', params.dateFrom);
-  if (params?.dateTo) queryParams.append('dateTo', params.dateTo);
 
   const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
   const result = await apiRequest<any>(
@@ -172,7 +168,9 @@ export async function getFbsOrders(
     return { success: false, error: result.error };
   }
 
-  return { success: true, orders: result.data };
+  // API возвращает массив заказов или пустой массив
+  const orders = Array.isArray(result.data) ? result.data : [];
+  return { success: true, orders };
 }
 
 /**
@@ -182,8 +180,6 @@ export async function getFbsOrdersCount(
   token: string,
   params?: {
     status?: string;
-    dateFrom?: string;
-    dateTo?: string;
   }
 ): Promise<{
   success: boolean;
@@ -192,8 +188,6 @@ export async function getFbsOrdersCount(
 }> {
   const queryParams = new URLSearchParams();
   if (params?.status) queryParams.append('status', params.status);
-  if (params?.dateFrom) queryParams.append('dateFrom', params.dateFrom);
-  if (params?.dateTo) queryParams.append('dateTo', params.dateTo);
 
   const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
   const result = await apiRequest<any>(
@@ -206,8 +200,8 @@ export async function getFbsOrdersCount(
     return { success: false, error: result.error };
   }
 
-  // API может возвращать число напрямую или объект { count: number }
-  const count = typeof result.data === 'number' ? result.data : (result.data?.count || 0);
+  // API возвращает объект с полями или число
+  const count = typeof result.data === 'number' ? result.data : (result.data?.total || result.data?.count || 0);
   return { success: true, count };
 }
 
@@ -394,25 +388,35 @@ export async function updateFbsSkuStocks(
 
 /**
  * GET /v1/finance/orders - Получение списка заказов
+ * Требует обязательный параметр shopIds
  */
 export async function getFinanceOrders(
   token: string,
+  shopId: number | string,
   params?: {
-    limit?: number;
-    offset?: number;
-    dateFrom?: string;
-    dateTo?: string;
+    size?: number;
+    page?: number;
+    dateFrom?: number;
+    dateTo?: number;
+    group?: boolean;
+    statuses?: string[];
   }
 ): Promise<{
   success: boolean;
   orders?: any[];
+  total?: number;
   error?: string;
 }> {
   const queryParams = new URLSearchParams();
-  if (params?.limit) queryParams.append('limit', String(params.limit));
-  if (params?.offset) queryParams.append('offset', String(params.offset));
-  if (params?.dateFrom) queryParams.append('dateFrom', params.dateFrom);
-  if (params?.dateTo) queryParams.append('dateTo', params.dateTo);
+  queryParams.append('shopIds', String(shopId));
+  queryParams.append('size', String(params?.size || 20));
+  queryParams.append('page', String(params?.page || 0));
+  if (params?.dateFrom) queryParams.append('dateFrom', String(params.dateFrom));
+  if (params?.dateTo) queryParams.append('dateTo', String(params.dateTo));
+  if (params?.group !== undefined) queryParams.append('group', String(params.group));
+  if (params?.statuses?.length) {
+    params.statuses.forEach(status => queryParams.append('statuses', status));
+  }
 
   const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
   const result = await apiRequest<any>(
@@ -425,7 +429,10 @@ export async function getFinanceOrders(
     return { success: false, error: result.error };
   }
 
-  return { success: true, orders: result.data };
+  // API возвращает { orderItems: [], totalElements: number }
+  const orders = result.data?.orderItems || [];
+  const total = result.data?.totalElements || 0;
+  return { success: true, orders, total };
 }
 
 /**
@@ -434,21 +441,22 @@ export async function getFinanceOrders(
 export async function getFinanceExpenses(
   token: string,
   params?: {
-    limit?: number;
-    offset?: number;
-    dateFrom?: string;
-    dateTo?: string;
+    size?: number;
+    page?: number;
+    dateFrom?: number;
+    dateTo?: number;
   }
 ): Promise<{
   success: boolean;
   expenses?: any[];
+  total?: number;
   error?: string;
 }> {
   const queryParams = new URLSearchParams();
-  if (params?.limit) queryParams.append('limit', String(params.limit));
-  if (params?.offset) queryParams.append('offset', String(params.offset));
-  if (params?.dateFrom) queryParams.append('dateFrom', params.dateFrom);
-  if (params?.dateTo) queryParams.append('dateTo', params.dateTo);
+  queryParams.append('size', String(params?.size || 20));
+  queryParams.append('page', String(params?.page || 0));
+  if (params?.dateFrom) queryParams.append('dateFrom', String(params.dateFrom));
+  if (params?.dateTo) queryParams.append('dateTo', String(params.dateTo));
 
   const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
   const result = await apiRequest<any>(
@@ -461,7 +469,10 @@ export async function getFinanceExpenses(
     return { success: false, error: result.error };
   }
 
-  return { success: true, expenses: result.data };
+  // API возвращает массив или объект с полями
+  const expenses = Array.isArray(result.data) ? result.data : (result.data?.expenses || []);
+  const total = result.data?.totalElements || expenses.length;
+  return { success: true, expenses, total };
 }
 
 // ============================================================================

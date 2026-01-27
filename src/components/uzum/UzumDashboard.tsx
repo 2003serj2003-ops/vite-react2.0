@@ -68,10 +68,10 @@ export default function UzumDashboard({ lang, token, onNavigate }: UzumDashboard
           const productsResult = await getProducts(token, shopId);
           console.log('📦 Products result:', productsResult);
           
-          if (productsResult.success && productsResult.products) {
+          if (productsResult.success) {
             setStats(prev => ({
               ...prev,
-              totalProducts: productsResult.products?.length || 0,
+              totalProducts: productsResult.total || 0,
             }));
           }
         }

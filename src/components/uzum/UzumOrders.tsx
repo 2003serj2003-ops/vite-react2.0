@@ -92,7 +92,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   async function loadOrders() {
     setLoading(true);
     try {
-      const result = await getFbsOrders(token);
+      const result = await getFbsOrders(token, { size: 100, page: 0 });
       console.log('📋 [Orders] FBS Orders:', result);
       if (result.success && result.orders) {
         const ordersList = Array.isArray(result.orders) ? result.orders : [];

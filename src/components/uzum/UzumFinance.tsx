@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getFinanceOrders, getFinanceExpenses } from '../../lib/uzum-api';
+import { getShops, getFinanceOrders, getFinanceExpenses } from '../../lib/uzum-api';
 
 interface UzumFinanceProps {
   lang: 'ru' | 'uz';
@@ -11,8 +11,11 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
   const [orders, setOrders] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [shopId, setShopId] = useState<number | null>(null);
+  
+  // Даты: с 1 января 2026 по сегодняшний день
+  const dateFromMs = new Date('2026-01-01T00:00:00').getTime();
+  const dateToMs = new Date().getTime();
 
   const T = {
     ru: {
@@ -62,24 +65,42 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
   const t = T[lang];
 
   useEffect(() => {
-    loadData();
-  }, [token, activeTab, dateFrom, dateTo]);
+    loadShopAndData();
+  }, [token, activeTab]);
 
-  async function loadData() {
+  async function loadShopAndData() {
     setLoading(true);
     try {
-      const params: any = {};
-      if (dateFrom) params.dateFrom = dateFrom;
-      if (dateTo) params.dateTo = dateTo;
+      // Сначала получаем shopId
+      const shopsResult = await getShops(token);
+      if (!shopsResult.success || !shopsResult.shops?.length) {
+        console.error('No shops found');
+        setLoading(false);
+        return;
+      }
 
+      const currentShopId = shopsResult.shops[0].id;
+      setShopId(currentShopId);
+
+      // Затем загружаем данные с датами
       if (activeTab === 'orders') {
-        const result = await getFinanceOrders(token, params);
+        const result = await getFinanceOrders(token, currentShopId, {
+          size: 100,
+          page: 0,
+          dateFrom: dateFromMs,
+          dateTo: dateToMs,
+        });
         console.log('💰 [Finance] Orders:', result);
         if (result.success && result.orders) {
           setOrders(Array.isArray(result.orders) ? result.orders : []);
         }
       } else {
-        const result = await getFinanceExpenses(token, params);
+        const result = await getFinanceExpenses(token, {
+          size: 100,
+          page: 0,
+          dateFrom: dateFromMs,
+          dateTo: dateToMs,
+        });
         console.log('💸 [Finance] Expenses:', result);
         if (result.success && result.expenses) {
           setExpenses(Array.isArray(result.expenses) ? result.expenses : []);
