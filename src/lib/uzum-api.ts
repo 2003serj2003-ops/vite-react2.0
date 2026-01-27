@@ -100,8 +100,8 @@ export async function getProducts(
     return { success: false, error: result.error };
   }
 
-  // API возвращает объект { products: [...], totalProductsAmount: number }
-  const products = result.data?.products || [];
+  // API возвращает объект { productList: [...], totalProductsAmount: number }
+  const products = result.data?.productList || [];
   const total = result.data?.totalProductsAmount || 0;
   return { success: true, products, total };
 }
