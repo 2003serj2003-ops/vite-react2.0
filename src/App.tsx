@@ -5,6 +5,10 @@ import "./App.css";
 import { runCrawl } from "../scripts/crawls";
 import { encryptToken, validatePin, isCryptoAvailable } from "./lib/crypto";
 import { testToken, getShops } from "./lib/uzum-api";
+import UzumDashboard from "./components/uzum/UzumDashboard";
+import UzumProducts from "./components/uzum/UzumProducts";
+import UzumOrders from "./components/uzum/UzumOrders";
+import UzumFinance from "./components/uzum/UzumFinance";
 
 type Lang = "ru" | "uz";
 
@@ -340,6 +344,7 @@ export default function App() {
   const [uzumIntegrationId, setUzumIntegrationId] = useState<string | null>(null);
   const [showUzumToken, setShowUzumToken] = useState(false);
   const [showUzumPin, setShowUzumPin] = useState(false);
+  const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance'>('dashboard');
   console.log('Uzum integration ID:', uzumIntegrationId); // используем переменную
 
   // Загрузка истории комиссий при входе пользователя
@@ -2522,7 +2527,7 @@ export default function App() {
 
                 {/* Кнопка Кабинет UZUM */}
                 <button
-                  onClick={() => alert(lang === "ru" ? "СКОРО БУДЕТ" : "TEZDA BO'LADI")}
+                  onClick={() => setRoute({ name: "uzum" })}
                   style={{
                     width: "100%",
                     padding: "16px",
@@ -2628,141 +2633,225 @@ export default function App() {
               showSearch={false}
               search={search}
               setSearch={setSearch}
-              onBack={goBack}
+              onBack={() => {
+                if (uzumConnected && uzumCurrentPage !== 'dashboard') {
+                  setUzumCurrentPage('dashboard');
+                } else {
+                  goBack();
+                }
+              }}
               onHome={goHome}
-            />
-            <div className="headerBlock" style={{
-              background: uzumConnected 
-                ? "linear-gradient(135deg, #059669, #10b981)" 
-                : "linear-gradient(135deg, #7E22CE, #6F00FF)",
-              color: "white",
-              padding: "24px 20px",
-              position: "relative",
-              overflow: "hidden"
-            }}>
-              {/* Декоративные элементы */}
-              <div style={{
-                position: "absolute",
-                width: "150px",
-                height: "150px",
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.1)",
-                filter: "blur(40px)",
-                top: "-50px",
-                right: "-30px"
-              }} />
-              <div style={{
-                position: "absolute",
-                width: "100px",
-                height: "100px",
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.08)",
-                filter: "blur(30px)",
-                bottom: "-20px",
-                left: "-20px"
-              }} />
-              
-              <div style={{ position: "relative", zIndex: 1 }}>
-                <div style={{
-                  fontSize: "28px",
-                  fontWeight: 900,
-                  marginBottom: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px"
-                }}>
-                  <span style={{ fontSize: "32px" }}>🛒</span>
-                  Uzum Integration
-                </div>
-                <div style={{
-                  fontSize: "14px",
-                  opacity: 0.95,
-                  fontWeight: 700,
-                  lineHeight: "1.4",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px"
-                }}>
-                  {uzumConnected ? (
-                    <>
-                      <span style={{ fontSize: "16px" }}>✓</span>
-                      Подключено
-                    </>
-                  ) : (
-                    <>
-                      <span style={{ fontSize: "16px" }}>○</span>
-                      Не подключено
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="list">
-              {/* Connection Status */}
-              {uzumConnected && uzumSellerInfo && (
-                <div className="cardCream" style={{
-                  background: "linear-gradient(135deg, #ecfdf5, #d1fae5)",
-                  border: "2px solid #10b981"
-                }}>
-                  <div style={{
-                    fontSize: "16px",
-                    fontWeight: 900,
-                    marginBottom: "12px",
-                    color: "#059669",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px"
-                  }}>
-                    <span>✓</span>
-                    Интеграция активна
-                  </div>
-                  {uzumSellerInfo && (
-                    <div style={{ fontSize: "14px", color: "rgba(0,0,0,0.7)", marginBottom: "12px" }}>
-                      <div><strong>Seller:</strong> {uzumSellerInfo.name || 'N/A'}</div>
-                      {uzumShops.length > 0 && (
-                        <div style={{ marginTop: "8px" }}>
-                          <strong>Магазины:</strong>
-                          <ul style={{ margin: "4px 0 0 20px", padding: 0 }}>
-                            {uzumShops.map((shop: any, idx: number) => (
-                              <li key={idx}>{shop.name || shop.id}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  )}
+              rightSlot={
+                uzumConnected ? (
                   <button
-                    className="menuBtn danger"
-                    style={{ width: "100%", fontSize: "14px" }}
+                    className="btnGhost"
                     onClick={handleDisconnect}
-                    disabled={uzumLoading}
+                    style={{
+                      fontSize: '12px',
+                      padding: '6px 12px',
+                      color: '#ef4444',
+                    }}
                   >
-                    🔌 Отключить интеграцию
+                    🔌 {lang === 'ru' ? 'Отключить' : 'Uzish'}
+                  </button>
+                ) : null
+              }
+            />
+            
+            {/* Connected: Show Navigation and Pages */}
+            {uzumConnected && (
+              <>
+                {/* Navigation Tabs */}
+                <div style={{
+                  display: 'flex',
+                  gap: '8px',
+                  padding: '16px',
+                  backgroundColor: 'white',
+                  borderBottom: '2px solid #f3f4f6',
+                  overflowX: 'auto',
+                }}>
+                  <button
+                    onClick={() => setUzumCurrentPage('dashboard')}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: uzumCurrentPage === 'dashboard' ? '#7c3aed' : '#f3f4f6',
+                      color: uzumCurrentPage === 'dashboard' ? 'white' : '#374151',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    🏠 {lang === 'ru' ? 'Главная' : 'Asosiy'}
+                  </button>
+                  <button
+                    onClick={() => setUzumCurrentPage('products')}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: uzumCurrentPage === 'products' ? '#7c3aed' : '#f3f4f6',
+                      color: uzumCurrentPage === 'products' ? 'white' : '#374151',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    📦 {lang === 'ru' ? 'Товары' : 'Mahsulotlar'}
+                  </button>
+                  <button
+                    onClick={() => setUzumCurrentPage('orders')}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: uzumCurrentPage === 'orders' ? '#22c55e' : '#f3f4f6',
+                      color: uzumCurrentPage === 'orders' ? 'white' : '#374151',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    📋 {lang === 'ru' ? 'Заказы' : 'Buyurtmalar'}
+                  </button>
+                  <button
+                    onClick={() => setUzumCurrentPage('finance')}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: uzumCurrentPage === 'finance' ? '#f59e0b' : '#f3f4f6',
+                      color: uzumCurrentPage === 'finance' ? 'white' : '#374151',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    💰 {lang === 'ru' ? 'Финансы' : 'Moliya'}
                   </button>
                 </div>
-              )}
 
-              {/* Error Display */}
-              {uzumError && (
-                <div className="cardCream" style={{
-                  background: "#fee2e2",
-                  border: "2px solid #ef4444",
-                  marginBottom: "12px"
+                {/* Page Content */}
+                <div style={{ flex: 1, overflow: 'auto' }}>
+                  {uzumCurrentPage === 'dashboard' && (
+                    <UzumDashboard 
+                      lang={lang} 
+                      token={uzumToken} 
+                      onNavigate={(page) => setUzumCurrentPage(page)} 
+                    />
+                  )}
+                  {uzumCurrentPage === 'products' && (
+                    <UzumProducts 
+                      lang={lang} 
+                      token={uzumToken} 
+                      onBack={() => setUzumCurrentPage('dashboard')} 
+                    />
+                  )}
+                  {uzumCurrentPage === 'orders' && (
+                    <UzumOrders 
+                      lang={lang} 
+                      token={uzumToken} 
+                      onBack={() => setUzumCurrentPage('dashboard')} 
+                    />
+                  )}
+                  {uzumCurrentPage === 'finance' && (
+                    <UzumFinance 
+                      lang={lang} 
+                      token={uzumToken} 
+                      onBack={() => setUzumCurrentPage('dashboard')} 
+                    />
+                  )}
+                </div>
+              </>
+            )}
+            
+            {/* Not Connected: Show Setup Form */}
+            {!uzumConnected && (
+              <>
+                <div className="headerBlock" style={{
+                  background: "linear-gradient(135deg, #7E22CE, #6F00FF)",
+                  color: "white",
+                  padding: "24px 20px",
+                  position: "relative",
+                  overflow: "hidden"
                 }}>
+                  {/* Декоративные элементы */}
                   <div style={{
-                    fontSize: "14px",
-                    color: "#991b1b",
-                    fontWeight: 600
-                  }}>
-                    ⚠️ {uzumError}
+                    position: "absolute",
+                    width: "150px",
+                    height: "150px",
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.1)",
+                    filter: "blur(40px)",
+                    top: "-50px",
+                    right: "-30px"
+                  }} />
+                  <div style={{
+                    position: "absolute",
+                    width: "100px",
+                    height: "100px",
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.08)",
+                    filter: "blur(30px)",
+                    bottom: "-20px",
+                    left: "-20px"
+                  }} />
+                  
+                  <div style={{ position: "relative", zIndex: 1 }}>
+                    <div style={{
+                      fontSize: "28px",
+                      fontWeight: 900,
+                      marginBottom: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px"
+                    }}>
+                      <span style={{ fontSize: "32px" }}>🛒</span>
+                      Uzum Integration
+                    </div>
+                    <div style={{
+                      fontSize: "14px",
+                      opacity: 0.95,
+                      fontWeight: 700,
+                      lineHeight: "1.4",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px"
+                    }}>
+                      <span style={{ fontSize: "16px" }}>○</span>
+                      {lang === 'ru' ? 'Не подключено' : 'Ulanmagan'}
+                    </div>
                   </div>
                 </div>
-              )}
 
-              {/* Setup Form (only if not connected) */}
-              {!uzumConnected && (
-                <>
+                <div className="list">
+                  {/* Error Display */}
+                  {uzumError && (
+                    <div className="cardCream" style={{
+                      background: "#fee2e2",
+                      border: "2px solid #ef4444",
+                      marginBottom: "12px"
+                    }}>
+                      <div style={{
+                        fontSize: "14px",
+                        color: "#991b1b",
+                        fontWeight: 600
+                      }}>
+                        ⚠️ {uzumError}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Setup Form */}
                   <div className="cardCream">
                     <div style={{
                       fontSize: "18px",
@@ -3022,11 +3111,9 @@ export default function App() {
                       • Даже мы не можем прочитать ваш токен
                     </div>
                   </div>
-                </>
-              )}
 
-              {/* Features */}
-              <div className="cardCream">
+                  {/* Features */}
+                  <div className="cardCream">
                 <div style={{
                   fontSize: "16px",
                   fontWeight: 900,
@@ -3100,9 +3187,11 @@ export default function App() {
                   </div>
                 </div>
               </div>
-            </div>
+                </div>
 
-            <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
+                <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
+              </>
+            )}
           </div>
         )}
 
