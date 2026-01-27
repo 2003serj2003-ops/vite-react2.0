@@ -3,19 +3,16 @@
  * 
  * Base URL: https://api-seller.uzum.uz/api/seller-openapi/
  * 
- * Auth scheme can be configured via VITE_UZUM_AUTH_SCHEME:
- * - "Bearer" → Authorization: Bearer <token>
- * - "Token" → Authorization: Token <token>
- * - "Raw" → Authorization: <token>
- * Default: Bearer
+ * Auth: RAW token without prefix
+ * Authorization: <token>
  */
 
 const BASE_URL = 'https://api-seller.uzum.uz/api/seller-openapi';
 const USE_PROXY = import.meta.env.VITE_USE_UZUM_PROXY !== 'false'; // По умолчанию используем прокси
 const PROXY_URL = '/api/uzum-proxy';
 
-// Get auth scheme from env or default to Bearer
-const AUTH_SCHEME = import.meta.env.VITE_UZUM_AUTH_SCHEME || 'Bearer';
+// Uzum uses RAW token without Bearer prefix
+const AUTH_SCHEME = 'Raw';
 
 /**
  * Build Authorization header based on scheme
@@ -111,7 +108,7 @@ async function apiRequest<T>(
 
 /**
  * Test if token is valid
- * Uses /seller-info endpoint as it's typically available and lightweight
+ * Uses /v1/shops endpoint to verify token and get shop info
  */
 export async function testToken(token: string): Promise<{
   valid: boolean;
@@ -122,31 +119,41 @@ export async function testToken(token: string): Promise<{
     return { valid: false, error: 'Токен пустой' };
   }
 
-  // Try seller-info endpoint
-  const result = await apiRequest('/seller-info', token, { method: 'GET' });
+  // Get shops list
+  const result = await apiRequest<any[]>('/v1/shops', token, { method: 'GET' });
 
   if (result.error) {
     return { valid: false, error: result.error };
   }
 
-  return { valid: true, sellerInfo: result.data };
+  return { 
+    valid: true, 
+    sellerInfo: { 
+      shops: result.data,
+      shopId: result.data?.[0]?.id,
+      shopName: result.data?.[0]?.name
+    } 
+  };
 }
 
 /**
  * Get products list
- * Endpoint: /products (example, check real API docs)
+ * Endpoint: /v1/product/shop/{shopId}
  */
 export async function getProducts(
   token: string,
-  shopId?: number | string
+  shopId: number | string
 ): Promise<{
   success: boolean;
   products?: any[];
   error?: string;
 }> {
-  const params = shopId ? `?shopId=${shopId}` : '';
-  const result = await apiRequest<{ items?: any[]; products?: any[] }>(
-    `/products${params}`,
+  if (!shopId) {
+    return { success: false, error: 'shopId обязателен' };
+  }
+
+  const result = await apiRequest<any[]>(
+    `/v1/product/shop/${shopId}`,
     token,
     { method: 'GET' }
   );
@@ -155,22 +162,22 @@ export async function getProducts(
     return { success: false, error: result.error };
   }
 
-  // API may return different structures
-  const products = result.data?.items || result.data?.products || [];
+  // API returns array of products
+  const products = Array.isArray(result.data) ? result.data : [];
   return { success: true, products };
 }
 
 /**
  * Get shops list
- * Some sellers have multiple shops
+ * Endpoint: /v1/shops
  */
 export async function getShops(token: string): Promise<{
   success: boolean;
   shops?: any[];
   error?: string;
 }> {
-  const result = await apiRequest<{ shops?: any[]; data?: any[] }>(
-    '/shops',
+  const result = await apiRequest<any[]>(
+    '/v1/shops',
     token,
     { method: 'GET' }
   );
@@ -179,7 +186,8 @@ export async function getShops(token: string): Promise<{
     return { success: false, error: result.error };
   }
 
-  const shops = result.data?.shops || result.data?.data || [];
+  // API returns array of shops
+  const shops = Array.isArray(result.data) ? result.data : [];
   return { success: true, shops };
 }
 

@@ -338,6 +338,8 @@ export default function App() {
   const [uzumShops, setUzumShops] = useState<any[]>([]);
   const [uzumSellerInfo, setUzumSellerInfo] = useState<any>(null);
   const [uzumIntegrationId, setUzumIntegrationId] = useState<string | null>(null);
+  const [showUzumToken, setShowUzumToken] = useState(false);
+  const [showUzumPin, setShowUzumPin] = useState(false);
   console.log('Uzum integration ID:', uzumIntegrationId); // используем переменную
 
   // Загрузка истории комиссий при входе пользователя
@@ -2786,35 +2788,68 @@ export default function App() {
                       }}>
                         Uzum API Token
                       </label>
-                      <input
-                        type="password"
-                        placeholder="uzum_api_token_..."
-                        value={uzumToken}
-                        onChange={(e) => {
-                          setUzumToken(e.target.value);
-                          setUzumError('');
-                        }}
-                        disabled={uzumLoading}
-                        style={{
-                          width: "100%",
-                          padding: "14px 16px",
-                          border: "2px solid rgba(111,0,255,0.2)",
-                          borderRadius: "12px",
-                          fontSize: "15px",
-                          fontFamily: "inherit",
-                          outline: "none",
-                          transition: "all 0.2s ease",
-                          background: "white"
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = "#6F00FF";
-                          e.target.style.boxShadow = "0 0 0 3px rgba(111,0,255,0.1)";
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = "rgba(111,0,255,0.2)";
-                          e.target.style.boxShadow = "none";
-                        }}
-                      />
+                      <div style={{ position: "relative" }}>
+                        <input
+                          type={showUzumToken ? "text" : "password"}
+                          placeholder="uzum_api_token_..."
+                          value={uzumToken}
+                          onChange={(e) => {
+                            setUzumToken(e.target.value);
+                            setUzumError('');
+                          }}
+                          disabled={uzumLoading}
+                          style={{
+                            width: "100%",
+                            padding: "14px 50px 14px 16px",
+                            border: "2px solid rgba(111,0,255,0.2)",
+                            borderRadius: "12px",
+                            fontSize: "15px",
+                            fontFamily: "inherit",
+                            outline: "none",
+                            transition: "all 0.2s ease",
+                            background: "white"
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = "#6F00FF";
+                            e.target.style.boxShadow = "0 0 0 3px rgba(111,0,255,0.1)";
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = "rgba(111,0,255,0.2)";
+                            e.target.style.boxShadow = "none";
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowUzumToken(!showUzumToken)}
+                          style={{
+                            position: "absolute",
+                            right: "12px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: "4px",
+                            color: "rgba(0,0,0,0.5)",
+                            fontSize: "18px"
+                          }}
+                        >
+                          {showUzumToken ? "👁️" : "👁️‍🗨️"}
+                        </button>
+                        {uzumToken && (
+                          <div style={{
+                            position: "absolute",
+                            right: "45px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            color: "#10b981",
+                            fontSize: "12px",
+                            fontWeight: 600
+                          }}>
+                            ✓ {uzumToken.length} симв.
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* PIN Input */}
@@ -2828,35 +2863,68 @@ export default function App() {
                       }}>
                         PIN для шифрования (6-10 символов)
                       </label>
-                      <input
-                        type="password"
-                        placeholder="Создайте PIN для защиты токена"
-                        value={uzumPin}
-                        onChange={(e) => {
-                          setUzumPin(e.target.value);
-                          setUzumError('');
-                        }}
-                        disabled={uzumLoading}
-                        style={{
-                          width: "100%",
-                          padding: "14px 16px",
-                          border: "2px solid rgba(111,0,255,0.2)",
-                          borderRadius: "12px",
-                          fontSize: "15px",
-                          fontFamily: "inherit",
-                          outline: "none",
-                          transition: "all 0.2s ease",
-                          background: "white"
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = "#6F00FF";
-                          e.target.style.boxShadow = "0 0 0 3px rgba(111,0,255,0.1)";
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = "rgba(111,0,255,0.2)";
-                          e.target.style.boxShadow = "none";
-                        }}
-                      />
+                      <div style={{ position: "relative" }}>
+                        <input
+                          type={showUzumPin ? "text" : "password"}
+                          placeholder="Создайте PIN для защиты токена"
+                          value={uzumPin}
+                          onChange={(e) => {
+                            setUzumPin(e.target.value);
+                            setUzumError('');
+                          }}
+                          disabled={uzumLoading}
+                          style={{
+                            width: "100%",
+                            padding: "14px 50px 14px 16px",
+                            border: "2px solid rgba(111,0,255,0.2)",
+                            borderRadius: "12px",
+                            fontSize: "15px",
+                            fontFamily: "inherit",
+                            outline: "none",
+                            transition: "all 0.2s ease",
+                            background: "white"
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = "#6F00FF";
+                            e.target.style.boxShadow = "0 0 0 3px rgba(111,0,255,0.1)";
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = "rgba(111,0,255,0.2)";
+                            e.target.style.boxShadow = "none";
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowUzumPin(!showUzumPin)}
+                          style={{
+                            position: "absolute",
+                            right: "12px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: "4px",
+                            color: "rgba(0,0,0,0.5)",
+                            fontSize: "18px"
+                          }}
+                        >
+                          {showUzumPin ? "👁️" : "👁️‍🗨️"}
+                        </button>
+                        {uzumPin && (
+                          <div style={{
+                            position: "absolute",
+                            right: "45px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            color: uzumPin.length >= 6 && uzumPin.length <= 10 ? "#10b981" : "#f59e0b",
+                            fontSize: "12px",
+                            fontWeight: 600
+                          }}>
+                            {uzumPin.length >= 6 && uzumPin.length <= 10 ? "✓" : "⚠️"} {uzumPin.length} симв.
+                          </div>
+                        )}
+                      </div>
                       <div style={{
                         fontSize: "12px",
                         color: "rgba(0,0,0,0.5)",
