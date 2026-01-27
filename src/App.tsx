@@ -2411,10 +2411,17 @@ export default function App() {
                         gap: "12px"
                       }}>
                         <span style={{ fontSize: "24px" }}>{s.icon}</span>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 700, color: "#111", marginBottom: "2px" }}>{s.title_ru}</div>
-                          <div style={{ fontSize: "12px", color: "#666" }}>{s.title_uz}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, color: "#111", marginBottom: "2px", wordBreak: "break-word" }}>{s.title_ru}</div>
+                          <div style={{ fontSize: "12px", color: "#666", wordBreak: "break-word" }}>{s.title_uz}</div>
                         </div>
+                        <button 
+                          className="btnGhost" 
+                          onClick={() => adminDeleteSection(s.id)}
+                          style={{ flexShrink: 0, padding: "6px 12px", fontSize: "12px" }}
+                        >
+                          Удалить
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -2519,15 +2526,49 @@ export default function App() {
                         <div key={c.id} style={{ 
                           padding: "12px 16px", 
                           background: "rgba(111,0,255,.05)", 
-                          borderRadius: "8px"
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px"
                         }}>
-                          <div style={{ fontWeight: 700, color: "#111", marginBottom: "4px" }}>{c.title_ru}</div>
-                          <div style={{ fontSize: "12px", color: "#666", marginBottom: "2px" }}>{c.title_uz}</div>
-                          {section && (
-                            <div style={{ fontSize: "11px", color: "#999", marginTop: "6px" }}>
-                              {section.icon} {section.title_ru}
-                            </div>
-                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 700, color: "#111", marginBottom: "4px", wordBreak: "break-word" }}>{c.title_ru}</div>
+                            <div style={{ fontSize: "12px", color: "#666", marginBottom: "2px", wordBreak: "break-word" }}>{c.title_uz}</div>
+                            {section && (
+                              <div style={{ fontSize: "11px", color: "#999", marginTop: "6px" }}>
+                                {section.icon} {section.title_ru}
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                            <button 
+                              className="btnGhost" 
+                              onClick={() => {
+                                setEditingCardId(c.id);
+                                setCardForm({
+                                  section_id: c.section_id,
+                                  title_ru: c.title_ru,
+                                  title_uz: c.title_uz,
+                                  body_ru: c.body_ru,
+                                  body_uz: c.body_uz,
+                                  sort: c.sort,
+                                  file_url: c.file_url || "",
+                                  map_url: c.map_url || "",
+                                });
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              style={{ padding: "6px 12px", fontSize: "12px" }}
+                            >
+                              Ред.
+                            </button>
+                            <button 
+                              className="btnGhost" 
+                              onClick={() => adminDeleteCard(c.id)}
+                              style={{ padding: "6px 12px", fontSize: "12px" }}
+                            >
+                              Удал.
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
@@ -2607,16 +2648,28 @@ export default function App() {
                       <div key={n.id} style={{ 
                         padding: "12px 16px", 
                         background: "rgba(111,0,255,.05)", 
-                        borderRadius: "8px"
+                        borderRadius: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px"
                       }}>
-                        <div style={{ fontWeight: 700, color: "#111", marginBottom: "4px" }}>
-                          {n.pinned ? "📌 " : ""}
-                          {n.title_ru}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, color: "#111", marginBottom: "4px", wordBreak: "break-word" }}>
+                            {n.pinned ? "📌 " : ""}
+                            {n.title_ru}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "#666", marginBottom: "2px", wordBreak: "break-word" }}>{n.title_uz}</div>
+                          <div style={{ fontSize: "11px", color: "#999", marginTop: "6px" }}>
+                            {new Date(n.published_at).toLocaleDateString("ru-RU")}
+                          </div>
                         </div>
-                        <div style={{ fontSize: "12px", color: "#666", marginBottom: "2px" }}>{n.title_uz}</div>
-                        <div style={{ fontSize: "11px", color: "#999", marginTop: "6px" }}>
-                          {new Date(n.published_at).toLocaleDateString("ru-RU")}
-                        </div>
+                        <button 
+                          className="btnGhost" 
+                          onClick={() => adminDeleteNews(n.id)}
+                          style={{ flexShrink: 0, padding: "6px 12px", fontSize: "12px" }}
+                        >
+                          Удалить
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -2886,12 +2939,24 @@ export default function App() {
                         <div key={f.id} style={{ 
                           padding: "12px 16px", 
                           background: "rgba(111,0,255,.05)", 
-                          borderRadius: "8px"
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "12px"
                         }}>
-                          <div style={{ fontWeight: 700, color: "#111", marginBottom: "6px" }}>{f.question_ru}</div>
-                          <div style={{ fontSize: "13px", color: "#666", marginBottom: "10px" }}>{f.answer_ru}</div>
-                          <div style={{ fontSize: "12px", color: "#999", marginBottom: "4px" }}>{f.question_uz}</div>
-                          <div style={{ fontSize: "12px", color: "#999" }}>{f.answer_uz}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 700, color: "#111", marginBottom: "6px", wordBreak: "break-word" }}>{f.question_ru}</div>
+                            <div style={{ fontSize: "13px", color: "#666", marginBottom: "10px", wordBreak: "break-word" }}>{f.answer_ru}</div>
+                            <div style={{ fontSize: "12px", color: "#999", marginBottom: "4px", wordBreak: "break-word" }}>{f.question_uz}</div>
+                            <div style={{ fontSize: "12px", color: "#999", wordBreak: "break-word" }}>{f.answer_uz}</div>
+                          </div>
+                          <button 
+                            className="btnGhost" 
+                            onClick={() => adminDeleteFaq(f.id)}
+                            style={{ flexShrink: 0, padding: "6px 12px", fontSize: "12px" }}
+                          >
+                            Удалить
+                          </button>
                         </div>
                       ))
                     )}
