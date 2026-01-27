@@ -4,11 +4,19 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import bcrypt from 'bcryptjs';
 
 interface Env {
   VITE_SUPABASE_URL: string;
   VITE_SUPABASE_ANON_KEY: string;
+}
+
+// Хеширование с использованием Web Crypto API (совместимо с Cloudflare Workers)
+async function hashCode(code: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(code);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export async function onRequestPost(context: { request: Request; env: Env }) {
@@ -28,13 +36,16 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       context.env.VITE_SUPABASE_ANON_KEY
     );
 
-    console.log('[AUTH] Checking code:', code.slice(-2));
+    // Хешируем введённый код
+    const inputHash = await hashCode(code);
+    console.log('[AUTH] Checking code hash...');
 
-    // Получаем все активные коды
+    // Получаем код по хешу
     const { data: codes, error: codesError } = await supabase
       .from('access_codes')
       .select('id,code_hash,role,is_active,expires_at,max_uses,uses_count')
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .eq('code_hash', inputHash);
 
     if (codesError) {
       console.error('[AUTH] DB error:', codesError);
@@ -51,23 +62,7 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       });
     }
 
-    // Проверяем каждый хеш
-    let validCode: typeof codes[0] | null = null;
-    for (const codeRecord of codes) {
-      const isMatch = await bcrypt.compare(code, codeRecord.code_hash);
-      if (isMatch) {
-        validCode = codeRecord;
-        break;
-      }
-    }
-
-    if (!validCode) {
-      console.log('[AUTH] No matching hash');
-      return new Response(JSON.stringify({ error: 'Invalid access code' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+    const validCode = codes[0];
 
     // Проверка срока действия
     if (validCode.expires_at && new Date(validCode.expires_at) < new Date()) {

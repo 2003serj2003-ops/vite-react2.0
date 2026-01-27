@@ -6,11 +6,19 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import bcrypt from 'bcryptjs';
 
 interface Env {
   VITE_SUPABASE_URL: string;
   VITE_SUPABASE_ANON_KEY: string;
+}
+
+// Хеширование с использованием Web Crypto API (совместимо с Cloudflare Workers)
+async function hashCode(code: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(code);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // GET: Список кодов
@@ -70,8 +78,8 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       context.env.VITE_SUPABASE_ANON_KEY
     );
 
-    // Хеширование на сервере
-    const codeHash = await bcrypt.hash(plainCode, 10);
+    // Хеширование на сервере с Web Crypto API
+    const codeHash = await hashCode(plainCode);
     console.log('[ADMIN] Hash generated for code:', plainCode.slice(-2));
 
     // Маскированный код для отображения
