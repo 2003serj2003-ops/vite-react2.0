@@ -826,7 +826,7 @@ export default function App() {
       const secId = cards.find((x) => x.id === route.cardId)?.section_id || "";
       return setRoute({ name: "section", sectionId: secId });
     }
-    if (route.name === "section" || route.name === "news" || route.name === "news_item" || route.name === "news_card" || route.name === "faq" || route.name === "commissions" || route.name === "admin") {
+    if (route.name === "section" || route.name === "news" || route.name === "news_item" || route.name === "news_card" || route.name === "faq" || route.name === "commissions" || route.name === "admin" || route.name === "sections_all") {
       return setRoute({ name: "home" });
     }
   };
@@ -1729,78 +1729,39 @@ export default function App() {
                     {filteredSections.map((s) => (
                       <button
                         key={s.id}
+                        className="menuBtn"
                         onClick={() => {
                           setRoute({ name: "section", sectionId: s.id });
                           setMenuOpen(false);
                         }}
-                        style={{
-                          width: "100%",
-                          padding: "12px 16px",
-                          marginBottom: "8px",
-                          border: "2px solid rgba(111,0,255,.15)",
-                          borderRadius: "12px",
-                          background: "white",
-                          textAlign: "left",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "12px",
-                          transition: "all .2s ease"
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = "rgba(111,0,255,.05)"}
-                        onMouseLeave={(e) => e.currentTarget.style.background = "white"}
                       >
                         <span style={{ fontSize: "24px" }}>{s.icon}</span>
-                        <span style={{ fontWeight: 700, fontSize: "14px", color: "#111" }}>
+                        <span>
                           {getSectionTitle(s)}
                         </span>
                       </button>
                     ))}
                     
                     <button
+                      className="menuBtn accent"
                       onClick={() => {
                         setRoute({ name: "faq" });
                         setMenuOpen(false);
                       }}
-                      style={{
-                        width: "100%",
-                        padding: "12px 16px",
-                        marginBottom: "8px",
-                        border: "2px solid rgba(111,0,255,.15)",
-                        borderRadius: "12px",
-                        background: "#FFF8E8",
-                        textAlign: "left",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px"
-                      }}
                     >
                       <span style={{ fontSize: "24px" }}>❓</span>
-                      <span style={{ fontWeight: 700, fontSize: "14px", color: "#111" }}>{t.faq}</span>
+                      <span>{t.faq}</span>
                     </button>
 
                     <button
+                      className="menuBtn accent"
                       onClick={() => {
                         setRoute({ name: "commissions" });
                         setMenuOpen(false);
                       }}
-                      style={{
-                        width: "100%",
-                        padding: "12px 16px",
-                        marginBottom: "8px",
-                        border: "2px solid rgba(111,0,255,.15)",
-                        borderRadius: "12px",
-                        background: "#FFF8E8",
-                        textAlign: "left",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px"
-                      }}
                     >
                       <span style={{ fontSize: "24px" }}>💰</span>
-                      <span style={{ fontWeight: 700, fontSize: "14px", color: "#111" }}>{lang === "ru" ? "Комиссии" : "Komissiyalar"}</span>
+                      <span>{lang === "ru" ? "Комиссии" : "Komissiyalar"}</span>
                     </button>
                   </div>
                   
@@ -1810,20 +1771,10 @@ export default function App() {
                     background: "linear-gradient(145deg, #FFF8E8, #FFECD2)"
                   }}>
                     <button
+                      className="menuBtn danger"
                       onClick={() => {
                         signOut();
                         setMenuOpen(false);
-                      }}
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        border: "2px solid rgba(176,0,32,.2)",
-                        borderRadius: "12px",
-                        background: "#FFF8E8",
-                        color: "#b00020",
-                        fontWeight: 800,
-                        fontSize: "14px",
-                        cursor: "pointer"
                       }}
                     >
                       {t.signOut}
