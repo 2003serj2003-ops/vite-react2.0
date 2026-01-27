@@ -1813,17 +1813,65 @@ export default function App() {
               searchDropdown={renderSearchResults()}
             />
 
-            {/* Компактное приветствие */}
+            {/* Приветственный блок */}
             <div style={{ 
-              padding: "12px 16px",
+              padding: "20px 16px",
               background: "linear-gradient(135deg, #7000FF 0%, #9D4EFF 100%)",
-              borderBottom: "2px solid rgba(157,78,255,.4)"
+              borderBottom: "2px solid rgba(157,78,255,.4)",
+              position: "relative",
+              overflow: "hidden"
             }}>
-              <div style={{ fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "2px" }}>
-                {t.hello} {userName || "Гость"} 👋
-              </div>
-              <div style={{ fontSize: "12px", color: "rgba(255,255,255,.8)" }}>
-                {new Date().toLocaleDateString(lang === "ru" ? "ru-RU" : "uz-UZ", { weekday: "long", day: "numeric", month: "long" })}
+              {/* Декоративные элементы */}
+              <div style={{
+                position: "absolute",
+                top: "-20px",
+                right: "-20px",
+                width: "100px",
+                height: "100px",
+                background: "rgba(255,255,255,.1)",
+                borderRadius: "50%",
+                filter: "blur(30px)"
+              }} />
+              <div style={{
+                position: "absolute",
+                bottom: "-30px",
+                left: "-30px",
+                width: "120px",
+                height: "120px",
+                background: "rgba(255,255,255,.08)",
+                borderRadius: "50%",
+                filter: "blur(40px)"
+              }} />
+              
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <div style={{ 
+                  fontSize: "13px", 
+                  fontWeight: 600, 
+                  color: "rgba(255,255,255,.7)", 
+                  marginBottom: "6px",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px"
+                }}>
+                  {new Date().toLocaleDateString(lang === "ru" ? "ru-RU" : "uz-UZ", { weekday: "long", day: "numeric", month: "long" })}
+                </div>
+                <div style={{ 
+                  fontSize: "24px", 
+                  fontWeight: 900, 
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px"
+                }}>
+                  <span>{t.hello},</span>
+                  <span style={{
+                    background: "rgba(255,255,255,.2)",
+                    padding: "4px 12px",
+                    borderRadius: "8px",
+                    fontSize: "20px"
+                  }}>
+                    {userName || "Гость"} 👋
+                  </span>
+                </div>
               </div>
             </div>
 
