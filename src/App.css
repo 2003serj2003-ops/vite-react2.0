@@ -121,6 +121,7 @@ body{
   position:relative;
   flex:1;
   min-height:0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* Для страниц с bottom bar */

@@ -1222,6 +1222,7 @@ export default function App() {
 
   // ---------- UI ----------
   const sectionListRef = useRef<HTMLDivElement | null>(null);
+  const scrollThrottleRef = useRef<number | null>(null);
 
   const handleSectionScroll = () => {
     const el = sectionListRef.current;
@@ -1243,6 +1244,14 @@ export default function App() {
         ch.classList.add("is-far");
       }
     });
+  };
+
+  const handleSectionScrollThrottled = () => {
+    if (scrollThrottleRef.current) return;
+    scrollThrottleRef.current = window.setTimeout(() => {
+      handleSectionScroll();
+      scrollThrottleRef.current = null;
+    }, 50);
   };
 
   useEffect(() => {
@@ -1886,8 +1895,8 @@ export default function App() {
                   e.preventDefault();
                 }
                 el.scrollLeft += e.deltaY;
-                window.requestAnimationFrame(() => handleSectionScroll());
-              }} onScroll={() => handleSectionScroll()}>
+                handleSectionScrollThrottled();
+              }} onScroll={handleSectionScrollThrottled}>
                 {filteredSections.map((s) => (
                   <button
                     key={s.id}
