@@ -608,6 +608,15 @@ body{
   max-height:100%;
 }
 
+.list::-webkit-scrollbar{
+  display:none;
+}
+
+.list{
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* список разделов */
 .sectionList{
   padding:16px;
@@ -647,16 +656,16 @@ body{
 
 /* строка раздела — как в макете */
 .sectionRow{
-  min-width:168px;
-  width:168px;
+  min-width:140px;
+  width:140px;
   border:3px solid var(--accent);
   background: var(--gradient-secondary);
   border-radius:var(--r-xl);
-  padding:18px;
+  padding:14px;
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:14px;
+  gap:10px;
   cursor:pointer;
   text-align:center;
   flex-shrink:0;
@@ -692,9 +701,9 @@ body{
 }
 
 .sectionIconBox{
-  width:62px;
-  height:62px;
-  border-radius:18px;
+  width:52px;
+  height:52px;
+  border-radius:16px;
   border:3px solid rgba(112,0,255,.3);
   background: linear-gradient(135deg, rgba(112,0,255,.12) 0%, rgba(157,78,255,.10) 100%);
   display:flex;
@@ -716,7 +725,7 @@ body{
 }
 
 .sectionIcon{
-  font-size:28px;
+  font-size:24px;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,.1));
   position: relative;
   z-index: 1;
@@ -729,7 +738,7 @@ body{
 }
 .sectionTitle{
   font-weight:950;
-  font-size:14px;
+  font-size:12px;
   line-height:1.15;
   color:#111;
   text-transform:uppercase;
@@ -742,7 +751,7 @@ body{
 .sectionSub{
   margin-top:4px;
   color:rgba(0,0,0,.55);
-  font-size:13px;
+  font-size:11px;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;

@@ -2343,8 +2343,8 @@ export default function App() {
               <div className="sub">{lang === "ru" ? "Поиск комиссий по категории товара" : "Tovar turkumi bo'yicha komissiya qidirish"}</div>
             </div>
 
-            {/* Кнопка калькулятора с отступом от заголовка */}
-            <div style={{ padding: "0 16px", marginTop: "20px", marginBottom: "16px" }}>
+            <div className="list" style={{ paddingTop: "20px" }}>
+              {/* Кнопка калькулятора */}
               <button
                 onClick={() => setShowCalculator(!showCalculator)}
                 style={{
@@ -2365,11 +2365,9 @@ export default function App() {
               >
                 🧮 {lang === "ru" ? (showCalculator ? "Скрыть калькулятор" : "Калькулятор прибыли") : (showCalculator ? "Kalkulyatorni yashirish" : "Foyda kalkulyatori")}
               </button>
-            </div>
 
-            {/* Калькулятор прибыли */}
-            {showCalculator && (
-              <div className="list" style={{ padding: "0 16px", marginBottom: "16px" }}>
+              {/* Калькулятор прибыли */}
+              {showCalculator && (
                 <div className="cardCream" style={{
                   background: "linear-gradient(145deg, rgba(111,0,255,.08), rgba(111,0,255,.03))",
                   border: "3px solid #6F00FF",
@@ -2642,10 +2640,8 @@ export default function App() {
                     </>
                   )}
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="list">
               {/* Поле поиска */}
               <div className="cardCream">
                 <label style={{ 
@@ -2849,8 +2845,6 @@ export default function App() {
                 </div>
               )}
             </div>
-
-            <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
           </div>
         )}
 
@@ -2927,16 +2921,16 @@ export default function App() {
                 <button
                   key={s.id}
                   className="cardCream"
-                  style={{ textAlign: "left", display: "flex", gap: 12, alignItems: "center" }}
+                  style={{ textAlign: "center", display: "flex", gap: 12, alignItems: "center", flexDirection: "column" }}
                   onClick={() => setRoute({ name: "section", sectionId: s.id })}
                 >
                   <div className="sectionIconBox" style={{ flex: "0 0 auto" }}>
                     <div className="sectionIcon">{s.icon}</div>
                   </div>
 
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 950, color: "#111" }}>{getSectionTitle(s)}</div>
-                    <div style={{ marginTop: 6, color: "rgba(0,0,0,.55)", fontSize: 13 }}>
+                  <div style={{ flex: 1, width: "100%" }}>
+                    <div style={{ fontWeight: 950, color: "#111", textAlign: "center" }}>{getSectionTitle(s)}</div>
+                    <div style={{ marginTop: 6, color: "rgba(0,0,0,.55)", fontSize: 13, textAlign: "center" }}>
                       {cards.filter((c) => c.section_id === s.id).slice(0, 2).map((c) => getCardTitle(c)).join(" • ") || "—"}
                     </div>
                   </div>
