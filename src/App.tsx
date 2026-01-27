@@ -554,13 +554,22 @@ export default function App() {
 
   const canContinue = code.trim().length > 0 && rules;
 
+  // Простое SHA-256 хеширование
+  const hashCode = async (code: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(code);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
   const submitCode = async () => {
     if (!canContinue) return;
 
     const entered = code.trim().toUpperCase();
     console.log("[CODE] Checking code:", entered);
 
-    // ADMIN: open admin immediately, no button needed
+    // ADMIN: open admin immediately
     if (entered === ADMIN_CODE) {
       console.log("[CODE] Admin code matched");
       setError("");
@@ -571,36 +580,48 @@ export default function App() {
       return;
     }
 
-    // user access codes via API (bcrypt on server)
+    // Проверка кода доступа через Supabase
     try {
-      console.log("[CODE] Calling API to verify code...");
+      const codeHash = await hashCode(entered);
       
-      const resp = await fetch("/api/auth/verify-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: entered }),
-      });
+      const { data, error } = await supabase
+        .from('access_codes')
+        .select('id,role,is_active,expires_at,max_uses,uses_count')
+        .eq('code_hash', codeHash)
+        .eq('is_active', true)
+        .single();
 
-      console.log("[CODE] API response status:", resp.status);
-
-      if (!resp.ok) {
-        const errorData = await resp.json().catch(() => ({ error: "Unknown error" }));
-        console.log("[CODE] API error:", errorData);
+      if (error || !data) {
+        console.log("[CODE] Invalid code");
         setError(t.invalidCode);
         return;
       }
 
-      const data = await resp.json();
-      console.log("[CODE] API success:", data);
+      // Проверка срока действия
+      if (data.expires_at && new Date(data.expires_at) < new Date()) {
+        setError("Код истёк");
+        return;
+      }
 
-      const userRole = data.user?.role || "viewer";
-      console.log("[CODE] Code valid, granting access with role:", userRole);
+      // Проверка лимита использований
+      if (data.max_uses !== null && data.uses_count >= data.max_uses) {
+        setError("Лимит использований исчерпан");
+        return;
+      }
+
+      // Увеличиваем счётчик
+      await supabase
+        .from('access_codes')
+        .update({ uses_count: data.uses_count + 1 })
+        .eq('id', data.id);
+
+      const userRole = data.role || "viewer";
+      console.log("[CODE] Code valid, role:", userRole);
       
       setError("");
       localStorage.setItem("access_ok", "1");
       localStorage.setItem("user_role", userRole);
       
-      // Если роль admin или owner, открываем админ-панель
       if (userRole === "admin" || userRole === "owner") {
         localStorage.setItem("admin_ok", "1");
         setAdminOk(true);
@@ -912,15 +933,17 @@ export default function App() {
 
   const loadAccessCodes = async () => {
     try {
-      const resp = await fetch("/api/admin/access-codes");
+      const { data, error } = await supabase
+        .from('access_codes')
+        .select('id,code_hash,role,is_active,expires_at,max_uses,uses_count,note,display_code,created_at')
+        .order('created_at', { ascending: false });
       
-      if (!resp.ok) {
-        console.error("Failed to load access codes:", resp.status);
+      if (error) {
+        console.error("Failed to load access codes:", error);
         return;
       }
       
-      const data = await resp.json();
-      setAccessCodes(data.codes ?? []);
+      setAccessCodes(data ?? []);
     } catch (err) {
       console.error("Error loading access codes:", err);
     }
@@ -932,11 +955,12 @@ export default function App() {
 
   const deleteAccessCode = async (codeId: string) => {
     try {
-      const resp = await fetch(`/api/admin/access-codes?id=${encodeURIComponent(codeId)}`, {
-        method: "DELETE",
-      });
+      const { error } = await supabase
+        .from('access_codes')
+        .update({ is_active: false })
+        .eq('id', codeId);
       
-      if (!resp.ok) {
+      if (error) {
         showToast(t.error);
         return;
       }
@@ -951,33 +975,42 @@ export default function App() {
 
   const adminSaveCode = async () => {
     try {
-      const payload = {
-        code: codeForm.code.trim() || undefined, // Пустой = автогенерация
-        role: codeForm.role,
-        max_uses: codeForm.max_uses,
-        expires_at: codeForm.expires_at ? new Date(codeForm.expires_at).toISOString() : null,
-        note: codeForm.note || null,
-      };
-      
-      console.log("[ADMIN] Creating code via API...");
-      
-      const resp = await fetch("/api/admin/access-codes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      
-      if (!resp.ok) {
-        const errorData = await resp.json().catch(() => ({ error: "Unknown error" }));
-        showToast(t.error + ": " + (errorData.error || "Unknown"));
+      // Генерация кода
+      let plainCode = codeForm.code.trim();
+      if (!plainCode) {
+        plainCode = Math.floor(100000 + Math.random() * 900000).toString();
+      }
+
+      // Проверка формата
+      if (!/^\d{6}$/.test(plainCode)) {
+        showToast("Код должен быть 6 цифр");
         return;
       }
-      
-      const data = await resp.json();
-      console.log("[ADMIN] Code created:", data.code);
-      
-      setGeneratedCode(data.code);
-      showToast("Код создан: " + data.code);
+
+      // Хешируем код
+      const codeHash = await hashCode(plainCode);
+      const displayCode = '****' + plainCode.slice(-2);
+
+      const payload = {
+        code_hash: codeHash,
+        role: codeForm.role || 'viewer',
+        max_uses: codeForm.max_uses || null,
+        expires_at: codeForm.expires_at ? new Date(codeForm.expires_at).toISOString() : null,
+        note: codeForm.note || null,
+        display_code: displayCode,
+      };
+
+      const { error } = await supabase
+        .from('access_codes')
+        .insert(payload);
+
+      if (error) {
+        showToast(t.error + ": " + error.message);
+        return;
+      }
+
+      setGeneratedCode(plainCode);
+      showToast("Код создан: " + plainCode);
       await loadAccessCodes();
       setCodeForm({ code: "", role: "viewer", max_uses: null, expires_at: "", note: "" });
     } catch (err) {
