@@ -1093,3 +1093,57 @@ export async function testEndpoint(token: string, endpoint: string) {
   console.log('Result:', result);
   return result;
 }
+
+/**
+ * Get Swagger documentation
+ * Usage: getSwagger()
+ */
+export async function getSwagger(): Promise<any> {
+  console.log('📚 Fetching Swagger documentation...');
+  
+  try {
+    const response = await fetch('https://api-seller.uzum.uz/api/seller-openapi/swagger/api-docs');
+    
+    if (!response.ok) {
+      console.error('Failed to fetch Swagger:', response.status, response.statusText);
+      return null;
+    }
+    
+    const swagger = await response.json();
+    console.log('✅ Swagger documentation loaded:', swagger);
+    console.log('\n📊 Available endpoints:');
+    
+    // Показываем все эндпоинты
+    if (swagger.paths) {
+      Object.keys(swagger.paths).forEach(path => {
+        const methods = Object.keys(swagger.paths[path]);
+        console.log(`  ${path}`);
+        methods.forEach(method => {
+          const operation = swagger.paths[path][method];
+          console.log(`    ${method.toUpperCase()}: ${operation.summary || operation.description || ''}`);
+        });
+      });
+    }
+    
+    return swagger;
+  } catch (error: any) {
+    console.error('Error fetching Swagger:', error.message);
+    return null;
+  }
+}
+
+// Экспортируем для использования в консоли браузера
+if (typeof window !== 'undefined') {
+  (window as any).uzumApi = {
+    testToken,
+    diagnoseApi,
+    quickTest,
+    testEndpoint,
+    getSwagger,
+    getShops,
+    getProducts,
+    getFbsOrders,
+    getFbsOrdersCount,
+  };
+  console.log('🔧 Uzum API utils available in window.uzumApi');
+}
