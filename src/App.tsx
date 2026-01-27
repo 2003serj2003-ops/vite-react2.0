@@ -293,6 +293,7 @@ export default function App() {
   const [error, setError] = useState("");
 
   const [toast, setToast] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [sections, setSections] = useState<SectionRow[]>([]);
   const [cards, setCards] = useState<CardRow[]>([]);
@@ -1402,6 +1403,138 @@ export default function App() {
 
         {route.name === "home" && (
           <div className="page">
+            {/* Боковое меню */}
+            {menuOpen && (
+              <>
+                <div 
+                  className="menuOverlay" 
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "rgba(0,0,0,.4)",
+                    zIndex: 999,
+                    animation: "fadeIn 0.3s ease"
+                  }}
+                />
+                <div 
+                  className="sideMenu"
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    width: "280px",
+                    maxWidth: "80%",
+                    background: "linear-gradient(145deg, #ffffff, #fdfcff)",
+                    boxShadow: "4px 0 24px rgba(0,0,0,.15)",
+                    zIndex: 1000,
+                    display: "flex",
+                    flexDirection: "column",
+                    animation: "slideInLeft 0.3s ease"
+                  }}
+                >
+                  <div style={{ 
+                    padding: "24px 20px", 
+                    borderBottom: "2px solid rgba(111,0,255,.15)",
+                    background: "linear-gradient(135deg, rgba(111,0,255,.08), rgba(111,0,255,.05))"
+                  }}>
+                    <div style={{ fontSize: "20px", fontWeight: 900, color: "#6F00FF", marginBottom: "4px" }}>
+                      Меню
+                    </div>
+                    <div style={{ fontSize: "13px", color: "rgba(0,0,0,.6)" }}>
+                      {userName || "Гость"}
+                    </div>
+                  </div>
+                  
+                  <div style={{ flex: 1, padding: "16px", overflowY: "auto" }}>
+                    {filteredSections.map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => {
+                          setRoute({ name: "section", sectionId: s.id });
+                          setMenuOpen(false);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          marginBottom: "8px",
+                          border: "2px solid rgba(111,0,255,.15)",
+                          borderRadius: "12px",
+                          background: "white",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          transition: "all .2s ease"
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "rgba(111,0,255,.05)"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "white"}
+                      >
+                        <span style={{ fontSize: "24px" }}>{s.icon}</span>
+                        <span style={{ fontWeight: 700, fontSize: "14px", color: "#111" }}>
+                          {getSectionTitle(s)}
+                        </span>
+                      </button>
+                    ))}
+                    
+                    <button
+                      onClick={() => {
+                        setRoute({ name: "faq" });
+                        setMenuOpen(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "12px 16px",
+                        marginBottom: "8px",
+                        border: "2px solid rgba(111,0,255,.15)",
+                        borderRadius: "12px",
+                        background: "white",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px"
+                      }}
+                    >
+                      <span style={{ fontSize: "24px" }}>❓</span>
+                      <span style={{ fontWeight: 700, fontSize: "14px", color: "#111" }}>{t.faq}</span>
+                    </button>
+                  </div>
+                  
+                  <div style={{ 
+                    padding: "16px", 
+                    borderTop: "2px solid rgba(111,0,255,.15)",
+                    background: "rgba(111,0,255,.03)"
+                  }}>
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setMenuOpen(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "12px",
+                        border: "2px solid rgba(176,0,32,.2)",
+                        borderRadius: "12px",
+                        background: "white",
+                        color: "#b00020",
+                        fontWeight: 800,
+                        fontSize: "14px",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {t.signOut}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
             <TopBar
               t={t}
               lang={lang}
@@ -1409,94 +1542,190 @@ export default function App() {
               showSearch={true}
               search={search}
               setSearch={setSearch}
-              onBack={goBack}
-              onHome={goHome}
+              onBack={() => setMenuOpen(true)}
+              onHome={() => {}}
               rightSlot={undefined}
               searchDropdown={renderSearchResults()}
             />
 
-            <div className="headerBlock">
-              <div className="h2">{t.hello} {userName || "Гость"}</div>
-              <div className="sub">{t.sections}</div>
+            {/* Компактное приветствие */}
+            <div style={{ 
+              padding: "12px 16px",
+              background: "linear-gradient(135deg, rgba(111,0,255,.05), rgba(111,0,255,.08))",
+              borderBottom: "2px solid rgba(111,0,255,.15)"
+            }}>
+              <div style={{ fontSize: "16px", fontWeight: 800, color: "#6F00FF", marginBottom: "2px" }}>
+                {t.hello} {userName || "Гость"} 👋
+              </div>
+              <div style={{ fontSize: "12px", color: "rgba(0,0,0,.6)" }}>
+                {new Date().toLocaleDateString(lang === "ru" ? "ru-RU" : "uz-UZ", { weekday: "long", day: "numeric", month: "long" })}
+              </div>
             </div>
-            <div className="sectionList" ref={sectionListRef} onWheel={(e: any) => {
-              // scroll horizontally with mouse wheel and update center classes
-              const el = sectionListRef.current as HTMLDivElement | null;
-              if (!el) return;
-              el.scrollLeft += e.deltaY;
-              e.preventDefault();
-              // schedule update
-              window.requestAnimationFrame(() => handleSectionScroll());
-            }} onScroll={() => handleSectionScroll()}>
-              {filteredSections.map((s) => (
-                <button
-                  key={s.id}
-                  className="sectionRow"
-                  onClick={() => setRoute({ name: "section", sectionId: s.id })}
-                >
-                  <div className="sectionIconBox">
-                    <div className="sectionIcon">{s.icon}</div>
-                  </div>
 
-                  <div className="sectionText">
-                    <div className="sectionTitle">{getSectionTitle(s)}</div>
-                    <div className="sectionSub">
-                      {cards
-                        .filter((c) => c.section_id === s.id)
-                        .slice(0, 1)
-                        .map((c) => getCardTitle(c))
-                        .join(" • ") || "—"}
+            {/* Карусель разделов */}
+            <div style={{ padding: "16px 0" }}>
+              <div style={{ 
+                fontSize: "14px", 
+                fontWeight: 800, 
+                color: "rgba(0,0,0,.7)", 
+                padding: "0 16px 8px",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px"
+              }}>
+                {t.sections}
+              </div>
+              <div className="sectionList" ref={sectionListRef} onWheel={(e: any) => {
+                const el = sectionListRef.current as HTMLDivElement | null;
+                if (!el) return;
+                el.scrollLeft += e.deltaY;
+                e.preventDefault();
+                window.requestAnimationFrame(() => handleSectionScroll());
+              }} onScroll={() => handleSectionScroll()}>
+                {filteredSections.map((s) => (
+                  <button
+                    key={s.id}
+                    className="sectionRow"
+                    onClick={() => setRoute({ name: "section", sectionId: s.id })}
+                  >
+                    <div className="sectionIconBox">
+                      <div className="sectionIcon">{s.icon}</div>
                     </div>
+                    <div className="sectionText">
+                      <div className="sectionTitle">{getSectionTitle(s)}</div>
+                      <div className="sectionSub">
+                        {cards
+                          .filter((c) => c.section_id === s.id)
+                          .slice(0, 1)
+                          .map((c) => getCardTitle(c))
+                          .join(" • ") || "—"}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+
+                <button className="sectionRow" onClick={() => setRoute({ name: "news" })}>
+                  <div className="sectionIconBox">
+                    <div className="sectionIcon">📰</div>
+                  </div>
+                  <div className="sectionText">
+                    <div className="sectionTitle">{t.news}</div>
+                    <div className="sectionSub">{news[0] ? (lang === "ru" ? news[0].title_ru : news[0].title_uz) : "—"}</div>
                   </div>
                 </button>
-              ))}
-
-              <button className="sectionRow" onClick={() => setRoute({ name: "faq" })}>
-                <div className="sectionIconBox">
-                  <div className="sectionIcon">❓</div>
-                </div>
-                <div className="sectionText">
-                  <div className="sectionTitle">{t.faq}</div>
-                  <div className="sectionSub">{faq[0] ? (lang === "ru" ? faq[0].question_ru : faq[0].question_uz) : "—"}</div>
-                </div>
-              </button>
-
-              <button className="sectionRow" onClick={() => setRoute({ name: "news" })}>
-                <div className="sectionIconBox">
-                  <div className="sectionIcon">📰</div>
-                </div>
-                <div className="sectionText">
-                  <div className="sectionTitle">{t.news}</div>
-                  <div className="sectionSub">{news[0] ? (lang === "ru" ? news[0].title_ru : news[0].title_uz) : "—"}</div>
-                </div>
-              </button>
+              </div>
             </div>
 
-            {/* кнопка над блоком новостей — с улучшенными анимациями */}
-            <div className="allSectionsContainer" style={{ display: "flex", justifyContent: "center", marginTop: "5px", marginBottom: "5px" }}>
-              <button className="btnGhost allSectionsBtn enhancedBtn" onClick={() => setRoute({ name: "sections_all" })}>
-                {t.allSections}
-              </button>
-            </div>
-
-            {/* на главном — только последние 4, остальное в "Новости" */}
-            <div className="blockTitle">{t.news}</div>
-            <div className="list">
-              {news.slice(0, 4).map((n) => (
-                <div key={n.id} className="cardCream newsPreview" onClick={() => setRoute({ name: "news_card", newsId: n.id })}>
-                  <div className="row" style={{ justifyContent: "space-between" }}>
-                    <div className="newsTitle">
-                      {n.pinned ? "📌 " : ""}
-                      {lang === "ru" ? n.title_ru : n.title_uz}
+            {/* Блок новостей - увеличенный */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+              <div style={{ 
+                fontSize: "18px", 
+                fontWeight: 900, 
+                color: "#111", 
+                padding: "8px 16px 12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between"
+              }}>
+                <span>📰 {t.news}</span>
+                <button 
+                  onClick={() => setRoute({ name: "news" })}
+                  style={{
+                    padding: "6px 12px",
+                    border: "2px solid rgba(111,0,255,.2)",
+                    borderRadius: "8px",
+                    background: "white",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "#6F00FF",
+                    cursor: "pointer"
+                  }}
+                >
+                  Все →
+                </button>
+              </div>
+              <div className="list" style={{ paddingTop: 0 }}>
+                {news.slice(0, 6).map((n) => (
+                  <div key={n.id} className="cardCream newsPreview" onClick={() => setRoute({ name: "news_card", newsId: n.id })}>
+                    <div className="row" style={{ justifyContent: "space-between", marginBottom: "8px" }}>
+                      <div className="newsTitle">
+                        {n.pinned ? "📌 " : ""}
+                        {lang === "ru" ? n.title_ru : n.title_uz}
+                      </div>
+                      <div className="newsMeta">{fmtDM(n.published_at)}</div>
                     </div>
-                    <div className="newsMeta">{fmtDM(n.published_at)}</div>
+                    <div className="newsBodyPreview">{lang === "ru" ? n.body_ru : n.body_uz}</div>
                   </div>
-                  <div className="newsBodyPreview">{lang === "ru" ? n.body_ru : n.body_uz}</div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
+            {/* Bottom Bar с FAQ */}
+            <div style={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: "64px",
+              background: "linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.95))",
+              borderTop: "2px solid rgba(111,0,255,.15)",
+              boxShadow: "0 -4px 16px rgba(0,0,0,.08)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-around",
+              padding: "0 16px",
+              zIndex: 100
+            }}>
+              <button
+                onClick={() => setRoute({ name: "faq" })}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "4px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  flex: 1
+                }}
+              >
+                <span style={{ fontSize: "24px" }}>❓</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#6F00FF" }}>FAQ</span>
+              </button>
+              
+              <button
+                onClick={() => setRoute({ name: "sections_all" })}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "4px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  flex: 1
+                }}
+              >
+                <span style={{ fontSize: "24px" }}>📂</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#6F00FF" }}>Разделы</span>
+              </button>
+              
+              <button
+                onClick={signOut}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "4px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  flex: 1
+                }}
+              >
+                <span style={{ fontSize: "24px" }}>👤</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "rgba(0,0,0,.6)" }}>{userName?.split(" ")[0] || "Выход"}</span>
+              </button>
+            </div>
           </div>
         )}
 
