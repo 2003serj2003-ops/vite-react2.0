@@ -7,22 +7,18 @@ export default defineConfig({
   server: {
     proxy: {
       // Прокси для Uzum API
+      // Путь передается через query параметр: /api/uzum-proxy?path=/v1/shops
       '/api/uzum-proxy': {
-        target: 'https://api-seller.uzum.uz',
+        target: 'https://api-seller.uzum.uz/api/seller-openapi',
         changeOrigin: true,
         secure: false,
-        configure: (proxy, _options) => {
-          proxy.on('proxyReq', (proxyReq, req) => {
-            // Читаем целевой path из заголовка
-            const uzumPath = req.headers['x-uzum-path'] || '';
-            // Меняем путь запроса на целевой Uzum API endpoint
-            proxyReq.path = `/api/seller-openapi${uzumPath}`;
-            
-            // Пробрасываем Authorization без изменений
-            if (req.headers['authorization']) {
-              proxyReq.setHeader('Authorization', req.headers['authorization']);
-            }
-          });
+        rewrite: (path: string) => {
+          // Берем путь из query параметра
+          const url = new URL(path, 'http://localhost');
+          const uzumPath = url.searchParams.get('path') || '';
+          
+          // Формируем новый путь
+          return uzumPath;
         },
       },
     },

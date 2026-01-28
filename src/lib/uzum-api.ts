@@ -24,10 +24,9 @@ async function apiRequest<T>(
     let response: Response;
 
     if (USE_PROXY) {
-      // Используем прокси - передаем путь через заголовок
+      // Используем прокси - передаем путь через query параметр
       const method = options.method || 'GET';
       const headers: Record<string, string> = {
-        'X-Uzum-Path': endpoint,
         'Authorization': token,
         'Accept': 'application/json',
       };
@@ -36,7 +35,10 @@ async function apiRequest<T>(
         headers['Content-Type'] = 'application/json';
       }
 
-      response = await fetch(PROXY_URL, {
+      // Кодируем путь в query параметр
+      const proxyUrl = `${PROXY_URL}?path=${encodeURIComponent(endpoint)}`;
+
+      response = await fetch(proxyUrl, {
         method,
         headers,
         body: options.body,

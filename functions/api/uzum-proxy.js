@@ -1,17 +1,20 @@
 /**
  * Cloudflare Function для проксирования запросов к Uzum API
  * Обходит CORS блокировку браузера
- * Читает целевой path из заголовка X-Uzum-Path
+ * Поддерживает оба способа передачи пути:
+ * 1. Query параметр: /api/uzum-proxy?path=/v1/shops
+ * 2. Заголовок: X-Uzum-Path: /v1/shops
  */
 
 export async function onRequest(context) {
   const { request } = context;
   
-  // Получаем путь из заголовка
-  const uzumPath = request.headers.get('X-Uzum-Path');
+  // Получаем путь из query параметра или заголовка
+  const url = new URL(request.url);
+  const uzumPath = url.searchParams.get('path') || request.headers.get('X-Uzum-Path');
   
   if (!uzumPath) {
-    return new Response(JSON.stringify({ error: 'X-Uzum-Path header is required' }), {
+    return new Response(JSON.stringify({ error: 'Path is required (use ?path= or X-Uzum-Path header)' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' }
     });
