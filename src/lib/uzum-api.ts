@@ -191,7 +191,7 @@ export async function updateProductPrices(
 
 /**
  * GET /v2/fbs/orders - Получение заказов продавца
- * Требуется shopId и shopIds (оба параметра!)
+ * Требуется только shopIds (БЕЗ shopId!)
  */
 export async function getFbsOrders(
   token: string,
@@ -207,8 +207,7 @@ export async function getFbsOrders(
   error?: string;
 }> {
   const queryParams = new URLSearchParams();
-  // API требует оба параметра
-  queryParams.append('shopId', String(shopId));
+  // FBS API требует только shopIds (БЕЗ shopId!)
   queryParams.append('shopIds', String(shopId));
   queryParams.append('size', String(params?.size || 20));
   queryParams.append('page', String(params?.page || 0));
@@ -234,7 +233,7 @@ export async function getFbsOrders(
 
 /**
  * GET /v2/fbs/orders/count - Получить количество заказов
- * Требуется shopId и shopIds (оба параметра!)
+ * Требуется только shopIds (БЕЗ shopId!)
  */
 export async function getFbsOrdersCount(
   token: string,
@@ -248,8 +247,7 @@ export async function getFbsOrdersCount(
   error?: string;
 }> {
   const queryParams = new URLSearchParams();
-  // API требует оба параметра
-  queryParams.append('shopId', String(shopId));
+  // FBS API требует только shopIds (БЕЗ shopId!)
   queryParams.append('shopIds', String(shopId));
   if (params?.status) queryParams.append('status', params.status);
 
