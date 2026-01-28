@@ -6,7 +6,11 @@
  * Authorization header: <token>
  */
 
-const BASE_URL = 'https://api-seller.uzum.uz/api/seller-openapi';
+// Используем прокси для dev окружения и Cloudflare Functions для продакшена
+const USE_PROXY = true;
+const PROXY_URL = import.meta.env.DEV 
+  ? '/api/uzum-proxy'  // Vite proxy в разработке
+  : '/api/uzum-proxy'; // Cloudflare/Vercel Functions в продакшене
 
 /**
  * Base API request handler
@@ -16,23 +20,48 @@ async function apiRequest<T>(
   token: string,
   options: RequestInit = {}
 ): Promise<{ data?: T; error?: string; status: number }> {
-  const url = `${BASE_URL}${endpoint}`;
-  
   try {
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Authorization': token,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...options.headers,
-      },
-    });
+    let response: Response;
+
+    if (USE_PROXY) {
+      // Используем прокси
+      response = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          path: endpoint,
+          method: options.method || 'GET',
+          headers: {
+            'Authorization': token,
+          },
+          body: options.body ? JSON.parse(options.body as string) : undefined,
+        }),
+      });
+    } else {
+      // Прямой запрос (будет работать только с отключённым CORS)
+      const url = `https://api-seller.uzum.uz/api/seller-openapi${endpoint}`;
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...options.headers,
+        },
+      });
+    }
 
     const status = response.status;
 
     if (!response.ok) {
-      await response.text(); // Consume response body
+      let errorText = '';
+      try {
+        errorText = await response.text();
+      } catch (e) {
+        // ignore
+      }
       
       if (status === 401) return { error: 'Неверный токен', status };
       if (status === 403) return { error: 'Доступ запрещён', status };
@@ -45,6 +74,7 @@ async function apiRequest<T>(
     const data = await response.json();
     return { data, status };
   } catch (error: any) {
+    console.error('API Request error:', error);
     return {
       error: error.message || 'Ошибка сети',
       status: 0
