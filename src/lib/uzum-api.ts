@@ -130,11 +130,30 @@ export async function getProducts(
 
   console.log('📦 Raw products API response:', result.data);
   
-  // API возвращает объект { productList: [...], totalProductsAmount: number }
-  const products = result.data?.productList || [];
-  const total = result.data?.totalProductsAmount || 0;
+  // API может возвращать разные структуры:
+  // Вариант 1: { productList: [...], totalProductsAmount: number }
+  // Вариант 2: Прямой массив [...]
+  // Вариант 3: { content: [...], totalElements: number }
+  let products = [];
+  let total = 0;
   
-  console.log('📦 Parsed products:', { productsCount: products.length, total });
+  if (result.data) {
+    if (Array.isArray(result.data)) {
+      products = result.data;
+      total = products.length;
+    } else if (result.data.productList) {
+      products = result.data.productList;
+      total = result.data.totalProductsAmount || products.length;
+    } else if (result.data.content) {
+      products = result.data.content;
+      total = result.data.totalElements || products.length;
+    } else if (result.data.data) {
+      products = Array.isArray(result.data.data) ? result.data.data : [];
+      total = result.data.total || products.length;
+    }
+  }
+  
+  console.log('📦 Parsed products:', { productsCount: products.length, total, firstProduct: products[0] });
   
   return { success: true, products, total };
 }

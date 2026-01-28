@@ -14,6 +14,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const T = {
     ru: {
@@ -23,6 +24,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       search: 'Поиск товаров...',
       noProducts: 'Товары не найдены',
       sku: 'Артикул',
+      productId: 'ID товара',
       price: 'Цена',
       stock: 'Остаток',
       status: 'Статус',
@@ -32,6 +34,8 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       description: 'Описание',
       active: 'Активен',
       inactive: 'Неактивен',
+      barcode: 'Штрихкод',
+      brand: 'Бренд',
     },
     uz: {
       title: 'Mahsulotlar',
@@ -40,6 +44,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       search: 'Mahsulotlarni qidirish...',
       noProducts: 'Mahsulotlar topilmadi',
       sku: 'Artikul',
+      productId: 'Mahsulot ID',
       price: 'Narxi',
       stock: 'Qoldiq',
       status: 'Holati',
@@ -49,6 +54,8 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       description: 'Tavsif',
       active: 'Faol',
       inactive: 'Nofaol',
+      barcode: 'Shtrix-kod',
+      brand: 'Brend',
     },
   };
 
@@ -98,6 +105,69 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
 
   function formatPrice(price: number): string {
     return new Intl.NumberFormat('ru-RU').format(price) + ' сум';
+  }
+
+  // Получить массив фото товара (может быть в разных форматах)
+  function getProductImages(product: any): string[] {
+    const images: string[] = [];
+    
+    // Разные варианты структуры данных
+    if (product.photos && Array.isArray(product.photos)) {
+      images.push(...product.photos);
+    } else if (product.images && Array.isArray(product.images)) {
+      images.push(...product.images);
+    } else if (product.photoLinks && Array.isArray(product.photoLinks)) {
+      images.push(...product.photoLinks);
+    } else if (product.mainPhoto) {
+      images.push(product.mainPhoto);
+    } else if (product.photo) {
+      images.push(product.photo);
+    } else if (product.imageUrl) {
+      images.push(product.imageUrl);
+    } else if (product.image) {
+      images.push(product.image);
+    }
+    
+    return images.filter(img => img && typeof img === 'string');
+  }
+
+  // Переключение фото
+  function handleNextImage() {
+    if (!selectedProduct) return;
+    const images = getProductImages(selectedProduct);
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  }
+
+  function handlePrevImage() {
+    if (!selectedProduct) return;
+    const images = getProductImages(selectedProduct);
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  }
+
+  // Обработка свайпа
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX = e.touches[0].clientX;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    touchEndX = e.changedTouches[0].clientX;
+    handleSwipe();
+  }
+
+  function handleSwipe() {
+    const swipeThreshold = 50;
+    const diff = touchStartX - touchEndX;
+    
+    if (Math.abs(diff) > swipeThreshold) {
+      if (diff > 0) {
+        handleNextImage(); // Свайп влево - следующее фото
+      } else {
+        handlePrevImage(); // Свайп вправо - предыдущее фото
+      }
+    }
   }
 
   if (loading) {
@@ -220,10 +290,17 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
           gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
           gap: '12px',
         }}>
-          {filteredProducts.map((product: any) => (
+          {filteredProducts.map((product: any) => {
+            const images = getProductImages(product);
+            const firstImage = images[0];
+            
+            return (
             <div
-              key={product.id || product.sku}
-              onClick={() => setSelectedProduct(product)}
+              key={product.id || product.productId || product.sku}
+              onClick={() => {
+                setSelectedProduct(product);
+                setCurrentImageIndex(0);
+              }}
               className="cardCream"
               style={{
                 cursor: 'pointer',
@@ -231,19 +308,36 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
               }}
             >
               {/* Product Image or Placeholder */}
-              {product.photo ? (
-                <img
-                  src={product.photo}
-                  alt={product.title || product.name}
-                  style={{
-                    width: '100%',
-                    height: '160px',
-                    objectFit: 'cover',
-                    borderRadius: '12px',
-                    marginBottom: '12px',
-                    backgroundColor: '#f9fafb',
-                  }}
-                />
+              {firstImage ? (
+                <div style={{ position: 'relative' }}>
+                  <img
+                    src={firstImage}
+                    alt={product.title || product.name}
+                    style={{
+                      width: '100%',
+                      height: '160px',
+                      objectFit: 'cover',
+                      borderRadius: '12px',
+                      marginBottom: '12px',
+                      backgroundColor: '#f9fafb',
+                    }}
+                  />
+                  {images.length > 1 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      padding: '4px 8px',
+                      backgroundColor: 'rgba(0,0,0,0.7)',
+                      color: 'white',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                    }}>
+                      📸 {images.length}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div style={{
                   width: '100%',
@@ -271,6 +365,19 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
               }}>
                 {product.title || product.name || 'Без названия'}
               </div>
+              
+              {/* Product ID */}
+              {(product.id || product.productId) && (
+                <div style={{
+                  fontSize: '11px',
+                  color: '#999',
+                  marginBottom: '4px',
+                }}>
+                  ID: {product.id || product.productId}
+                </div>
+              )}
+              
+              {/* SKU */}
               <div style={{
                 fontSize: '12px',
                 color: '#666',
@@ -278,6 +385,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
               }}>
                 {t.sku}: {product.sku || 'N/A'}
               </div>
+              
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -304,7 +412,8 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
                 )}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -330,12 +439,132 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
             onClick={(e) => e.stopPropagation()}
             className="cardCream"
             style={{
-              maxWidth: '500px',
+              maxWidth: '600px',
               maxHeight: '90vh',
               overflow: 'auto',
               width: '100%',
             }}
           >
+            {/* Image Gallery */}
+            {(() => {
+              const images = getProductImages(selectedProduct);
+              return images.length > 0 ? (
+                <div style={{ position: 'relative', marginBottom: '16px' }}>
+                  <div
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    style={{
+                      width: '100%',
+                      height: '300px',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      backgroundColor: '#f9fafb',
+                      position: 'relative',
+                    }}
+                  >
+                    <img
+                      src={images[currentImageIndex]}
+                      alt={selectedProduct.title || selectedProduct.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  </div>
+                  
+                  {/* Navigation Buttons */}
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        onClick={handlePrevImage}
+                        style={{
+                          position: 'absolute',
+                          left: '8px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          border: 'none',
+                          backgroundColor: 'rgba(255,255,255,0.9)',
+                          cursor: 'pointer',
+                          fontSize: '20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        }}
+                      >
+                        ←
+                      </button>
+                      <button
+                        onClick={handleNextImage}
+                        style={{
+                          position: 'absolute',
+                          right: '8px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          border: 'none',
+                          backgroundColor: 'rgba(255,255,255,0.9)',
+                          cursor: 'pointer',
+                          fontSize: '20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        }}
+                      >
+                        →
+                      </button>
+                      
+                      {/* Image Counter */}
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '12px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        padding: '4px 12px',
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        color: 'white',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                      }}>
+                        {currentImageIndex + 1} / {images.length}
+                      </div>
+                      
+                      {/* Dots */}
+                      <div style={{
+                        display: 'flex',
+                        gap: '6px',
+                        justifyContent: 'center',
+                        marginTop: '12px',
+                      }}>
+                        {images.map((_, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => setCurrentImageIndex(idx)}
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: idx === currentImageIndex ? '#7c3aed' : '#d1d5db',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : null;
+            })()}
+            
             <div style={{
               fontSize: '18px',
               fontWeight: 700,
@@ -351,9 +580,19 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
               marginBottom: '16px',
               fontSize: '14px',
             }}>
+              {(selectedProduct.id || selectedProduct.productId) && (
+                <div style={{ color: '#666' }}>
+                  <strong style={{ color: '#111' }}>{t.productId}:</strong> {selectedProduct.id || selectedProduct.productId}
+                </div>
+              )}
               <div style={{ color: '#666' }}>
                 <strong style={{ color: '#111' }}>{t.sku}:</strong> {selectedProduct.sku || 'N/A'}
               </div>
+              {selectedProduct.barcode && (
+                <div style={{ color: '#666' }}>
+                  <strong style={{ color: '#111' }}>{t.barcode}:</strong> {selectedProduct.barcode}
+                </div>
+              )}
               <div style={{ color: '#666' }}>
                 <strong style={{ color: '#111' }}>{t.price}:</strong>
                 <span style={{
@@ -368,6 +607,11 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
               {selectedProduct.stock !== undefined && (
                 <div style={{ color: '#666' }}>
                   <strong style={{ color: '#111' }}>{t.stock}:</strong> {selectedProduct.stock}
+                </div>
+              )}
+              {selectedProduct.brand && (
+                <div style={{ color: '#666' }}>
+                  <strong style={{ color: '#111' }}>{t.brand}:</strong> {selectedProduct.brand}
                 </div>
               )}
               {selectedProduct.category && (
