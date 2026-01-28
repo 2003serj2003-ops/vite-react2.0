@@ -95,7 +95,7 @@ export default function UzumFinance({ lang, token, onNavigateBack, onNavigateHom
           setOrders(Array.isArray(result.orders) ? result.orders : []);
         }
       } else {
-        const result = await getFinanceExpenses(token, {
+        const result = await getFinanceExpenses(token, currentShopId, {
           size: 100,
           page: 0,
           dateFrom: dateFromMs,

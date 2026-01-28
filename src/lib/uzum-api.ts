@@ -191,9 +191,11 @@ export async function updateProductPrices(
 
 /**
  * GET /v2/fbs/orders - Получение заказов продавца
+ * Требуется shopId и shopIds (оба параметра!)
  */
 export async function getFbsOrders(
   token: string,
+  shopId: number | string,
   params?: {
     size?: number;
     page?: number;
@@ -205,6 +207,9 @@ export async function getFbsOrders(
   error?: string;
 }> {
   const queryParams = new URLSearchParams();
+  // API требует оба параметра
+  queryParams.append('shopId', String(shopId));
+  queryParams.append('shopIds', String(shopId));
   queryParams.append('size', String(params?.size || 20));
   queryParams.append('page', String(params?.page || 0));
   if (params?.status) queryParams.append('status', params.status);
@@ -220,6 +225,8 @@ export async function getFbsOrders(
     return { success: false, error: result.error };
   }
 
+  console.log('📋 Raw fbs orders API response:', result.data);
+
   // API возвращает массив заказов или пустой массив
   const orders = Array.isArray(result.data) ? result.data : [];
   return { success: true, orders };
@@ -227,7 +234,7 @@ export async function getFbsOrders(
 
 /**
  * GET /v2/fbs/orders/count - Получить количество заказов
- * Требуется shopIds (множественное число!)
+ * Требуется shopId и shopIds (оба параметра!)
  */
 export async function getFbsOrdersCount(
   token: string,
@@ -241,7 +248,9 @@ export async function getFbsOrdersCount(
   error?: string;
 }> {
   const queryParams = new URLSearchParams();
-  queryParams.append('shopIds', String(shopId)); // Обратите внимание: shopIds во множественном числе!
+  // API требует оба параметра
+  queryParams.append('shopId', String(shopId));
+  queryParams.append('shopIds', String(shopId));
   if (params?.status) queryParams.append('status', params.status);
 
   const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
@@ -448,7 +457,7 @@ export async function updateFbsSkuStocks(
 
 /**
  * GET /v1/finance/orders - Получение списка заказов
- * Требует обязательный параметр shopIds
+ * Требует обязательные параметры shopId и shopIds
  */
 export async function getFinanceOrders(
   token: string,
@@ -468,6 +477,8 @@ export async function getFinanceOrders(
   error?: string;
 }> {
   const queryParams = new URLSearchParams();
+  // API требует оба параметра
+  queryParams.append('shopId', String(shopId));
   queryParams.append('shopIds', String(shopId));
   queryParams.append('size', String(params?.size || 20));
   queryParams.append('page', String(params?.page || 0));
@@ -489,6 +500,8 @@ export async function getFinanceOrders(
     return { success: false, error: result.error };
   }
 
+  console.log('💰 Raw finance orders API response:', result.data);
+
   // API возвращает { orderItems: [], totalElements: number }
   const orders = result.data?.orderItems || [];
   const total = result.data?.totalElements || 0;
@@ -497,9 +510,11 @@ export async function getFinanceOrders(
 
 /**
  * GET /v1/finance/expenses - Получение списка расходов продавца
+ * Требует обязательные параметры shopId и shopIds
  */
 export async function getFinanceExpenses(
   token: string,
+  shopId: number | string,
   params?: {
     size?: number;
     page?: number;
@@ -513,6 +528,9 @@ export async function getFinanceExpenses(
   error?: string;
 }> {
   const queryParams = new URLSearchParams();
+  // API требует оба параметра
+  queryParams.append('shopId', String(shopId));
+  queryParams.append('shopIds', String(shopId));
   queryParams.append('size', String(params?.size || 20));
   queryParams.append('page', String(params?.page || 0));
   if (params?.dateFrom) queryParams.append('dateFrom', String(params.dateFrom));
@@ -528,6 +546,8 @@ export async function getFinanceExpenses(
   if (result.error) {
     return { success: false, error: result.error };
   }
+
+  console.log('💸 Raw finance expenses API response:', result.data);
 
   // API возвращает массив или объект с полями
   const expenses = Array.isArray(result.data) ? result.data : (result.data?.expenses || []);

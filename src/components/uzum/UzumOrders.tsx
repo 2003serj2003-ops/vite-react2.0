@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getFbsOrders, confirmFbsOrder, cancelFbsOrder } from '../../lib/uzum-api';
+import { getShops, getFbsOrders, confirmFbsOrder, cancelFbsOrder } from '../../lib/uzum-api';
 
 interface UzumOrdersProps {
   lang: 'ru' | 'uz';
@@ -94,7 +94,18 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
   async function loadOrders() {
     setLoading(true);
     try {
-      const result = await getFbsOrders(token, { size: 100, page: 0 });
+      // Сначала получаем shopId
+      const shopsResult = await getShops(token);
+      if (!shopsResult.success || !shopsResult.shops?.length) {
+        console.error('No shops found');
+        setLoading(false);
+        return;
+      }
+
+      const shopId = shopsResult.shops[0].id;
+
+      // Затем загружаем заказы
+      const result = await getFbsOrders(token, shopId, { size: 100, page: 0 });
       console.log('📋 [Orders] FBS Orders:', result);
       if (result.success && result.orders) {
         const ordersList = Array.isArray(result.orders) ? result.orders : [];
