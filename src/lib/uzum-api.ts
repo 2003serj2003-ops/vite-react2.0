@@ -56,13 +56,6 @@ async function apiRequest<T>(
     const status = response.status;
 
     if (!response.ok) {
-      let errorText = '';
-      try {
-        errorText = await response.text();
-      } catch (e) {
-        // ignore
-      }
-      
       if (status === 401) return { error: 'Неверный токен', status };
       if (status === 403) return { error: 'Доступ запрещён', status };
       if (status === 404) return { error: 'Ресурс не найден', status };
