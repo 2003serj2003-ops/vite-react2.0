@@ -11,7 +11,19 @@ export default defineConfig({
         target: 'https://api-seller.uzum.uz',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api\/uzum-proxy/, '/api/seller-openapi'),
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
+            // Читаем целевой path из заголовка
+            const uzumPath = req.headers['x-uzum-path'] || '';
+            // Меняем путь запроса на целевой Uzum API endpoint
+            proxyReq.path = `/api/seller-openapi${uzumPath}`;
+            
+            // Пробрасываем Authorization без изменений
+            if (req.headers['authorization']) {
+              proxyReq.setHeader('Authorization', req.headers['authorization']);
+            }
+          });
+        },
       },
     },
   },

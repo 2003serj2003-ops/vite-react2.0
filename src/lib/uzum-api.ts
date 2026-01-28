@@ -24,20 +24,22 @@ async function apiRequest<T>(
     let response: Response;
 
     if (USE_PROXY) {
-      // Используем прокси
+      // Используем прокси - передаем путь через заголовок
+      const method = options.method || 'GET';
+      const headers: Record<string, string> = {
+        'X-Uzum-Path': endpoint,
+        'Authorization': token,
+        'Accept': 'application/json',
+      };
+      
+      if (options.body || method === 'POST' || method === 'PUT' || method === 'PATCH') {
+        headers['Content-Type'] = 'application/json';
+      }
+
       response = await fetch(PROXY_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          path: endpoint,
-          method: options.method || 'GET',
-          headers: {
-            'Authorization': token,
-          },
-          body: options.body ? JSON.parse(options.body as string) : undefined,
-        }),
+        method,
+        headers,
+        body: options.body,
       });
     } else {
       // Прямой запрос (будет работать только с отключённым CORS)
