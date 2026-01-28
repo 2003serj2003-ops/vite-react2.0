@@ -227,9 +227,11 @@ export async function getFbsOrders(
 
 /**
  * GET /v2/fbs/orders/count - Получить количество заказов
+ * Требуется shopIds (множественное число!)
  */
 export async function getFbsOrdersCount(
   token: string,
+  shopId: number | string,
   params?: {
     status?: string;
   }
@@ -239,6 +241,7 @@ export async function getFbsOrdersCount(
   error?: string;
 }> {
   const queryParams = new URLSearchParams();
+  queryParams.append('shopIds', String(shopId)); // Обратите внимание: shopIds во множественном числе!
   if (params?.status) queryParams.append('status', params.status);
 
   const query = queryParams.toString() ? `?${queryParams.toString()}` : '';

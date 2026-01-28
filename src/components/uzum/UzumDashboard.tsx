@@ -65,9 +65,11 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
       if (shopsResult.success && shopsResult.shops) {
         setShops(shopsResult.shops);
 
-        // Load products for first shop
+        // Load products and orders for first shop
         if (shopsResult.shops.length > 0) {
           const shopId = shopsResult.shops[0].id;
+          
+          // Load products
           const productsResult = await getProducts(token, shopId);
           console.log('📦 Products result:', productsResult);
           
@@ -77,26 +79,26 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
               totalProducts: productsResult.total || 0,
             }));
           }
+
+          // Load orders count (все заказы)
+          const ordersResult = await getFbsOrdersCount(token, shopId);
+          console.log('📋 Orders count result:', ordersResult);
+          if (ordersResult.success && ordersResult.count !== undefined) {
+            setStats(prev => ({
+              ...prev,
+              activeOrders: ordersResult.count || 0,
+            }));
+          }
+
+          // Load pending orders (NEW статус)
+          const pendingResult = await getFbsOrdersCount(token, shopId, { status: 'NEW' });
+          if (pendingResult.success && pendingResult.count !== undefined) {
+            setStats(prev => ({
+              ...prev,
+              pendingOrders: pendingResult.count || 0,
+            }));
+          }
         }
-      }
-
-      // Load orders count
-      const ordersResult = await getFbsOrdersCount(token);
-      console.log('📋 Orders count result:', ordersResult);
-      if (ordersResult.success && ordersResult.count !== undefined) {
-        setStats(prev => ({
-          ...prev,
-          activeOrders: ordersResult.count || 0,
-        }));
-      }
-
-      // Load pending orders
-      const pendingResult = await getFbsOrdersCount(token, { status: 'pending' });
-      if (pendingResult.success && pendingResult.count !== undefined) {
-        setStats(prev => ({
-          ...prev,
-          pendingOrders: pendingResult.count || 0,
-        }));
       }
     } catch (error) {
       console.error('Dashboard load error:', error);
