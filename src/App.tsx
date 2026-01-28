@@ -404,6 +404,9 @@ export default function App() {
     if (!done) {
       setShowOnboarding(true);
       setOnboardingStep(0);
+      setRoute({ name: "home" });
+    } else {
+      setRoute({ name: "home" });
     }
   };
 
