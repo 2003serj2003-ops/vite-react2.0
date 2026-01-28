@@ -282,14 +282,14 @@ function FaqItem({ question, answer, id }: { question: string; answer: string; i
           cursor: "pointer",
           fontSize: "16px",
           fontWeight: "bold",
-          color: "#333"
+          color: "#8B6F47"
         }}
       >
         {question}
         <span style={{ float: "right", fontSize: "18px" }}>{isOpen ? "−" : "+"}</span>
       </button>
       {isOpen && (
-        <div style={{ padding: "0 15px 15px 15px", color: "#555" }}>
+        <div style={{ padding: "0 15px 15px 15px", color: "#8B6F47", lineHeight: "1.6" }}>
           {answer}
         </div>
       )}
