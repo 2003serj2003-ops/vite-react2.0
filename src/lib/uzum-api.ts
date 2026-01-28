@@ -93,7 +93,12 @@ export async function getShops(token: string): Promise<{
     return { success: false, error: result.error };
   }
 
+  console.log('🏪 Raw shops API response:', result.data);
+  
   const shops = Array.isArray(result.data) ? result.data : [];
+  
+  console.log('🏪 Parsed shops:', shops);
+  
   return { success: true, shops };
 }
 
@@ -123,9 +128,14 @@ export async function getProducts(
     return { success: false, error: result.error };
   }
 
+  console.log('📦 Raw products API response:', result.data);
+  
   // API возвращает объект { productList: [...], totalProductsAmount: number }
   const products = result.data?.productList || [];
   const total = result.data?.totalProductsAmount || 0;
+  
+  console.log('📦 Parsed products:', { productsCount: products.length, total });
+  
   return { success: true, products, total };
 }
 
@@ -223,8 +233,13 @@ export async function getFbsOrdersCount(
     return { success: false, error: result.error };
   }
 
+  console.log('📋 Raw orders count API response:', result.data);
+  
   // API возвращает объект с полями или число
   const count = typeof result.data === 'number' ? result.data : (result.data?.total || result.data?.count || 0);
+  
+  console.log('📋 Parsed count:', count);
+  
   return { success: true, count };
 }
 

@@ -354,6 +354,7 @@ export default function App() {
   const [showUzumToken, setShowUzumToken] = useState(false);
   const [showUzumPin, setShowUzumPin] = useState(false);
   const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance'>('dashboard');
+  const [uzumDecryptedToken, setUzumDecryptedToken] = useState(""); // Для использования в API запросах
   console.log('Uzum integration ID:', uzumIntegrationId); // используем переменную
 
   // Загрузка истории комиссий при входе пользователя
@@ -599,9 +600,11 @@ export default function App() {
           shopId: shopsResult.shops[0].id,
           shopName: shopsResult.shops[0].name
         });
+        showToast(`✓ Токен валиден! Магазин: ${shopsResult.shops[0].name} (ID: ${shopsResult.shops[0].id})`);
+      } else {
+        showToast('✓ Токен валиден!');
       }
 
-      showToast('✓ Токен валиден!');
       setUzumLoading(false);
     } catch (error: any) {
       setUzumError(error.message || 'Ошибка проверки токена');
@@ -675,12 +678,14 @@ export default function App() {
 
       setUzumIntegrationId(data.id);
       setUzumConnected(true);
+      setUzumDecryptedToken(uzumToken); // Сохраняем для использования в API
       
-      // Clear sensitive data from state
+      // Clear sensitive data from input state
       setUzumToken('');
       setUzumPin('');
 
-      showToast('✓ Токен сохранён!');
+      const shopInfo = uzumShops.length > 0 ? `Магазин: ${uzumShops[0].name} (ID: ${uzumShops[0].id})` : '';
+      showToast(`✓ Токен сохранён! ${shopInfo}`);
       setUzumLoading(false);
     } catch (error: any) {
       setUzumError(error.message || 'Ошибка сохранения');
@@ -721,6 +726,7 @@ export default function App() {
       setUzumToken('');
       setUzumPin('');
       setUzumError('');
+      setUzumDecryptedToken('');
 
       showToast('✓ Интеграция отключена');
       setUzumLoading(false);
@@ -2796,7 +2802,7 @@ export default function App() {
                   {uzumCurrentPage === 'dashboard' && (
                     <UzumDashboard 
                       lang={lang} 
-                      token={uzumToken} 
+                      token={uzumDecryptedToken} 
                       onNavigate={(page) => setUzumCurrentPage(page)}
                       onNavigateBack={() => setRoute({ name: 'home' })}
                     />
@@ -2804,7 +2810,7 @@ export default function App() {
                   {uzumCurrentPage === 'products' && (
                     <UzumProducts 
                       lang={lang} 
-                      token={uzumToken}
+                      token={uzumDecryptedToken}
                       onNavigateBack={() => setUzumCurrentPage('dashboard')}
                       onNavigateHome={() => setRoute({ name: 'home' })}
                     />
@@ -2812,7 +2818,7 @@ export default function App() {
                   {uzumCurrentPage === 'orders' && (
                     <UzumOrders 
                       lang={lang} 
-                      token={uzumToken}
+                      token={uzumDecryptedToken}
                       onNavigateBack={() => setUzumCurrentPage('dashboard')}
                       onNavigateHome={() => setRoute({ name: 'home' })}
                     />
@@ -2820,7 +2826,7 @@ export default function App() {
                   {uzumCurrentPage === 'finance' && (
                     <UzumFinance 
                       lang={lang} 
-                      token={uzumToken}
+                      token={uzumDecryptedToken}
                       onNavigateBack={() => setUzumCurrentPage('dashboard')}
                       onNavigateHome={() => setRoute({ name: 'home' })}
                     />
@@ -3068,6 +3074,85 @@ export default function App() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Shop Info Card - показывается после успешной проверки токена */}
+                  {uzumShops.length > 0 && (
+                    <div className="cardCream" style={{
+                      background: "linear-gradient(135deg, #dcfce7, #bbf7d0)",
+                      border: "2px solid #10b981"
+                    }}>
+                      <div style={{
+                        fontSize: "16px",
+                        fontWeight: 900,
+                        marginBottom: "12px",
+                        color: "#047857",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px"
+                      }}>
+                        <span>✅</span>
+                        Токен проверен успешно!
+                      </div>
+                      <div style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "12px"
+                      }}>
+                        {uzumShops.map((shop: any, idx: number) => (
+                          <div
+                            key={idx}
+                            style={{
+                              padding: "12px",
+                              background: "white",
+                              borderRadius: "8px",
+                              border: "1px solid rgba(16, 185, 129, 0.3)"
+                            }}
+                          >
+                            <div style={{
+                              fontSize: "16px",
+                              fontWeight: 700,
+                              marginBottom: "6px",
+                              color: "#111",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px"
+                            }}>
+                              <span style={{ fontSize: "24px" }}>🏪</span>
+                              {shop.name}
+                            </div>
+                            <div style={{
+                              fontSize: "14px",
+                              color: "#666",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px"
+                            }}>
+                              <span style={{ fontSize: "16px" }}>🆔</span>
+                              <strong>Shop ID:</strong> {shop.id}
+                            </div>
+                            {shop.description && (
+                              <div style={{
+                                fontSize: "13px",
+                                color: "#888",
+                                marginTop: "6px"
+                              }}>
+                                {shop.description}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{
+                        fontSize: "13px",
+                        color: "#047857",
+                        marginTop: "12px",
+                        fontWeight: 600,
+                        textAlign: "center"
+                      }}>
+                        💾 Теперь нажмите "Сохранить" чтобы завершить настройку
+                      </div>
+                    </div>
+                  )}
 
                   {/* Info Card */}
                   <div className="cardCream" style={{
