@@ -13,6 +13,7 @@ import UzumStatusBlock from "./components/UzumStatusBlock";
 import GettingStartedBlock from "./components/GettingStartedBlock";
 import ContextualTooltip from "./components/ContextualTooltip";
 import ContextualFaqLink from "./components/ContextualFaqLink";
+import UsersManagement from "./components/UsersManagement";
 // @ts-ignore - EmptyState used in child components
 import EmptyState from "./components/EmptyState";
 
@@ -877,8 +878,59 @@ export default function App() {
     if (!f.error) setFaq((f.data ?? []) as FaqRow[]);
   };
 
+  // Load microcopy
+  const loadMicrocopy = async () => {
+    const { data, error } = await supabase.from("microcopy").select("*");
+    if (error) {
+      console.error("[MICROCOPY] Error loading:", error);
+      return;
+    }
+    const map: Record<string, { ru: string; uz: string }> = {};
+    data?.forEach((item: any) => {
+      map[item.key] = { ru: item.text_ru, uz: item.text_uz };
+    });
+    setMicrocopy(map);
+    setMicrocopyList(data || []);
+  };
+
+  // Helper to get microcopy with fallback (для будущего использования)
+  /* 
+  const getMicrocopy = (key: string, fallbackRu: string, fallbackUz: string) => {
+    if (microcopy[key]) {
+      return lang === "ru" ? microcopy[key].ru : microcopy[key].uz;
+    }
+    return lang === "ru" ? fallbackRu : fallbackUz;
+  };
+  */
+
+  const adminSaveMicrocopy = async () => {
+    if (!microcopyForm.key || !microcopyForm.text_ru || !microcopyForm.text_uz) {
+      showToast("Заполните обязательные поля");
+      return;
+    }
+    const resp = await supabase.from("microcopy").insert(microcopyForm as any);
+    if (resp.error) {
+      showToast(t.error);
+      return;
+    }
+    showToast(t.ok);
+    setMicrocopyForm({ key: "", text_ru: "", text_uz: "", context: "", description: "" });
+    await loadMicrocopy();
+  };
+
+  const adminDeleteMicrocopy = async (id: string) => {
+    const resp = await supabase.from("microcopy").delete().eq("id", id);
+    if (resp.error) {
+      showToast(t.error);
+      return;
+    }
+    showToast(t.ok);
+    await loadMicrocopy();
+  };
+
   useEffect(() => {
     loadPublic();
+    loadMicrocopy();
   }, []);
 
   // protect admin route
@@ -1077,10 +1129,15 @@ export default function App() {
         return;
       }
 
-      // Увеличиваем счётчик
+      // Увеличиваем счётчик и записываем использование
+      const telegramId = (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id;
       await supabase
         .from('access_codes')
-        .update({ uses_count: data.uses_count + 1 })
+        .update({ 
+          uses_count: data.uses_count + 1,
+          last_used_at: new Date().toISOString(),
+          last_used_by_telegram_id: telegramId || null
+        })
         .eq('id', data.id);
 
       const userRole = data.role || "viewer";
@@ -1149,7 +1206,7 @@ export default function App() {
   };
 
   // ---------- Admin UI helpers ----------
-  const [adminTab, setAdminTab] = useState<"" | "sections" | "cards" | "news" | "faq" | "codes">("sections");
+  const [adminTab, setAdminTab] = useState<"" | "sections" | "cards" | "news" | "faq" | "codes" | "users" | "microcopy">("sections");
 
   const [secForm, setSecForm] = useState({ key: "", title_ru: "", title_uz: "", icon: "📄", sort: 100 });
   const [cardForm, setCardForm] = useState({
@@ -1178,10 +1235,21 @@ export default function App() {
     answer_ru: "",
     answer_uz: "",
     sort: 0,
+    slug: "",
+    category: "general",
   });
   const [codeForm, setCodeForm] = useState({ code: "", role: "viewer", max_uses: null as number | null, expires_at: "", note: "" });
   const [accessCodes, setAccessCodes] = useState<any[]>([]);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [microcopy, setMicrocopy] = useState<Record<string, { ru: string; uz: string }>>({});
+  const [microcopyList, setMicrocopyList] = useState<any[]>([]);
+  const [microcopyForm, setMicrocopyForm] = useState({
+    key: "",
+    text_ru: "",
+    text_uz: "",
+    context: "",
+    description: "",
+  });
 
   const adminSignOut = async () => {
     localStorage.removeItem("admin_ok");
@@ -1394,6 +1462,8 @@ export default function App() {
       answer_ru: "",
       answer_uz: "",
       sort: 0,
+      slug: "",
+      category: "general",
     });
     await loadPublic();
   };
@@ -1822,7 +1892,10 @@ export default function App() {
                     }}
                   />
                   <div style={{ fontSize: "11px", color: "rgba(0,0,0,.5)", marginTop: "6px", textAlign: "center" }}>
-                    {lang === "ru" ? "🔐 Код нужен для входа в систему" : "🔐 Tizimga kirish uchun kod kerak"}
+                    {microcopy["login_code_info"] 
+                      ? (lang === "ru" ? microcopy["login_code_info"].ru : microcopy["login_code_info"].uz)
+                      : (lang === "ru" ? "🔐 Код нужен для входа в систему" : "🔐 Tizimga kirish uchun kod kerak")
+                    }
                   </div>
                 </div>
 
@@ -4394,15 +4467,27 @@ export default function App() {
                       <button className="btnGhost" onClick={() => setAdminTab("codes")}>
                         🔑 {t.manageCodes}
                       </button>
+                      <button className="btnGhost" onClick={() => setAdminTab("microcopy")}>
+                        ✏️ Микро-тексты
+                      </button>
                     </>
                   )}
                   {canFullAccess() && (
-                    <button className="btnGhost" onClick={async () => { await runCrawl(); alert('Краулинг завершён'); }}>
-                      🚀 Краулинг
-                    </button>
+                    <>
+                      <button className="btnGhost" onClick={() => setAdminTab("users")}>
+                        👥 Пользователи
+                      </button>
+                      <button className="btnGhost" onClick={async () => { await runCrawl(); alert('Краулинг завершён'); }}>
+                        🚀 Краулинг
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
+
+              {canFullAccess() && adminTab === "users" && (
+                <UsersManagement userRole={userRole} />
+              )}
 
               {canEdit() && adminTab === "sections" && (
                 <div className="cardCream">
@@ -4970,6 +5055,24 @@ export default function App() {
                     <div className="split">
                       <input
                         className="input"
+                        placeholder="Slug (для ContextualFaqLink)"
+                        value={faqForm.slug}
+                        onChange={(e) => setFaqForm({ ...faqForm, slug: e.target.value })}
+                      />
+                      <select
+                        className="input"
+                        value={faqForm.category}
+                        onChange={(e) => setFaqForm({ ...faqForm, category: e.target.value })}
+                      >
+                        <option value="general">General</option>
+                        <option value="calculator">Calculator</option>
+                        <option value="commissions">Commissions</option>
+                        <option value="uzum">Uzum</option>
+                      </select>
+                    </div>
+                    <div className="split">
+                      <input
+                        className="input"
                         type="number"
                         placeholder={t.sort}
                         value={faqForm.sort}
@@ -5011,6 +5114,93 @@ export default function App() {
                         </div>
                       ))
                     )}
+                  </div>
+                </>
+              )}
+
+              {canManage() && adminTab === "microcopy" && (
+                <>
+                  <div className="headerBlock">
+                    <div className="h2">✏️ Микро-тексты</div>
+                    <div className="sub">Управление текстовыми фрагментами UI</div>
+                  </div>
+
+                  <div className="cardCream">
+                    <div style={{ fontWeight: 950, marginBottom: 12 }}>Добавить</div>
+                    <div className="split">
+                      <input
+                        className="input"
+                        placeholder="Key (уникальный ключ)"
+                        value={microcopyForm.key}
+                        onChange={(e) => setMicrocopyForm({ ...microcopyForm, key: e.target.value })}
+                      />
+                      <input
+                        className="input"
+                        placeholder="Context (login, home, uzum...)"
+                        value={microcopyForm.context}
+                        onChange={(e) => setMicrocopyForm({ ...microcopyForm, context: e.target.value })}
+                      />
+                    </div>
+                    <div className="split">
+                      <input
+                        className="input"
+                        placeholder="Текст (RU)"
+                        value={microcopyForm.text_ru}
+                        onChange={(e) => setMicrocopyForm({ ...microcopyForm, text_ru: e.target.value })}
+                      />
+                      <input
+                        className="input"
+                        placeholder="Текст (UZ)"
+                        value={microcopyForm.text_uz}
+                        onChange={(e) => setMicrocopyForm({ ...microcopyForm, text_uz: e.target.value })}
+                      />
+                    </div>
+                    <input
+                      className="input"
+                      placeholder="Описание (для админа)"
+                      value={microcopyForm.description}
+                      onChange={(e) => setMicrocopyForm({ ...microcopyForm, description: e.target.value })}
+                      style={{ marginTop: 10 }}
+                    />
+                    <button className="btnPrimary" onClick={adminSaveMicrocopy} style={{ marginTop: 10, width: "100%" }}>
+                      Сохранить
+                    </button>
+                  </div>
+
+                  <div className="cardCream" style={{ marginTop: 16 }}>
+                    <div style={{ fontWeight: 950, marginBottom: 12 }}>Список</div>
+                    <div className="adminListContainer">
+                      {microcopyList.map((item) => (
+                        <div key={item.id} style={{ 
+                          padding: "12px 16px", 
+                          background: "rgba(111,0,255,.05)", 
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px"
+                        }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 700, color: "#6F00FF", marginBottom: "4px", fontFamily: "monospace", fontSize: "13px" }}>
+                              {item.key}
+                            </div>
+                            <div style={{ fontSize: "14px", color: "#111", marginBottom: "2px" }}>{item.text_ru}</div>
+                            <div style={{ fontSize: "13px", color: "#666" }}>{item.text_uz}</div>
+                            {item.context && (
+                              <div style={{ fontSize: "11px", color: "#999", marginTop: "4px" }}>
+                                Context: {item.context}
+                              </div>
+                            )}
+                          </div>
+                          <button 
+                            className="btnGhost" 
+                            onClick={() => adminDeleteMicrocopy(item.id)}
+                            style={{ flexShrink: 0, padding: "6px 12px", fontSize: "12px" }}
+                          >
+                            Удалить
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </>
               )}
