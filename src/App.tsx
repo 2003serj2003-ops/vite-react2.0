@@ -12,6 +12,7 @@ import UzumFinance from "./components/uzum/UzumFinance";
 import UzumStatusBlock from "./components/UzumStatusBlock";
 import GettingStartedBlock from "./components/GettingStartedBlock";
 import ContextualTooltip from "./components/ContextualTooltip";
+import ContextualFaqLink from "./components/ContextualFaqLink";
 // @ts-ignore - EmptyState used in child components
 import EmptyState from "./components/EmptyState";
 
@@ -263,11 +264,11 @@ function BottomBar(props: {
   );
 }
 
-function FaqItem({ question, answer }: { question: string; answer: string }) {
+function FaqItem({ question, answer, id }: { question: string; answer: string; id?: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="cardCream" style={{ marginBottom: "10px" }}>
+    <div className="cardCream" style={{ marginBottom: "10px" }} data-faq-id={id}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
@@ -1820,6 +1821,9 @@ export default function App() {
                       height: "50px"
                     }}
                   />
+                  <div style={{ fontSize: "11px", color: "rgba(0,0,0,.5)", marginTop: "6px", textAlign: "center" }}>
+                    {lang === "ru" ? "🔐 Код нужен для входа в систему" : "🔐 Tizimga kirish uchun kod kerak"}
+                  </div>
                 </div>
 
                 {/* Правила - аккордеон */}
@@ -1948,7 +1952,7 @@ export default function App() {
                     marginBottom: "14px"
                   }}
                 >
-                  {t.continue}
+                  {lang === "ru" ? "✅ Продолжить" : "✅ Davom etish"}
                 </button>
 
                 {/* Информация о получении кода */}
@@ -2178,6 +2182,13 @@ export default function App() {
                   </span>
                 </div>
               </div>
+            </div>
+
+            {/* Дружелюбное приветствие */}
+            <div style={{ padding: "0 16px 12px", fontSize: "13px", color: "rgba(0,0,0,.7)" }}>
+              {lang === "ru" 
+                ? "👋 Мы поможем разобраться и начать продажи" 
+                : "👋 Biz sizga yangiliklari boshlashga yordam beramiz"}
             </div>
 
             {/* Блок статуса Uzum */}
@@ -3354,7 +3365,7 @@ export default function App() {
 
             <div className="list">
               {faq.map((item) => (
-                <FaqItem key={item.id} question={lang === "ru" ? item.question_ru : item.question_uz} answer={lang === "ru" ? item.answer_ru : item.answer_uz} />
+                <FaqItem key={item.id} id={item.id} question={lang === "ru" ? item.question_ru : item.question_uz} answer={lang === "ru" ? item.answer_ru : item.answer_uz} />
               ))}
             </div>
 
@@ -3704,6 +3715,54 @@ export default function App() {
                                     {lang === "ru" ? "Подключите Uzum →" : "Uzumni ulang →"}
                                   </span>
                                 </div>
+
+                                {/* Контекстный FAQ */}
+                                <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
+                                  <ContextualFaqLink
+                                    text={lang === "ru" ? "Почему это примерный расчёт?" : "Nima uchun bu tahlili hisoblash?"}
+                                    onClick={() => {
+                                      // Найди FAQ с вопросом о расчёте и открой его
+                                      const faqItem = faq.find(f => 
+                                        lang === "ru" 
+                                          ? f.question_ru?.includes("расчёт") || f.question_ru?.includes("примерн")
+                                          : f.question_uz?.includes("hisoblash")
+                                      );
+                                      if (faqItem) {
+                                        setRoute({ name: "faq" });
+                                        // Будет открыт FAQ с фокусом на вопрос
+                                        setTimeout(() => {
+                                          const elem = document.querySelector(`[data-faq-id="${faqItem.id}"]`) as HTMLElement;
+                                          if (elem) {
+                                            elem.click();
+                                            elem.scrollIntoView({ behavior: "smooth", block: "center" });
+                                          }
+                                        }, 100);
+                                      }
+                                    }}
+                                  />
+                                  <ContextualFaqLink
+                                    text={lang === "ru" ? "Что влияет на прибыль?" : "Foydaga nima ta'sir qiladi?"}
+                                    onClick={() => {
+                                      const faqItem = faq.find(f => 
+                                        lang === "ru" 
+                                          ? f.question_ru?.includes("прибыль") || f.question_ru?.includes("влияет")
+                                          : f.question_uz?.includes("foyda")
+                                      );
+                                      if (faqItem) {
+                                        setRoute({ name: "faq" });
+                                        setTimeout(() => {
+                                          const elem = document.querySelector(`[data-faq-id="${faqItem.id}"]`) as HTMLElement;
+                                          if (elem) {
+                                            elem.click();
+                                            elem.scrollIntoView({ behavior: "smooth", block: "center" });
+                                          }
+                                        }, 100);
+                                      } else {
+                                        setRoute({ name: "faq" });
+                                      }
+                                    }}
+                                  />
+                                </div>
                               </>
                             );
                           })()}
@@ -3877,6 +3936,30 @@ export default function App() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Контекстный FAQ */}
+                  <ContextualFaqLink
+                    text={lang === "ru" ? "От чего зависит комиссия Uzum?" : "Uzum komissiyasi nimaga bog'liq?"}
+                    onClick={() => {
+                      const faqItem = faq.find(f => 
+                        lang === "ru" 
+                          ? f.question_ru?.toLowerCase().includes("комиссия") && f.question_ru?.toLowerCase().includes("зависит")
+                          : f.question_uz?.toLowerCase().includes("komissiya")
+                      );
+                      if (faqItem) {
+                        setRoute({ name: "faq" });
+                        setTimeout(() => {
+                          const elem = document.querySelector(`[data-faq-id="${faqItem.id}"]`) as HTMLElement;
+                          if (elem) {
+                            elem.click();
+                            elem.scrollIntoView({ behavior: "smooth", block: "center" });
+                          }
+                        }, 100);
+                      } else {
+                        setRoute({ name: "faq" });
+                      }
+                    }}
+                  />
 
                   {/* Кнопка очистки */}
                   <button
