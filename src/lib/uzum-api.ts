@@ -6,11 +6,10 @@
  * Authorization header: <token>
  */
 
-// Используем прокси для dev окружения и Cloudflare Functions для продакшена
-const USE_PROXY = true;
-const PROXY_URL = import.meta.env.DEV 
-  ? '/api/uzum-proxy'  // Vite proxy в разработке
-  : '/api/uzum-proxy'; // Cloudflare/Vercel Functions в продакшене
+// Используем прокси для dev окружения и прямые запросы для продакшена
+// В продакшене прокси не работает из-за блокировки Uzum API
+const USE_PROXY = import.meta.env.DEV;
+const PROXY_URL = '/api/uzum-proxy';
 
 /**
  * Base API request handler
@@ -40,7 +39,7 @@ async function apiRequest<T>(
         }),
       });
     } else {
-      // Прямой запрос (будет работать только с отключённым CORS)
+      // Прямой запрос (продакшен - Uzum API разрешает CORS)
       const url = `https://api-seller.uzum.uz/api/seller-openapi${endpoint}`;
       response = await fetch(url, {
         ...options,
@@ -48,8 +47,12 @@ async function apiRequest<T>(
           'Authorization': token,
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'Origin': window.location.origin,
+          'Referer': window.location.href,
           ...options.headers,
         },
+        mode: 'cors',
+        credentials: 'omit',
       });
     }
 
