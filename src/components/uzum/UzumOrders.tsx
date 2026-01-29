@@ -93,6 +93,24 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
 
   const t = T[lang];
 
+  // Функция для получения названия статуса
+  const getStatusLabel = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      'CREATED': t.created,
+      'PACKING': t.packing,
+      'PENDING_DELIVERY': t.pendingDelivery,
+      'DELIVERING': t.delivering,
+      'DELIVERED': t.delivered,
+      'ACCEPTED_AT_DP': t.acceptedAtDp,
+      'DELIVERED_TO_CUSTOMER_DELIVERY_POINT': t.deliveredToDp,
+      'COMPLETED': t.completed,
+      'CANCELED': t.canceled,
+      'PENDING_CANCELLATION': t.pendingCancellation,
+      'RETURNED': t.returned,
+    };
+    return statusMap[status] || status;
+  };
+
   const statusOptions = [
     { value: 'all', label: t.all },
     { value: 'CREATED', label: t.created },
@@ -149,13 +167,17 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
 
       // Объединяем все заказы
       let allOrders: any[] = [];
-      results.forEach(result => {
+      results.forEach((result, index) => {
+        console.log(`📋 [Orders] Status ${statuses[index]}:`, result.orders?.length || 0, 'orders');
         if (result.success && result.orders) {
           allOrders = allOrders.concat(result.orders);
         }
       });
 
       console.log('📋 [Orders] Total FBS Orders:', allOrders.length);
+      if (allOrders.length > 0) {
+        console.log('📋 [Orders] Sample order:', allOrders[0]);
+      }
       setOrders(allOrders);
       setFilteredOrders(allOrders);
     } catch (error) {
@@ -425,10 +447,7 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
                     fontSize: '13px',
                     fontWeight: '600',
                   }}>
-                    {order.status === 'pending' && t.pending}
-                    {order.status === 'confirmed' && t.confirmed}
-                    {order.status === 'cancelled' && t.cancelled}
-                    {!['pending', 'confirmed', 'cancelled'].includes(order.status) && order.status}
+                    {getStatusLabel(order.status)}
                   </div>
                 </div>
                 <div style={{
