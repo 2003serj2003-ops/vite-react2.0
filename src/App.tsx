@@ -2,7 +2,6 @@ import { type ReactNode, useEffect, useMemo, useState, useRef } from "react";
 import { supabase } from "./supabase";
 import "./App.css";
 // import Chat from "./Chat"; // ВРЕМЕННО ОТКЛЮЧЕНО - раскомментировать когда доработаешь
-import { runCrawl } from "../scripts/crawls";
 import { encryptToken, validatePin, isCryptoAvailable } from "./lib/crypto";
 import { getShops } from "./lib/uzum-api";
 import UzumDashboard from "./components/uzum/UzumDashboard";
@@ -385,7 +384,6 @@ export default function App() {
   // Проверка прав доступа
   const canEdit = () => ["editor", "admin", "owner"].includes(userRole);
   const canManage = () => ["admin", "owner"].includes(userRole);
-  const canFullAccess = () => userRole === "owner";
 
   // Загрузка профиля пользователя из базы
   const loadUserProfile = async (telegramId: string) => {
@@ -4261,11 +4259,6 @@ export default function App() {
                         🔑 {t.manageCodes}
                       </button>
                     </>
-                  )}
-                  {canFullAccess() && (
-                    <button className="btnGhost" onClick={async () => { await runCrawl(); alert('Краулинг завершён'); }}>
-                      🚀 Краулинг
-                    </button>
                   )}
                 </div>
               </div>
