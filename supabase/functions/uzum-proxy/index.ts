@@ -37,6 +37,13 @@ serve(async (req: Request) => {
 
     const { path, method = 'GET', headers = {}, body } = requestData;
 
+    console.log('[Uzum Proxy] Parsed request:', {
+      path,
+      method,
+      hasBody: !!body,
+      bodyType: body ? typeof body : 'none'
+    });
+
     if (!path) {
       return new Response(
         JSON.stringify({ error: 'Path is required' }),
@@ -59,12 +66,18 @@ serve(async (req: Request) => {
       },
     };
 
-    if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+    // НЕ добавляем body для GET запросов
+    if (body && method !== 'GET' && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
       requestOptions.body = JSON.stringify(body);
+      console.log('[Uzum Proxy] Added body to request');
     }
 
     console.log(`[Uzum Proxy] ${method} ${uzumApiUrl}`);
-    console.log('[Uzum Proxy] Headers:', JSON.stringify(requestOptions.headers));
+    console.log('[Uzum Proxy] Request options:', JSON.stringify({
+      method: requestOptions.method,
+      hasBody: !!requestOptions.body,
+      headers: requestOptions.headers
+    }));
 
     const response = await fetch(uzumApiUrl, requestOptions);
     const data = await response.text();
