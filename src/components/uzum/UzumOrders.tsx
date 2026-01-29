@@ -134,14 +134,30 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
 
       const shopId = shopsResult.shops[0].id;
 
-      // Затем загружаем заказы (без параметров size/page - API вернет все)
-      const result = await getFbsOrders(token, shopId);
-      console.log('📋 [Orders] FBS Orders:', result);
-      if (result.success && result.orders) {
-        const ordersList = Array.isArray(result.orders) ? result.orders : [];
-        setOrders(ordersList);
-        setFilteredOrders(ordersList);
-      }
+      // API требует обязательный параметр status
+      // Загружаем заказы по всем статусам параллельно
+      const statuses = [
+        'CREATED', 'PACKING', 'PENDING_DELIVERY', 
+        'DELIVERING', 'DELIVERED', 'ACCEPTED_AT_DP',
+        'DELIVERED_TO_CUSTOMER_DELIVERY_POINT',
+        'COMPLETED', 'CANCELED', 'PENDING_CANCELLATION', 'RETURNED'
+      ];
+
+      const results = await Promise.all(
+        statuses.map(status => getFbsOrders(token, shopId, { status }))
+      );
+
+      // Объединяем все заказы
+      let allOrders: any[] = [];
+      results.forEach(result => {
+        if (result.success && result.orders) {
+          allOrders = allOrders.concat(result.orders);
+        }
+      });
+
+      console.log('📋 [Orders] Total FBS Orders:', allOrders.length);
+      setOrders(allOrders);
+      setFilteredOrders(allOrders);
     } catch (error) {
       console.error('Orders load error:', error);
     } finally {
