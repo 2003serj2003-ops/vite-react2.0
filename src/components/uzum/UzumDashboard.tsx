@@ -22,10 +22,20 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
   });
   const [loading, setLoading] = useState(true);
   const [showWeeklyChart, setShowWeeklyChart] = useState(false);
-  const [dateRange] = useState({
-    start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
-    end: new Date().toISOString().split('T')[0]
-  });
+  const [datePeriod, setDatePeriod] = useState<7 | 10 | 30>(7);
+
+  // Вычисляем диапазон дат на основе выбранного периода
+  function getDateRange() {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - datePeriod);
+    return {
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0]
+    };
+  }
+
+  const dateRange = getDateRange();
 
   const T = {
     ru: {
@@ -57,6 +67,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
       finance: 'Финансы',
       viewAll: 'Смотреть все',
       weeklyChart: 'Недельный обзор заказов',
+      last7days: 'Последние 7 дней',
+      last10days: 'Последние 10 дней',
+      last30days: 'Последние 30 дней',
     },
     uz: {
       title: 'Bosh sahifa',
@@ -87,6 +100,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
       finance: 'Moliya',
       viewAll: 'Barchasini korish',
       weeklyChart: 'Haftalik buyurtmalar sharhi',
+      last7days: 'Oxirgi 7 kun',
+      last10days: 'Oxirgi 10 kun',
+      last30days: 'Oxirgi 30 kun',
     },
   };
 
@@ -94,7 +110,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
 
   useEffect(() => {
     loadDashboard();
-  }, [token]);
+  }, [token, datePeriod]);
 
   async function loadDashboard() {
     setLoading(true);
@@ -246,6 +262,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
               justifyContent: 'space-between',
               alignItems: 'center',
               marginBottom: '20px',
+              flexWrap: 'wrap',
+              gap: '12px',
             }}>
               <h2 style={{
                 fontSize: '18px',
@@ -256,10 +274,58 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                 {t.financialData}
               </h2>
               <div style={{
-                fontSize: '13px',
-                color: '#666',
+                display: 'flex',
+                gap: '8px',
+                alignItems: 'center',
               }}>
-                {t.dateRange}: {dateRange.start} — {dateRange.end}
+                <button
+                  onClick={() => setDatePeriod(7)}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: datePeriod === 7 ? '#7c3aed' : '#f3f4f6',
+                    color: datePeriod === 7 ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: datePeriod === 7 ? 600 : 400,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {t.last7days}
+                </button>
+                <button
+                  onClick={() => setDatePeriod(10)}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: datePeriod === 10 ? '#7c3aed' : '#f3f4f6',
+                    color: datePeriod === 10 ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: datePeriod === 10 ? 600 : 400,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {t.last10days}
+                </button>
+                <button
+                  onClick={() => setDatePeriod(30)}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: datePeriod === 30 ? '#7c3aed' : '#f3f4f6',
+                    color: datePeriod === 30 ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: datePeriod === 30 ? 600 : 400,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {t.last30days}
+                </button>
               </div>
             </div>
             <div style={{
