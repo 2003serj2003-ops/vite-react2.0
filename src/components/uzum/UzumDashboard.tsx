@@ -166,13 +166,10 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             pendingOrders: pendingTotal,
           }));
 
-          // Load finance data - orders and expenses
-          const dateFromMs = new Date(dateRange.start).getTime();
-          const dateToMs = new Date(dateRange.end).getTime();
+          // Load finance data - orders and expenses (without date filter as API doesn't support it properly)
+          console.log('📊 Loading finance data...');
 
-          console.log('📊 Loading finance data for period:', dateRange);
-
-          // Load finance orders (revenue)
+          // Load finance orders (revenue) - load ALL orders
           let allFinanceOrders: any[] = [];
           let page = 0;
           let hasMore = true;
@@ -181,8 +178,6 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             const financeResult = await getFinanceOrders(token, shopId, {
               size: 100,
               page,
-              dateFrom: dateFromMs,
-              dateTo: dateToMs,
             });
             
             if (financeResult.success && financeResult.orders && financeResult.orders.length > 0) {
@@ -200,9 +195,28 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
 
           console.log('💰 Finance orders loaded:', allFinanceOrders.length);
 
-          // Calculate revenue (sum of all order amounts)
-          const revenue = allFinanceOrders.reduce((sum, order) => {
-            return sum + (order.totalPrice || order.price || 0);
+          // Filter by date range manually
+          const dateFromMs = new Date(dateRange.start).getTime();
+          const dateToMs = new Date(dateRange.end).getTime();
+
+          const filteredOrders = allFinanceOrders.filter(order => {
+            const orderDate = order.date || order.createdAt || 0;
+            return orderDate >= dateFromMs && orderDate <= dateToMs;
+          });
+
+          console.log(`💰 Filtered orders for period ${dateRange.start} - ${dateRange.end}: ${filteredOrders.length}`);
+
+          // Calculate revenue (sum of sellPrice * amount for non-canceled orders)
+          const revenue = filteredOrders.reduce((sum, order) => {
+            // Skip canceled orders
+            if (order.status === 'CANCELED' || order.cancelled) return sum;
+            return sum + ((order.sellPrice || 0) * (order.amount || 1));
+          }, 0);
+
+          // Calculate profit (sellerProfit)
+          const totalProfit = filteredOrders.reduce((sum, order) => {
+            if (order.status === 'CANCELED' || order.cancelled) return sum;
+            return sum + ((order.sellerProfit || 0) * (order.amount || 1));
           }, 0);
 
           // Load expenses
@@ -214,8 +228,6 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             const expensesResult = await getFinanceExpenses(token, shopId, {
               size: 100,
               page,
-              dateFrom: dateFromMs,
-              dateTo: dateToMs,
             });
 
             if (expensesResult.success && expensesResult.expenses && expensesResult.expenses.length > 0) {
@@ -233,23 +245,34 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
 
           console.log('💸 Expenses loaded:', allExpenses.length);
 
+          // Filter expenses by date range
+          const filteredExpenses = allExpenses.filter(expense => {
+            const expenseDate = expense.dateCreated || expense.createdAt || 0;
+            return expenseDate >= dateFromMs && expenseDate <= dateToMs;
+          });
+
+          console.log(`💸 Filtered expenses for period: ${filteredExpenses.length}`);
+
           // Calculate total expenses
-          const totalExpenses = allExpenses.reduce((sum, expense) => {
+          const totalExpenses = filteredExpenses.reduce((sum, expense) => {
             return sum + (expense.paymentPrice * expense.amount || 0);
           }, 0);
-
-          // Calculate profit
-          const profit = revenue - totalExpenses;
 
           // Update stats with finance data
           setStats(prev => ({
             ...prev,
             revenue,
             toPay: revenue, // К выплате = выручка (упрощенно)
-            profit,
+            profit: totalProfit,
           }));
 
-          console.log('📊 Finance summary:', { revenue, totalExpenses, profit });
+          console.log('📊 Finance summary:', { 
+            revenue, 
+            totalExpenses, 
+            profit: totalProfit,
+            ordersInPeriod: filteredOrders.length,
+            expensesInPeriod: filteredExpenses.length
+          });
         }
       }
     } catch (error) {
