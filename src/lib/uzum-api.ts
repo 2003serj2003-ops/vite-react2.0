@@ -236,7 +236,9 @@ export async function getFbsOrders(
   const queryParams = new URLSearchParams();
   // FBS API требует только shopIds (БЕЗ shopId!)
   queryParams.append('shopIds', String(shopId));
-  queryParams.append('size', String(params?.size || 20));
+  // API поддерживает максимум size=50
+  const size = Math.min(params?.size || 20, 50);
+  queryParams.append('size', String(size));
   queryParams.append('page', String(params?.page || 0));
   if (params?.status) queryParams.append('status', params.status);
 
