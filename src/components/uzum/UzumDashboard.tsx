@@ -20,6 +20,16 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
     fboStock: 0,
     fbsStock: 0,
   });
+  const [financeBreakdown, setFinanceBreakdown] = useState({
+    // Расходы
+    marketing: 0,
+    commission: 0,
+    logistics: 0,
+    fines: 0,
+    // Доходы (из заказов)
+    totalCommission: 0,
+    totalLogistics: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [showWeeklyChart, setShowWeeklyChart] = useState(false);
   const [datePeriod, setDatePeriod] = useState<7 | 10 | 30>(7);
@@ -252,10 +262,44 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
 
           console.log(`💸 Filtered expenses for period (${datePeriod} days): ${filteredExpenses.length}`);
 
-          // Calculate total expenses (fix calculation with proper parentheses)
+          // Calculate expenses by category
+          const expensesByCategory = {
+            marketing: 0,
+            commission: 0,
+            logistics: 0,
+            fines: 0,
+          };
+
+          filteredExpenses.forEach(expense => {
+            const amount = (expense.paymentPrice || 0) * (expense.amount || 1);
+            const source = expense.source?.toLowerCase() || '';
+            
+            if (source.includes('marketing')) {
+              expensesByCategory.marketing += amount;
+            } else if (source.includes('logist')) {
+              expensesByCategory.logistics += amount;
+            } else if (source.includes('uzum') || source.includes('market')) {
+              expensesByCategory.fines += amount; // FBS штрафы/комиссии
+            }
+          });
+
+          // Calculate total expenses
           const totalExpenses = filteredExpenses.reduce((sum, expense) => {
             return sum + ((expense.paymentPrice || 0) * (expense.amount || 1));
           }, 0);
+
+          // Calculate income breakdown from orders (commission + logistics charged in orders)
+          const incomeBreakdown = {
+            totalCommission: 0,
+            totalLogistics: 0,
+          };
+
+          filteredOrders.forEach(order => {
+            if (order.status !== 'CANCELED' && !order.cancelled) {
+              incomeBreakdown.totalCommission += (order.commission || 0) * (order.amount || 1);
+              incomeBreakdown.totalLogistics += (order.logisticDeliveryFee || 0) * (order.amount || 1);
+            }
+          });
 
           // Update stats with finance data
           setStats(prev => ({
@@ -265,6 +309,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             profit: totalProfit,
           }));
 
+          // Update finance breakdown
+          setFinanceBreakdown({
+            ...expensesByCategory,
+            ...incomeBreakdown,
+          });
+
           console.log('📊 Finance summary:', { 
             period: `Last ${datePeriod} days`,
             dateRangeMs: { start: dateRange.startMs, end: dateRange.endMs },
@@ -273,6 +323,10 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             profit: totalProfit,
             ordersInPeriod: filteredOrders.length,
             expensesInPeriod: filteredExpenses.length,
+            breakdown: {
+              expenses: expensesByCategory,
+              income: incomeBreakdown,
+            },
             sampleOrderDate: filteredOrders[0]?.date || 'no orders',
             sampleExpenseDate: filteredExpenses[0]?.dateCreated || 'no expenses'
           });
@@ -607,10 +661,10 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[
-                { icon: '📱', label: t.marketing, value: 0, color: '#8b5cf6' },
-                { icon: '💵', label: t.commission, value: 0, color: '#3b82f6' },
-                { icon: '🚚', label: t.logistics, value: 0, color: '#f43f5e' },
-                { icon: '⚠️', label: t.fines, value: 0, color: '#f59e0b' },
+                { icon: '📱', label: t.marketing, value: financeBreakdown.marketing, color: '#8b5cf6' },
+                { icon: '💵', label: t.commission, value: financeBreakdown.commission, color: '#3b82f6' },
+                { icon: '🚚', label: t.logistics, value: financeBreakdown.logistics, color: '#f43f5e' },
+                { icon: '⚠️', label: t.fines, value: financeBreakdown.fines, color: '#f59e0b' },
               ].map((item, i) => (
                 <div key={i}>
                   <div style={{
@@ -673,12 +727,52 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             <div style={{ fontSize: '13px', color: '#666', marginBottom: '20px' }}>
               {t.dateRange} {new Date(dateRange.startMs).toLocaleDateString('ru-RU')} по {new Date(dateRange.endMs).toLocaleDateString('ru-RU')}
             </div>
-            <div style={{
-              textAlign: 'center',
-              padding: '40px',
-              color: '#9ca3af',
-            }}>
-              Нет данных
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {[
+                { icon: '💰', label: t.commission, value: financeBreakdown.totalCommission, color: '#8b5cf6' },
+                { icon: '🚚', label: t.logistics, value: financeBreakdown.totalLogistics, color: '#3b82f6' },
+              ].map((item, i) => (
+                <div key={i}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    marginBottom: '8px',
+                  }}>
+                    <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+                        {item.label}
+                      </div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#111' }}>
+                        {formatNumber(item.value)}
+                      </div>
+                    </div>
+                    <div style={{
+                      fontSize: '14px',
+                      color: '#666',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}>
+                      100% <span style={{ color: '#10b981' }}>↑</span>
+                    </div>
+                  </div>
+                  <div style={{
+                    height: '4px',
+                    backgroundColor: '#f3f4f6',
+                    borderRadius: '2px',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: '100%',
+                      backgroundColor: item.color,
+                      borderRadius: '2px',
+                    }}></div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
