@@ -139,6 +139,12 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
     }
   }, [statusFilter, orders]);
 
+  // Функция для подсчета заказов по статусу
+  const getStatusCount = (status: string) => {
+    if (status === 'all') return orders.length;
+    return orders.filter((o: any) => o.status === status).length;
+  };
+
   async function loadOrders() {
     setLoading(true);
     try {
@@ -362,21 +368,56 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
       </div>
 
       {/* Status Filter */}
-      <div className="cardCream" style={{
-        display: 'flex',
-        gap: '8px',
+      <div style={{
+        backgroundColor: '#fffbeb',
+        borderRadius: '16px',
+        padding: '12px',
         marginBottom: '12px',
-        flexWrap: 'wrap',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
       }}>
-        {statusOptions.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => setStatusFilter(option.value)}
-            className={statusFilter === option.value ? "btnPrimary" : "split"}
-          >
-            {option.label}
-          </button>
-        ))}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          minWidth: 'max-content',
+        }}>
+          {statusOptions.map((option) => {
+            const count = getStatusCount(option.value);
+            const isActive = statusFilter === option.value;
+            return (
+              <button
+                key={option.value}
+                onClick={() => setStatusFilter(option.value)}
+                style={{
+                  padding: '10px 16px',
+                  backgroundColor: isActive ? '#22c55e' : 'white',
+                  color: isActive ? 'white' : '#374151',
+                  border: isActive ? 'none' : '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <span>{option.label}</span>
+                <span style={{
+                  padding: '2px 8px',
+                  backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : '#f3f4f6',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                }}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Orders List */}

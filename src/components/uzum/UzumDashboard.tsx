@@ -80,19 +80,29 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             }));
           }
 
-          // Load orders count (все заказы)
-          const ordersResult = await getFbsOrdersCount(token, shopId);
-          console.log('📋 Orders count result:', ordersResult);
-          if (ordersResult.success && ordersResult.count !== undefined) {
-            setStats(prev => ({
-              ...prev,
-              activeOrders: ordersResult.count || 0,
-            }));
+          // Load orders count (все заказы - суммируем по всем статусам)
+          const statuses = ['CREATED', 'PACKING', 'PENDING_DELIVERY', 'DELIVERING', 'DELIVERED', 
+                           'ACCEPTED_AT_DP', 'DELIVERED_TO_CUSTOMER_DELIVERY_POINT', 
+                           'COMPLETED', 'CANCELED', 'PENDING_CANCELLATION', 'RETURNED'];
+          
+          let totalOrders = 0;
+          for (const status of statuses) {
+            const result = await getFbsOrdersCount(token, shopId, { status });
+            totalOrders += result.count || 0;
+            await new Promise(resolve => setTimeout(resolve, 100)); // задержка чтобы избежать 429
           }
+          
+          console.log('📋 Total orders count:', totalOrders);
+          setStats(prev => ({
+            ...prev,
+            activeOrders: totalOrders,
+          }));
 
           // Load pending orders (CREATED + PACKING + PENDING_DELIVERY статусы)
           const createdResult = await getFbsOrdersCount(token, shopId, { status: 'CREATED' });
+          await new Promise(resolve => setTimeout(resolve, 100));
           const packingResult = await getFbsOrdersCount(token, shopId, { status: 'PACKING' });
+          await new Promise(resolve => setTimeout(resolve, 100));
           const pendingResult = await getFbsOrdersCount(token, shopId, { status: 'PENDING_DELIVERY' });
           
           const pendingTotal = (createdResult.count || 0) + (packingResult.count || 0) + (pendingResult.count || 0);
