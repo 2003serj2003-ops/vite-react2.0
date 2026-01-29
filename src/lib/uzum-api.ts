@@ -70,15 +70,28 @@ async function apiRequest<T>(
     const status = response.status;
 
     if (!response.ok) {
+      // Логируем тело ошибки для отладки
+      const errorText = await response.text();
+      console.error(`API Error ${status}:`, errorText);
+      
       if (status === 401) return { error: 'Неверный токен', status };
       if (status === 403) return { error: 'Доступ запрещён', status };
       if (status === 404) return { error: 'Ресурс не найден', status };
+      if (status === 400) return { error: `Неверный запрос: ${errorText}`, status };
       if (status >= 500) return { error: 'Ошибка сервера', status };
       
       return { error: `Ошибка ${status}`, status };
     }
 
     const data = await response.json();
+    
+    // Uzum API возвращает ответ в формате { payload: ..., timestamp: ... }
+    // Извлекаем payload если он есть
+    if (data && typeof data === 'object' && 'payload' in data) {
+      console.log('📦 [API] Extracted payload from response');
+      return { data: data.payload, status };
+    }
+    
     return { data, status };
   } catch (error: any) {
     console.error('API Request error:', error);
@@ -240,8 +253,16 @@ export async function getFbsOrders(
 
   console.log('📋 Raw fbs orders API response:', result.data);
 
-  // API возвращает массив заказов или пустой массив
-  const orders = Array.isArray(result.data) ? result.data : [];
+  // API возвращает структуру { orders: [] } после извлечения payload
+  // или может вернуть просто массив
+  let orders: any[] = [];
+  
+  if (Array.isArray(result.data)) {
+    orders = result.data;
+  } else if (result.data && typeof result.data === 'object' && 'orders' in result.data) {
+    orders = Array.isArray(result.data.orders) ? result.data.orders : [];
+  }
+  
   return { success: true, orders };
 }
 
