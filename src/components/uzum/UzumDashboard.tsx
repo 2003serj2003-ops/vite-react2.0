@@ -29,9 +29,11 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
     const end = new Date();
     const start = new Date();
     start.setDate(end.getDate() - datePeriod);
+    start.setHours(0, 0, 0, 0); // начало дня
+    end.setHours(23, 59, 59, 999); // конец дня
     return {
-      start: start.toISOString().split('T')[0],
-      end: end.toISOString().split('T')[0]
+      startMs: start.getTime(),
+      endMs: end.getTime()
     };
   }
 
@@ -196,15 +198,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           console.log('💰 Finance orders loaded:', allFinanceOrders.length);
 
           // Filter by date range manually
-          const dateFromMs = new Date(dateRange.start).getTime();
-          const dateToMs = new Date(dateRange.end).getTime();
-
           const filteredOrders = allFinanceOrders.filter(order => {
             const orderDate = order.date || order.createdAt || 0;
-            return orderDate >= dateFromMs && orderDate <= dateToMs;
+            return orderDate >= dateRange.startMs && orderDate <= dateRange.endMs;
           });
 
-          console.log(`💰 Filtered orders for period ${dateRange.start} - ${dateRange.end}: ${filteredOrders.length}`);
+          console.log(`💰 Filtered orders for period (${datePeriod} days): ${filteredOrders.length}`);
 
           // Calculate revenue (sum of sellPrice * amount for non-canceled orders)
           const revenue = filteredOrders.reduce((sum, order) => {
@@ -248,14 +247,14 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           // Filter expenses by date range
           const filteredExpenses = allExpenses.filter(expense => {
             const expenseDate = expense.dateCreated || expense.createdAt || 0;
-            return expenseDate >= dateFromMs && expenseDate <= dateToMs;
+            return expenseDate >= dateRange.startMs && expenseDate <= dateRange.endMs;
           });
 
-          console.log(`💸 Filtered expenses for period: ${filteredExpenses.length}`);
+          console.log(`💸 Filtered expenses for period (${datePeriod} days): ${filteredExpenses.length}`);
 
-          // Calculate total expenses
+          // Calculate total expenses (fix calculation with proper parentheses)
           const totalExpenses = filteredExpenses.reduce((sum, expense) => {
-            return sum + (expense.paymentPrice * expense.amount || 0);
+            return sum + ((expense.paymentPrice || 0) * (expense.amount || 1));
           }, 0);
 
           // Update stats with finance data
@@ -267,11 +266,15 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           }));
 
           console.log('📊 Finance summary:', { 
+            period: `Last ${datePeriod} days`,
+            dateRangeMs: { start: dateRange.startMs, end: dateRange.endMs },
             revenue, 
             totalExpenses, 
             profit: totalProfit,
             ordersInPeriod: filteredOrders.length,
-            expensesInPeriod: filteredExpenses.length
+            expensesInPeriod: filteredExpenses.length,
+            sampleOrderDate: filteredOrders[0]?.date || 'no orders',
+            sampleExpenseDate: filteredExpenses[0]?.dateCreated || 'no expenses'
           });
         }
       }
@@ -600,7 +603,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
               {t.expenses}
             </h2>
             <div style={{ fontSize: '13px', color: '#666', marginBottom: '20px' }}>
-              {t.dateRange} {dateRange.start} по {dateRange.end}
+              {t.dateRange} {new Date(dateRange.startMs).toLocaleDateString('ru-RU')} по {new Date(dateRange.endMs).toLocaleDateString('ru-RU')}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[
@@ -668,7 +671,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
               {t.income}
             </h2>
             <div style={{ fontSize: '13px', color: '#666', marginBottom: '20px' }}>
-              {t.dateRange} {dateRange.start} по {dateRange.end}
+              {t.dateRange} {new Date(dateRange.startMs).toLocaleDateString('ru-RU')} по {new Date(dateRange.endMs).toLocaleDateString('ru-RU')}
             </div>
             <div style={{
               textAlign: 'center',
