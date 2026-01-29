@@ -153,7 +153,7 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
       const shopId = shopsResult.shops[0].id;
 
       // API требует обязательный параметр status
-      // Загружаем заказы по всем статусам параллельно
+      // Загружаем заказы последовательно с задержками чтобы избежать rate limit
       const statuses = [
         'CREATED', 'PACKING', 'PENDING_DELIVERY', 
         'DELIVERING', 'DELIVERED', 'ACCEPTED_AT_DP',
@@ -161,18 +161,22 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
         'COMPLETED', 'CANCELED', 'PENDING_CANCELLATION', 'RETURNED'
       ];
 
-      const results = await Promise.all(
-        statuses.map(status => getFbsOrders(token, shopId, { status }))
-      );
-
-      // Объединяем все заказы
       let allOrders: any[] = [];
-      results.forEach((result, index) => {
-        console.log(`📋 [Orders] Status ${statuses[index]}:`, result.orders?.length || 0, 'orders');
+      
+      for (let i = 0; i < statuses.length; i++) {
+        const status = statuses[i];
+        const result = await getFbsOrders(token, shopId, { status });
+        console.log(`📋 [Orders] Status ${status}:`, result.orders?.length || 0, 'orders');
+        
         if (result.success && result.orders) {
           allOrders = allOrders.concat(result.orders);
         }
-      });
+        
+        // Задержка 200ms между запросами
+        if (i < statuses.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
 
       console.log('📋 [Orders] Total FBS Orders:', allOrders.length);
       if (allOrders.length > 0) {
