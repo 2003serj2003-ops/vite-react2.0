@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShops, getProducts, getFbsOrdersCount } from '../../lib/uzum-api';
+import { getShops, getProducts, getFbsOrdersCount, getFinanceOrders, getFinanceExpenses } from '../../lib/uzum-api';
 import UzumWeeklyChart from './UzumWeeklyChart';
 
 interface UzumDashboardProps {
@@ -165,6 +165,91 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             ...prev,
             pendingOrders: pendingTotal,
           }));
+
+          // Load finance data - orders and expenses
+          const dateFromMs = new Date(dateRange.start).getTime();
+          const dateToMs = new Date(dateRange.end).getTime();
+
+          console.log('📊 Loading finance data for period:', dateRange);
+
+          // Load finance orders (revenue)
+          let allFinanceOrders: any[] = [];
+          let page = 0;
+          let hasMore = true;
+
+          while (hasMore) {
+            const financeResult = await getFinanceOrders(token, shopId, {
+              size: 100,
+              page,
+              dateFrom: dateFromMs,
+              dateTo: dateToMs,
+            });
+            
+            if (financeResult.success && financeResult.orders && financeResult.orders.length > 0) {
+              allFinanceOrders.push(...financeResult.orders);
+              if (financeResult.orders.length < 100) {
+                hasMore = false;
+              } else {
+                page++;
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
+            } else {
+              hasMore = false;
+            }
+          }
+
+          console.log('💰 Finance orders loaded:', allFinanceOrders.length);
+
+          // Calculate revenue (sum of all order amounts)
+          const revenue = allFinanceOrders.reduce((sum, order) => {
+            return sum + (order.totalPrice || order.price || 0);
+          }, 0);
+
+          // Load expenses
+          let allExpenses: any[] = [];
+          page = 0;
+          hasMore = true;
+
+          while (hasMore) {
+            const expensesResult = await getFinanceExpenses(token, shopId, {
+              size: 100,
+              page,
+              dateFrom: dateFromMs,
+              dateTo: dateToMs,
+            });
+
+            if (expensesResult.success && expensesResult.expenses && expensesResult.expenses.length > 0) {
+              allExpenses.push(...expensesResult.expenses);
+              if (expensesResult.expenses.length < 100) {
+                hasMore = false;
+              } else {
+                page++;
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
+            } else {
+              hasMore = false;
+            }
+          }
+
+          console.log('💸 Expenses loaded:', allExpenses.length);
+
+          // Calculate total expenses
+          const totalExpenses = allExpenses.reduce((sum, expense) => {
+            return sum + (expense.paymentPrice * expense.amount || 0);
+          }, 0);
+
+          // Calculate profit
+          const profit = revenue - totalExpenses;
+
+          // Update stats with finance data
+          setStats(prev => ({
+            ...prev,
+            revenue,
+            toPay: revenue, // К выплате = выручка (упрощенно)
+            profit,
+          }));
+
+          console.log('📊 Finance summary:', { revenue, totalExpenses, profit });
         }
       }
     } catch (error) {
