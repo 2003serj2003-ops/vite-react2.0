@@ -369,12 +369,14 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
 
       {/* Status Filter */}
       <div style={{
-        backgroundColor: '#fffbeb',
+        backgroundColor: 'white',
         borderRadius: '16px',
-        padding: '12px',
-        marginBottom: '12px',
+        padding: '16px',
+        marginBottom: '16px',
         overflowX: 'auto',
         WebkitOverflowScrolling: 'touch',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        border: '1px solid #e5e7eb',
       }}>
         <div style={{
           display: 'flex',
@@ -389,10 +391,10 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
                 key={option.value}
                 onClick={() => setStatusFilter(option.value)}
                 style={{
-                  padding: '10px 16px',
-                  backgroundColor: isActive ? '#22c55e' : 'white',
+                  padding: '12px 18px',
+                  backgroundColor: isActive ? '#22c55e' : '#f9fafb',
                   color: isActive ? 'white' : '#374151',
-                  border: isActive ? 'none' : '2px solid #e5e7eb',
+                  border: isActive ? 'none' : '2px solid #d1d5db',
                   borderRadius: '12px',
                   cursor: 'pointer',
                   fontSize: '14px',
@@ -402,15 +404,18 @@ export default function UzumOrders({ lang, token, onNavigateBack, onNavigateHome
                   alignItems: 'center',
                   gap: '8px',
                   transition: 'all 0.2s',
+                  boxShadow: isActive ? '0 2px 4px rgba(34, 197, 94, 0.3)' : 'none',
                 }}
               >
                 <span>{option.label}</span>
                 <span style={{
-                  padding: '2px 8px',
-                  backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : '#f3f4f6',
-                  borderRadius: '6px',
-                  fontSize: '12px',
+                  padding: '4px 10px',
+                  backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : '#e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '13px',
                   fontWeight: '700',
+                  minWidth: '24px',
+                  textAlign: 'center',
                 }}>
                   {count}
                 </span>
