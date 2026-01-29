@@ -120,11 +120,19 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
 
   const t = T[lang];
 
+  // Load basic dashboard data once
   useEffect(() => {
-    loadDashboard();
-  }, [token, datePeriod]);
+    loadBasicData();
+  }, [token]);
 
-  async function loadDashboard() {
+  // Load finance data when period changes
+  useEffect(() => {
+    if (stats.totalProducts > 0) { // Only load if we have shop data
+      loadFinanceData();
+    }
+  }, [datePeriod]);
+
+  async function loadBasicData() {
     setLoading(true);
     try {
       // Load shops
@@ -146,16 +154,19 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             }));
           }
 
-          // Load orders count (все заказы - суммируем по всем статусам)
+          // Load orders count - use Promise.all for parallel requests (faster!)
           const statuses = ['CREATED', 'PACKING', 'PENDING_DELIVERY', 'DELIVERING', 'DELIVERED', 
                            'ACCEPTED_AT_DP', 'DELIVERED_TO_CUSTOMER_DELIVERY_POINT', 
                            'COMPLETED', 'CANCELED', 'PENDING_CANCELLATION', 'RETURNED'];
           
+          // Split into chunks of 3 for parallel requests
           let totalOrders = 0;
-          for (const status of statuses) {
-            const result = await getFbsOrdersCount(token, shopId, { status });
-            totalOrders += result.count || 0;
-            await new Promise(resolve => setTimeout(resolve, 100)); // задержка чтобы избежать 429
+          for (let i = 0; i < statuses.length; i += 3) {
+            const chunk = statuses.slice(i, i + 3);
+            const results = await Promise.all(
+              chunk.map(status => getFbsOrdersCount(token, shopId, { status }))
+            );
+            totalOrders += results.reduce((sum, r) => sum + (r.count || 0), 0);
           }
           
           console.log('📋 Total orders count:', totalOrders);
@@ -164,12 +175,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             activeOrders: totalOrders,
           }));
 
-          // Load pending orders (CREATED + PACKING + PENDING_DELIVERY статусы)
-          const createdResult = await getFbsOrdersCount(token, shopId, { status: 'CREATED' });
-          await new Promise(resolve => setTimeout(resolve, 100));
-          const packingResult = await getFbsOrdersCount(token, shopId, { status: 'PACKING' });
-          await new Promise(resolve => setTimeout(resolve, 100));
-          const pendingResult = await getFbsOrdersCount(token, shopId, { status: 'PENDING_DELIVERY' });
+          // Load pending orders in parallel
+          const [createdResult, packingResult, pendingResult] = await Promise.all([
+            getFbsOrdersCount(token, shopId, { status: 'CREATED' }),
+            getFbsOrdersCount(token, shopId, { status: 'PACKING' }),
+            getFbsOrdersCount(token, shopId, { status: 'PENDING_DELIVERY' }),
+          ]);
           
           const pendingTotal = (createdResult.count || 0) + (packingResult.count || 0) + (pendingResult.count || 0);
           
@@ -178,11 +189,31 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             pendingOrders: pendingTotal,
           }));
 
-          // Load finance data - orders and expenses (without date filter as API doesn't support it properly)
-          console.log('📊 Loading finance data...');
+          // Load initial finance data
+          await loadFinanceData();
+        }
+      }
+    } catch (error) {
+      console.error('Dashboard load error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-          // Load finance orders (revenue) - load ALL orders
-          let allFinanceOrders: any[] = [];
+  async function loadFinanceData() {
+    try {
+      const shopsResult = await getShops(token);
+      if (!shopsResult.success || !shopsResult.shops || shopsResult.shops.length === 0) {
+        return;
+      }
+
+      const shopId = shopsResult.shops[0].id;
+
+      // Load finance data - orders and expenses
+      console.log('📊 Loading finance data for period:', datePeriod, 'days');
+
+      // Load finance orders (revenue) - load ALL orders
+      let allFinanceOrders: any[] = [];
           let page = 0;
           let hasMore = true;
 
@@ -198,7 +229,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                 hasMore = false;
               } else {
                 page++;
-                await new Promise(resolve => setTimeout(resolve, 100));
+                // No delay - API handles it fine
               }
             } else {
               hasMore = false;
@@ -245,7 +276,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                 hasMore = false;
               } else {
                 page++;
-                await new Promise(resolve => setTimeout(resolve, 100));
+                // No delay needed
               }
             } else {
               hasMore = false;
@@ -330,12 +361,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             sampleOrderDate: filteredOrders[0]?.date || 'no orders',
             sampleExpenseDate: filteredExpenses[0]?.dateCreated || 'no expenses'
           });
-        }
-      }
     } catch (error) {
-      console.error('Dashboard load error:', error);
-    } finally {
-      setLoading(false);
+      console.error('Finance load error:', error);
     }
   }
 

@@ -103,21 +103,62 @@ async function testFinanceCalculations() {
 
     console.log(`Expenses in last 7 days: ${filteredExpenses.length}\n`);
 
-    // Calculate expenses by source
-    const totalExpenses = filteredExpenses.reduce((sum, e) => sum + (e.paymentPrice * e.amount), 0);
-    
+    // Calculate expenses by category
     const bySource = {};
+    const byCategory = {
+      marketing: 0,
+      commission: 0,
+      logistics: 0,
+      fines: 0,
+    };
+    
     filteredExpenses.forEach(expense => {
       const source = expense.source || 'Unknown';
+      const amount = expense.paymentPrice * expense.amount;
+      
       if (!bySource[source]) bySource[source] = 0;
-      bySource[source] += expense.paymentPrice * expense.amount;
+      bySource[source] += amount;
+      
+      // Categorize
+      const sourceLower = source.toLowerCase();
+      if (sourceLower.includes('marketing')) {
+        byCategory.marketing += amount;
+      } else if (sourceLower.includes('logist')) {
+        byCategory.logistics += amount;
+      } else if (sourceLower.includes('uzum') || sourceLower.includes('market')) {
+        byCategory.fines += amount;
+      }
     });
 
+    // Calculate total expenses
+    const totalExpenses = filteredExpenses.reduce((sum, e) => sum + (e.paymentPrice * e.amount), 0);
+
+    // Calculate income breakdown from orders
+    const incomeBreakdown = {
+      totalCommission: 0,
+      totalLogistics: 0,
+    };
+
+    activeOrders.forEach(order => {
+      incomeBreakdown.totalCommission += (order.commission || 0) * (order.amount || 1);
+      incomeBreakdown.totalLogistics += (order.logisticDeliveryFee || 0) * (order.amount || 1);
+    });
+    
     console.log('💸 EXPENSES (Last 7 days):');
     console.log(`   Total: ${totalExpenses.toLocaleString('ru-RU')} сум`);
+    console.log('\n   By source:');
     Object.entries(bySource).forEach(([source, amount]) => {
-      console.log(`   ${source}: ${amount.toLocaleString('ru-RU')} сум`);
+      console.log(`   - ${source}: ${amount.toLocaleString('ru-RU')} сум`);
     });
+    console.log('\n   By category (as shown in dashboard):');
+    console.log(`   - Marketing: ${byCategory.marketing.toLocaleString('ru-RU')} сум`);
+    console.log(`   - Commission: ${byCategory.commission.toLocaleString('ru-RU')} сум`);
+    console.log(`   - Logistics: ${byCategory.logistics.toLocaleString('ru-RU')} сум`);
+    console.log(`   - FBS Fines: ${byCategory.fines.toLocaleString('ru-RU')} сум`);
+
+    console.log('\n💰 INCOME BREAKDOWN (from orders):');
+    console.log(`   Commission: ${incomeBreakdown.totalCommission.toLocaleString('ru-RU')} сум`);
+    console.log(`   Logistics fees: ${incomeBreakdown.totalLogistics.toLocaleString('ru-RU')} сум`);
 
     console.log('\n📊 SUMMARY:');
     console.log(`   Revenue: ${revenue.toLocaleString('ru-RU')} сум`);
