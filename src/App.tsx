@@ -2711,17 +2711,30 @@ export default function App() {
               onHome={goHome}
               rightSlot={
                 uzumConnected ? (
-                  <button
-                    className="btnGhost"
-                    onClick={handleDisconnect}
-                    style={{
-                      fontSize: '12px',
-                      padding: '6px 12px',
-                      color: '#ef4444',
-                    }}
-                  >
-                    🔌 {lang === 'ru' ? 'Отключить' : 'Uzish'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button
+                      className="btnGhost"
+                      onClick={goHome}
+                      style={{
+                        fontSize: '12px',
+                        padding: '6px 12px',
+                        color: '#7c3aed',
+                      }}
+                    >
+                      🏠 {lang === 'ru' ? 'В приложение' : 'Ilovaga'}
+                    </button>
+                    <button
+                      className="btnGhost"
+                      onClick={handleDisconnect}
+                      style={{
+                        fontSize: '12px',
+                        padding: '6px 12px',
+                        color: '#ef4444',
+                      }}
+                    >
+                      🔌 {lang === 'ru' ? 'Отключить' : 'Uzish'}
+                    </button>
+                  </div>
                 ) : null
               }
             />
