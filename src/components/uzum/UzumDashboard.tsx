@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getShops, getProducts, getFbsOrdersCount } from '../../lib/uzum-api';
+import UzumWeeklyChart from './UzumWeeklyChart';
 
 interface UzumDashboardProps {
   lang: 'ru' | 'uz';
@@ -20,6 +21,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
     fbsStock: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [showWeeklyChart, setShowWeeklyChart] = useState(false);
   const [dateRange] = useState({
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     end: new Date().toISOString().split('T')[0]
@@ -54,6 +56,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
       orders: 'Заказы',
       finance: 'Финансы',
       viewAll: 'Смотреть все',
+      weeklyChart: 'Недельный обзор заказов',
     },
     uz: {
       title: 'Bosh sahifa',
@@ -83,6 +86,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
       orders: 'Buyurtmalar',
       finance: 'Moliya',
       viewAll: 'Barchasini korish',
+      weeklyChart: 'Haftalik buyurtmalar sharhi',
     },
   };
 
@@ -201,6 +205,24 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             {t.title}
           </h1>
         </div>
+        <button
+          onClick={() => setShowWeeklyChart(true)}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#7c3aed',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          📊 {t.weeklyChart}
+        </button>
       </div>
 
       {/* Main Grid */}
@@ -572,6 +594,15 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           </div>
         </button>
       </div>
+
+      {/* Weekly Chart Modal */}
+      {showWeeklyChart && (
+        <UzumWeeklyChart
+          lang={lang}
+          token={token}
+          onClose={() => setShowWeeklyChart(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,555 @@
+import { useState, useEffect, useRef } from 'react';
+import { getFbsOrders } from '../../lib/uzum-api';
+
+interface UzumWeeklyChartProps {
+  lang: 'ru' | 'uz';
+  token: string;
+  onClose: () => void;
+}
+
+interface DayStats {
+  day: string;
+  sold: number;
+  canceled: number;
+}
+
+const ALL_STATUSES = [
+  'CREATED', 'PACKING', 'PENDING_DELIVERY', 'DELIVERING', 
+  'DELIVERED', 'ACCEPTED_AT_DP', 'DELIVERED_TO_CUSTOMER_DELIVERY_POINT',
+  'COMPLETED', 'CANCELED', 'PENDING_CANCELLATION', 'RETURNED'
+] as const;
+
+export default function UzumWeeklyChart({ lang, token, onClose }: UzumWeeklyChartProps) {
+  const [weekType, setWeekType] = useState<'current' | 'previous'>('previous');
+  const [stats, setStats] = useState({
+    sold: 0,
+    issued: 0,
+    canceled: 0,
+    total: 0,
+  });
+  const [weekData, setWeekData] = useState<DayStats[]>([]);
+  const [loading, setLoading] = useState(true);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const T = {
+    ru: {
+      title: 'Недельный обзор заказов',
+      currentWeek: 'На этой неделе',
+      previousWeek: 'На прошлой неделе',
+      soldVsCanceled: 'Продано vs Отменено',
+      overview: 'Обзор',
+      sold: 'Продано',
+      issued: 'Выдано',
+      canceled: 'Отменено',
+      total: 'Всего',
+      close: 'Закрыть',
+      days: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+    },
+    uz: {
+      title: 'Haftalik buyurtmalar sharhi',
+      currentWeek: 'Shu haftada',
+      previousWeek: 'Otgan haftada',
+      soldVsCanceled: 'Sotildi vs Bekor qilindi',
+      overview: 'Sharh',
+      sold: 'Sotildi',
+      issued: 'Berildi',
+      canceled: 'Bekor qilindi',
+      total: 'Jami',
+      close: 'Yopish',
+      days: ['Yak', 'Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan'],
+    },
+  };
+
+  const t = T[lang];
+
+  useEffect(() => {
+    loadWeeklyData();
+  }, [token, weekType]);
+
+  useEffect(() => {
+    if (weekData.length > 0 && canvasRef.current) {
+      drawChart();
+    }
+  }, [weekData]);
+
+  async function loadWeeklyData() {
+    setLoading(true);
+    try {
+      const now = new Date();
+      const { start, end } = getWeekRange(now, weekType);
+
+      // Get all orders for the week
+      const allOrders: any[] = [];
+      
+      // First, we need to get shopId - we'll use 0 as default or get from shops
+      const shopId = 0; // You may want to pass this as a prop or get it from API
+      
+      for (const status of ALL_STATUSES) {
+        try {
+          const result = await getFbsOrders(token, shopId, {
+            status,
+            page: 1,
+            size: 50
+          });
+          if (result?.orders) {
+            allOrders.push(...result.orders);
+          }
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (err) {
+          console.error(`Error loading ${status}:`, err);
+        }
+      }
+
+      // Filter orders by date range
+      const weekOrders = allOrders.filter(order => {
+        const orderDate = new Date(order.created_at || order.createdAt);
+        return orderDate >= start && orderDate <= end;
+      });
+
+      // Calculate stats
+      const soldStatuses = ['COMPLETED', 'DELIVERED', 'DELIVERED_TO_CUSTOMER_DELIVERY_POINT'];
+      const issuedStatuses = ['ACCEPTED_AT_DP', 'DELIVERING'];
+      const canceledStatuses = ['CANCELED', 'RETURNED'];
+
+      const sold = weekOrders.filter(o => soldStatuses.includes(o.status)).length;
+      const issued = weekOrders.filter(o => issuedStatuses.includes(o.status)).length;
+      const canceled = weekOrders.filter(o => canceledStatuses.includes(o.status)).length;
+
+      setStats({
+        sold,
+        issued,
+        canceled,
+        total: weekOrders.length,
+      });
+
+      // Group by day
+      const dayMap = new Map<string, DayStats>();
+      const days = getDaysInRange(start, end);
+
+      days.forEach(day => {
+        const dayKey = day.toISOString().split('T')[0];
+        dayMap.set(dayKey, {
+          day: t.days[day.getDay()],
+          sold: 0,
+          canceled: 0,
+        });
+      });
+
+      weekOrders.forEach(order => {
+        const orderDate = new Date(order.created_at || order.createdAt);
+        const dayKey = orderDate.toISOString().split('T')[0];
+        const dayStats = dayMap.get(dayKey);
+        
+        if (dayStats) {
+          if (soldStatuses.includes(order.status)) {
+            dayStats.sold++;
+          } else if (canceledStatuses.includes(order.status)) {
+            dayStats.canceled++;
+          }
+        }
+      });
+
+      setWeekData(Array.from(dayMap.values()));
+    } catch (error) {
+      console.error('Error loading weekly data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function getWeekRange(date: Date, type: 'current' | 'previous') {
+    const current = new Date(date);
+    const dayOfWeek = current.getDay();
+    
+    // Get Monday of current week
+    const monday = new Date(current);
+    monday.setDate(current.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+    monday.setHours(0, 0, 0, 0);
+
+    if (type === 'previous') {
+      monday.setDate(monday.getDate() - 7);
+    }
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+
+    return { start: monday, end: sunday };
+  }
+
+  function getDaysInRange(start: Date, end: Date) {
+    const days: Date[] = [];
+    const current = new Date(start);
+    
+    while (current <= end) {
+      days.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+    
+    return days;
+  }
+
+  function drawChart() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const padding = 40;
+    const chartWidth = width - padding * 2;
+    const chartHeight = height - padding * 2;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Background
+    ctx.fillStyle = '#f9fafb';
+    ctx.fillRect(0, 0, width, height);
+
+    // Find max value
+    const maxValue = Math.max(
+      ...weekData.map(d => Math.max(d.sold, d.canceled)),
+      1
+    );
+
+    // Draw grid lines
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 6; i++) {
+      const y = padding + (chartHeight / 6) * i;
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(width - padding, y);
+      ctx.stroke();
+
+      // Y-axis labels
+      const value = Math.round(maxValue - (maxValue / 6) * i);
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(value.toString(), padding - 10, y + 4);
+    }
+
+    // Draw lines
+    const pointSpacing = chartWidth / (weekData.length - 1 || 1);
+
+    // Sold line (green)
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    weekData.forEach((data, i) => {
+      const x = padding + i * pointSpacing;
+      const y = padding + chartHeight - (data.sold / maxValue) * chartHeight;
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    ctx.stroke();
+
+    // Draw sold points
+    weekData.forEach((data, i) => {
+      const x = padding + i * pointSpacing;
+      const y = padding + chartHeight - (data.sold / maxValue) * chartHeight;
+      
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Value label
+      ctx.fillStyle = '#374151';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(data.sold.toString(), x, y - 12);
+    });
+
+    // Canceled line (gray)
+    ctx.strokeStyle = '#9ca3af';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    weekData.forEach((data, i) => {
+      const x = padding + i * pointSpacing;
+      const y = padding + chartHeight - (data.canceled / maxValue) * chartHeight;
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    ctx.stroke();
+
+    // Draw canceled points
+    weekData.forEach((data, i) => {
+      const x = padding + i * pointSpacing;
+      const y = padding + chartHeight - (data.canceled / maxValue) * chartHeight;
+      
+      ctx.fillStyle = '#9ca3af';
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Value label
+      ctx.fillStyle = '#374151';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(data.canceled.toString(), x, y + 20);
+    });
+
+    // X-axis labels (days)
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'center';
+    weekData.forEach((data, i) => {
+      const x = padding + i * pointSpacing;
+      ctx.fillText(data.day, x, height - padding + 25);
+    });
+  }
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '20px',
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '16px',
+        maxWidth: '1200px',
+        width: '100%',
+        maxHeight: '90vh',
+        overflow: 'auto',
+        padding: '24px',
+      }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+        }}>
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: 700,
+            margin: 0,
+          }}>
+            {t.title}
+          </h2>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#f3f4f6',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+            }}
+          >
+            {t.close}
+          </button>
+        </div>
+
+        {/* Week toggle */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: '24px',
+          backgroundColor: '#f3f4f6',
+          padding: '4px',
+          borderRadius: '8px',
+          width: 'fit-content',
+        }}>
+          <button
+            onClick={() => setWeekType('previous')}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: weekType === 'previous' ? 'white' : 'transparent',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: weekType === 'previous' ? 600 : 400,
+              boxShadow: weekType === 'previous' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+            }}
+          >
+            ✓ {t.previousWeek}
+          </button>
+          <button
+            onClick={() => setWeekType('current')}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: weekType === 'current' ? 'white' : 'transparent',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: weekType === 'current' ? 600 : 400,
+              boxShadow: weekType === 'current' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+            }}
+          >
+            {t.currentWeek}
+          </button>
+        </div>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '60px', color: '#666' }}>
+            Загрузка...
+          </div>
+        ) : (
+          <>
+            {/* Chart section */}
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              marginBottom: '20px',
+              border: '1px solid #e5e7eb',
+            }}>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                marginBottom: '16px',
+                color: '#374151',
+              }}>
+                {t.soldVsCanceled}
+              </h3>
+              <canvas
+                ref={canvasRef}
+                width={1100}
+                height={300}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                }}
+              />
+            </div>
+
+            {/* Stats overview */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '16px',
+            }}>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                margin: 0,
+                color: '#374151',
+              }}>
+                {t.overview}
+              </h3>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '16px',
+            }}>
+              <div style={{
+                backgroundColor: '#ecfdf5',
+                borderRadius: '12px',
+                padding: '20px',
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: 700,
+                  color: '#064e3b',
+                  marginBottom: '8px',
+                }}>
+                  {stats.sold}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#065f46',
+                }}>
+                  {t.sold}
+                </div>
+              </div>
+
+              <div style={{
+                backgroundColor: '#dbeafe',
+                borderRadius: '12px',
+                padding: '20px',
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: 700,
+                  color: '#1e3a8a',
+                  marginBottom: '8px',
+                }}>
+                  {stats.issued}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#1e40af',
+                }}>
+                  {t.issued}
+                </div>
+              </div>
+
+              <div style={{
+                backgroundColor: '#fee2e2',
+                borderRadius: '12px',
+                padding: '20px',
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: 700,
+                  color: '#7f1d1d',
+                  marginBottom: '8px',
+                }}>
+                  {stats.canceled}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#991b1b',
+                }}>
+                  {t.canceled}
+                </div>
+              </div>
+
+              <div style={{
+                backgroundColor: '#ede9fe',
+                borderRadius: '12px',
+                padding: '20px',
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: 700,
+                  color: '#4c1d95',
+                  marginBottom: '8px',
+                }}>
+                  {stats.total}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#5b21b6',
+                }}>
+                  {t.total}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
