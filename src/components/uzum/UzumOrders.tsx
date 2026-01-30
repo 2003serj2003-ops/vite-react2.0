@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShops, getFbsOrders, confirmFbsOrder, cancelFbsOrder, getFbsOrderLabel, getFbsReturnReasons } from '../../lib/uzum-api';
+import { getShops, getFbsOrders, cancelFbsOrder, getFbsOrderLabel, getFbsReturnReasons } from '../../lib/uzum-api';
 
 interface UzumOrdersProps {
   lang: 'ru' | 'uz';
@@ -11,10 +11,8 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
-  const [labelSize, setLabelSize] = useState<'LARGE' | 'BIG'>('LARGE');
   const [returnReasons, setReturnReasons] = useState<any[]>([]);
 
   const T = {
@@ -211,24 +209,6 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
       console.error('Orders load error:', error);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleConfirmOrder(orderId: string | number) {
-    setActionLoading(true);
-    try {
-      const result = await confirmFbsOrder(token, orderId);
-      if (result.success) {
-        await loadOrders();
-        setSelectedOrder(null);
-        alert(t.confirmSuccess);
-      } else {
-        alert(t.error + ': ' + result.error);
-      }
-    } catch (error: any) {
-      alert(t.error + ': ' + error.message);
-    } finally {
-      setActionLoading(false);
     }
   }
 
