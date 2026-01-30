@@ -32,12 +32,16 @@ npm install -g wrangler
 # Авторизация в Cloudflare
 wrangler login
 
-# Деплой проекта
-npm run cf:deploy
-
-# Или вручную
+# Сначала создайте проект в Cloudflare Dashboard (см. Способ 1)
+# Затем выполните сборку и деплой:
+npm run build
 wrangler pages deploy dist --project-name=sanya
+
+# Или используйте команду из package.json:
+npm run cf:deploy
 ```
+
+**Важно**: Перед первым деплоем через CLI, проект должен быть создан в Cloudflare Dashboard!
 
 ## Важно!
 

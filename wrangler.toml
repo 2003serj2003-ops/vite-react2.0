@@ -1,14 +1,8 @@
+# This project uses Cloudflare Pages
+# Deploy via Cloudflare Dashboard or CLI: wrangler pages deploy dist
+
 name = "sanya"
 compatibility_date = "2026-01-30"
-
-# Cloudflare Pages configuration
-pages_build_output_dir = "dist"
-
-# Build configuration for Cloudflare Pages
-[build]
-command = "npm run build"
-cwd = "."
-watch_dir = "src"
 
 # Environment variables will be set in Cloudflare dashboard:
 # - VITE_SUPABASE_URL
