@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShops, getFbsOrders, confirmFbsOrder, cancelFbsOrder } from '../../lib/uzum-api';
+import { getShops, getFbsOrders, cancelFbsOrder, getFbsOrderLabel, getFbsReturnReasons } from '../../lib/uzum-api';
 
 interface UzumOrdersProps {
   lang: 'ru' | 'uz';
@@ -11,8 +11,9 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+  const [returnReasons, setReturnReasons] = useState<any[]>([]);
 
   const T = {
     ru: {
@@ -50,6 +51,14 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
       confirmSuccess: 'Заказ подтвержден',
       cancelSuccess: 'Заказ отменен',
       error: 'Ошибка',
+      getLabel: 'Получить этикетку',
+      labelSize: 'Размер этикетки',
+      large: 'Большая (58x40мм)',
+      big: 'Стандартная (43x25мм)',
+      downloading: 'Скачивание...',
+      returnReason: 'Причина возврата',
+      cancelOrder: 'Отменить заказ',
+      confirmCancel: 'Вы уверены?',
     },
     uz: {
       title: 'Buyurtmalar',
@@ -86,6 +95,14 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
       confirmSuccess: 'Buyurtma tasdiqlandi',
       cancelSuccess: 'Buyurtma bekor qilindi',
       error: 'Xatolik',
+      getLabel: 'Yorliqni olish',
+      labelSize: 'Yorliq o\'lchami',
+      large: 'Katta (58x40mm)',
+      big: 'Standart (43x25mm)',
+      downloading: 'Yuklanmoqda...',
+      returnReason: 'Qaytarish sababi',
+      cancelOrder: 'Buyurtmani bekor qilish',
+      confirmCancel: 'Ishonchingiz komilmi?',
     },
   };
 
@@ -195,14 +212,16 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
     }
   }
 
-  async function handleConfirmOrder(orderId: string | number) {
+  async function handleCancelOrder(orderId: string | number) {
+    if (!window.confirm(t.confirmCancel)) return;
+    
     setActionLoading(true);
     try {
-      const result = await confirmFbsOrder(token, orderId);
+      const result = await cancelFbsOrder(token, orderId);
       if (result.success) {
         await loadOrders();
-        setSelectedOrder(null);
-        alert(t.confirmSuccess);
+        setExpandedOrderId(null);
+        alert(t.cancelSuccess);
       } else {
         alert(t.error + ': ' + result.error);
       }
@@ -213,14 +232,29 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
     }
   }
 
-  async function handleCancelOrder(orderId: string | number) {
+  async function handleDownloadLabel(orderId: string | number, size: 'LARGE' | 'BIG') {
     setActionLoading(true);
     try {
-      const result = await cancelFbsOrder(token, orderId);
-      if (result.success) {
-        await loadOrders();
-        setSelectedOrder(null);
-        alert(t.cancelSuccess);
+      const result = await getFbsOrderLabel(token, orderId, size);
+      if (result.success && result.label) {
+        // Decode base64 and create blob
+        const byteCharacters = atob(result.label);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        
+        // Download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `label-${orderId}-${size}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
       } else {
         alert(t.error + ': ' + result.error);
       }
@@ -228,6 +262,18 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
       alert(t.error + ': ' + error.message);
     } finally {
       setActionLoading(false);
+    }
+  }
+
+  async function loadReturnReasons() {
+    if (returnReasons.length > 0) return;
+    try {
+      const result = await getFbsReturnReasons(token);
+      if (result.success && result.reasons) {
+        setReturnReasons(result.reasons);
+      }
+    } catch (error) {
+      console.error('Failed to load return reasons:', error);
     }
   }
 
@@ -375,307 +421,245 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
+          gap: '12px',
         }}>
-          {filteredOrders.map((order: any) => (
-            <div
-              key={order.id || order.order_number}
-              style={{
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                padding: '20px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                border: '2px solid transparent',
-              }}
-              onClick={() => setSelectedOrder(order)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
-                e.currentTarget.style.borderColor = '#22c55e';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-                e.currentTarget.style.borderColor = 'transparent';
-              }}
-            >
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                gap: '16px',
-                flexWrap: 'wrap',
-              }}>
-                <div style={{ flex: 1, minWidth: '200px' }}>
+          {filteredOrders.map((order: any) => {
+            const isExpanded = expandedOrderId === (order.id || order.order_number);
+            const canCancel = ['CREATED', 'PACKING'].includes(order.status);
+            
+            return (
+              <div
+                key={order.id || order.order_number}
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  overflow: 'hidden',
+                  border: isExpanded ? '2px solid #7c3aed' : '2px solid transparent',
+                  transition: 'all 0.2s',
+                }}
+              >
+              {/* Order Header - Always Visible */}
+              <div
+                style={{
+                  padding: '16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '12px',
+                  backgroundColor: isExpanded ? '#faf5ff' : 'white',
+                }}
+                onClick={() => {
+                  setExpandedOrderId(isExpanded ? null : (order.id || order.order_number));
+                  if (!isExpanded && order.status === 'RETURNED') {
+                    loadReturnReasons();
+                  }
+                }}
+              >
+                <div style={{ flex: 1 }}>
                   <div style={{
-                    fontSize: '18px',
+                    fontSize: '16px',
                     fontWeight: '700',
-                    marginBottom: '8px',
+                    marginBottom: '6px',
                     color: '#111827',
                   }}>
                     {t.orderNumber}{order.order_number || order.id}
                   </div>
                   <div style={{
-                    fontSize: '14px',
+                    fontSize: '13px',
                     color: '#6b7280',
-                    marginBottom: '8px',
+                    marginBottom: '6px',
                   }}>
                     {t.date}: {formatDate(order.created_at || order.date)}
                   </div>
                   <div style={{
                     display: 'inline-block',
-                    padding: '6px 12px',
+                    padding: '4px 10px',
                     backgroundColor: getStatusBg(order.status),
                     color: getStatusColor(order.status),
                     borderRadius: '6px',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     fontWeight: '600',
                   }}>
                     {getStatusLabel(order.status)}
                   </div>
                 </div>
+                
                 <div style={{
-                  textAlign: 'right',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  gap: '6px',
                 }}>
+                  {order.totalSum && (
+                    <div style={{
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      color: '#7c3aed',
+                    }}>
+                      {formatPrice(order.totalSum)}
+                    </div>
+                  )}
                   <div style={{
                     fontSize: '24px',
-                    fontWeight: '700',
-                    color: '#22c55e',
-                    marginBottom: '4px',
+                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s',
                   }}>
-                    {order.total ? formatPrice(order.total) : 'N/A'}
-                  </div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#6b7280',
-                  }}>
-                    {order.items?.length || 0} {t.items}
+                    ▼
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
 
-      {/* Order Detail Modal */}
-      {selectedOrder && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px',
-          }}
-          onClick={() => setSelectedOrder(null)}
-        >
-          <div
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '20px',
-              maxWidth: '600px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflow: 'auto',
-              padding: '32px',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              marginBottom: '24px',
-            }}>
-              <h2 style={{
-                fontSize: '24px',
-                fontWeight: '700',
-                margin: 0,
-              }}>
-                {t.details}
-              </h2>
-              <button
-                onClick={() => setSelectedOrder(null)}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#f3f4f6',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                }}
-              >
-                {t.close}
-              </button>
-            </div>
+              {/* Expanded Details */}
+              {isExpanded && (
+                <div style={{
+                  padding: '16px',
+                  borderTop: '1px solid #e5e7eb',
+                  backgroundColor: '#fafafa',
+                }}>
+                  {/* Order Items */}
+                  {order.skus && order.skus.length > 0 && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', color: '#374151' }}>
+                        {t.items}:
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {order.skus.map((sku: any, idx: number) => (
+                          <div
+                            key={idx}
+                            style={{
+                              padding: '10px',
+                              backgroundColor: 'white',
+                              borderRadius: '8px',
+                              fontSize: '13px',
+                            }}
+                          >
+                            <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+                              {sku.title || sku.name || 'N/A'}
+                            </div>
+                            <div style={{ color: '#6b7280', fontSize: '12px' }}>
+                              SKU: {sku.sku} | {t.items}: {sku.quantity || 1}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '20px',
-              marginBottom: '24px',
-            }}>
-              <div>
-                <div style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#6b7280',
-                  marginBottom: '4px',
-                }}>
-                  {t.orderNumber}
-                </div>
-                <div style={{ fontSize: '18px', fontWeight: '600' }}>
-                  {selectedOrder.order_number || selectedOrder.id}
-                </div>
-              </div>
+                  {/* Customer Info */}
+                  {(order.customer || order.customerName) && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                        {t.customer}:
+                      </h4>
+                      <div style={{ padding: '10px', backgroundColor: 'white', borderRadius: '8px', fontSize: '13px' }}>
+                        <div style={{ marginBottom: '4px' }}>{order.customerName || order.customer}</div>
+                        {order.customerPhone && (
+                          <div style={{ color: '#6b7280' }}>{t.phone}: {order.customerPhone}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
-              <div>
-                <div style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#6b7280',
-                  marginBottom: '4px',
-                }}>
-                  {t.status}
-                </div>
-                <div style={{
-                  display: 'inline-block',
-                  padding: '8px 16px',
-                  backgroundColor: getStatusBg(selectedOrder.status),
-                  color: getStatusColor(selectedOrder.status),
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                }}>
-                  {selectedOrder.status}
-                </div>
-              </div>
+                  {/* Address */}
+                  {order.deliveryAddress && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                        {t.address}:
+                      </h4>
+                      <div style={{ padding: '10px', backgroundColor: 'white', borderRadius: '8px', fontSize: '13px', color: '#6b7280' }}>
+                        {order.deliveryAddress}
+                      </div>
+                    </div>
+                  )}
 
-              <div>
-                <div style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#6b7280',
-                  marginBottom: '4px',
-                }}>
-                  {t.total}
-                </div>
-                <div style={{
-                  fontSize: '24px',
-                  fontWeight: '700',
-                  color: '#22c55e',
-                }}>
-                  {selectedOrder.total ? formatPrice(selectedOrder.total) : 'N/A'}
-                </div>
-              </div>
+                  {/* Return Reason */}
+                  {order.status === 'RETURNED' && order.returnReasonId && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                        {t.returnReason}:
+                      </h4>
+                      <div style={{ padding: '10px', backgroundColor: '#fee2e2', borderRadius: '8px', fontSize: '13px', color: '#991b1b' }}>
+                        {returnReasons.find((r: any) => r.id === order.returnReasonId)?.title || `ID: ${order.returnReasonId}`}
+                      </div>
+                    </div>
+                  )}
 
-              {selectedOrder.items && selectedOrder.items.length > 0 && (
-                <div>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#6b7280',
-                    marginBottom: '8px',
-                  }}>
-                    {t.items} ({selectedOrder.items.length})
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                  }}>
-                    {selectedOrder.items.map((item: any, idx: number) => (
-                      <div
-                        key={idx}
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    {/* Label Download */}
+                    <div style={{ display: 'flex', gap: '6px', flex: 1 }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadLabel(order.id || order.order_number, 'LARGE');
+                        }}
+                        disabled={actionLoading}
                         style={{
-                          padding: '12px',
-                          backgroundColor: '#f9fafb',
+                          flex: 1,
+                          padding: '10px',
+                          backgroundColor: actionLoading ? '#d1d5db' : '#10b981',
+                          color: 'white',
+                          border: 'none',
                           borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          cursor: actionLoading ? 'not-allowed' : 'pointer',
                         }}
                       >
-                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>
-                          {item.title || item.name || 'N/A'}
-                        </div>
-                        <div style={{ fontSize: '14px', color: '#6b7280' }}>
-                          {item.quantity || 1} шт. × {formatPrice(item.price || 0)}
-                        </div>
-                      </div>
-                    ))}
+                        {actionLoading ? t.downloading : `${t.getLabel} (58x40)`}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadLabel(order.id || order.order_number, 'BIG');
+                        }}
+                        disabled={actionLoading}
+                        style={{
+                          flex: 1,
+                          padding: '10px',
+                          backgroundColor: actionLoading ? '#d1d5db' : '#06b6d4',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          cursor: actionLoading ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        {actionLoading ? t.downloading : `${t.getLabel} (43x25)`}
+                      </button>
+                    </div>
+
+                    {/* Cancel Order */}
+                    {canCancel && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelOrder(order.id || order.order_number);
+                        }}
+                        disabled={actionLoading}
+                        style={{
+                          padding: '10px 16px',
+                          backgroundColor: actionLoading ? '#d1d5db' : '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          cursor: actionLoading ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        {t.cancelOrder}
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Action Buttons */}
-            {selectedOrder.status === 'pending' && (
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-              }}>
-                <button
-                  onClick={() => handleConfirmOrder(selectedOrder.id || selectedOrder.order_number)}
-                  disabled={actionLoading}
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    backgroundColor: '#22c55e',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    cursor: actionLoading ? 'not-allowed' : 'pointer',
-                    opacity: actionLoading ? 0.6 : 1,
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!actionLoading) {
-                      e.currentTarget.style.backgroundColor = '#16a34a';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#22c55e';
-                  }}
-                >
-                  ✓ {t.confirm}
-                </button>
-                <button
-                  onClick={() => handleCancelOrder(selectedOrder.id || selectedOrder.order_number)}
-                  disabled={actionLoading}
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    backgroundColor: '#ef4444',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    cursor: actionLoading ? 'not-allowed' : 'pointer',
-                    opacity: actionLoading ? 0.6 : 1,
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!actionLoading) {
-                      e.currentTarget.style.backgroundColor = '#dc2626';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ef4444';
-                  }}
-                >
-                  ✕ {t.cancel}
-                </button>
               </div>
-            )}
-          </div>
+            );
+          })}
         </div>
       )}
     </div>

@@ -394,17 +394,19 @@ export async function cancelFbsOrder(
 
 /**
  * GET /v1/fbs/order/{orderId}/labels/print - Получить этикетку для FBS заказа
+ * @param size - Размер этикетки: LARGE (58x40mm) или BIG (43x25mm)
  */
 export async function getFbsOrderLabel(
   token: string,
-  orderId: string | number
+  orderId: string | number,
+  size: 'LARGE' | 'BIG' = 'LARGE'
 ): Promise<{
   success: boolean;
   label?: any;
   error?: string;
 }> {
   const result = await apiRequest<any>(
-    `/v1/fbs/order/${orderId}/labels/print`,
+    `/v1/fbs/order/${orderId}/labels/print?size=${size}`,
     token,
     { method: 'GET' }
   );

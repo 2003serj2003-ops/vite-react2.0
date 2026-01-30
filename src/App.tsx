@@ -752,7 +752,7 @@ export default function App() {
     if (route.name === 'uzum') {
       loadUzumIntegration();
     }
-  }, [route.name]);
+  }, [route.name, loadUzumIntegration]);
 
   // Get Telegram user info
   useEffect(() => {

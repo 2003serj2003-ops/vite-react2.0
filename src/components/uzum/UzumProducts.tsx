@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShops, getProducts } from '../../lib/uzum-api';
+import { getShops, getProducts, updateFbsSkuStocks } from '../../lib/uzum-api';
 
 interface UzumProductsProps {
   lang: 'ru' | 'uz';
@@ -9,12 +9,16 @@ interface UzumProductsProps {
 }
 
 export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHome }: UzumProductsProps) {
+  const [shops, setShops] = useState<any[]>([]);
+  const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [editingStock, setEditingStock] = useState<{ sku: string; currentStock: number } | null>(null);
+  const [newStockValue, setNewStockValue] = useState('');
 
   const T = {
     ru: {
@@ -27,6 +31,9 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       productId: 'ID товара',
       price: 'Цена',
       stock: 'Остаток',
+      stockFBO: 'Остаток FBO',
+      stockFBS: 'Остаток FBS',
+      stockDBS: 'Остаток DBS',
       status: 'Статус',
       details: 'Подробнее',
       close: 'Закрыть',
@@ -36,6 +43,13 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       inactive: 'Неактивен',
       barcode: 'Штрихкод',
       brand: 'Бренд',
+      selectShop: 'Выберите магазин',
+      updateStock: 'Обновить остаток FBS',
+      updating: 'Обновление...',
+      newStock: 'Новый остаток',
+      cancel: 'Отмена',
+      save: 'Сохранить',
+      stockUpdated: 'Остаток обновлен',
     },
     uz: {
       title: 'Mahsulotlar',
@@ -47,6 +61,9 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       productId: 'Mahsulot ID',
       price: 'Narxi',
       stock: 'Qoldiq',
+      stockFBO: 'FBO qoldig\'i',
+      stockFBS: 'FBS qoldig\'i',
+      stockDBS: 'DBS qoldig\'i',
       status: 'Holati',
       details: 'Batafsil',
       close: 'Yopish',
@@ -56,14 +73,27 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       inactive: 'Nofaol',
       barcode: 'Shtrix-kod',
       brand: 'Brend',
+      selectShop: 'Do\'konni tanlang',
+      updateStock: 'FBS qoldig\'ini yangilash',
+      updating: 'Yangilanmoqda...',
+      newStock: 'Yangi qoldiq',
+      cancel: 'Bekor qilish',
+      save: 'Saqlash',
+      stockUpdated: 'Qoldiq yangilandi',
     },
   };
 
   const t = T[lang];
 
   useEffect(() => {
-    loadProducts();
+    loadShops();
   }, [token]);
+
+  useEffect(() => {
+    if (selectedShopId) {
+      loadProducts(selectedShopId);
+    }
+  }, [selectedShopId]);
 
   useEffect(() => {
     // Filter products based on search query
@@ -74,30 +104,64 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       setFilteredProducts(
         products.filter((p: any) =>
           p.title?.toLowerCase().includes(query) ||
+          p.skuTitle?.toLowerCase().includes(query) ||
           p.sku?.toLowerCase().includes(query) ||
-          p.barcode?.toLowerCase().includes(query)
+          p.skuList?.some((sku: any) => 
+            sku.skuTitle?.toLowerCase().includes(query) ||
+            sku.barcode?.toString().includes(query)
+          )
         )
       );
     }
   }, [searchQuery, products]);
 
-  async function loadProducts() {
+  async function loadShops() {
     setLoading(true);
     try {
       const shopsResult = await getShops(token);
       console.log('🏪 [Products] Shops:', shopsResult);
       if (shopsResult.success && shopsResult.shops && shopsResult.shops.length > 0) {
-        const shopId = shopsResult.shops[0].id;
-        const productsResult = await getProducts(token, shopId);
-        console.log('📦 [Products] Products:', productsResult);
-        
-        if (productsResult.success && productsResult.products) {
-          setProducts(productsResult.products);
-          setFilteredProducts(productsResult.products);
-        }
+        setShops(shopsResult.shops);
+        setSelectedShopId(shopsResult.shops[0].id);
+      }
+    } catch (error) {
+      console.error('Shops load error:', error);
+      setLoading(false);
+    }
+  }
+
+  async function loadProducts(shopId: number) {
+    setLoading(true);
+    try {
+      const productsResult = await getProducts(token, shopId);
+      console.log('📦 [Products] Products:', productsResult);
+      
+      if (productsResult.success && productsResult.products) {
+        setProducts(productsResult.products);
+        setFilteredProducts(productsResult.products);
       }
     } catch (error) {
       console.error('Products load error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleUpdateStock(sku: string, newStock: number) {
+    setLoading(true);
+    try {
+      const result = await updateFbsSkuStocks(token, [{ sku, stock: newStock }]);
+      if (result.success) {
+        alert(t.stockUpdated);
+        setEditingStock(null);
+        if (selectedShopId) {
+          await loadProducts(selectedShopId);
+        }
+      } else {
+        alert('Error: ' + result.error);
+      }
+    } catch (error: any) {
+      alert('Error: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -264,6 +328,34 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
         </div>
       </div>
 
+      {/* Shop Selector */}
+      {shops.length > 1 && (
+        <div className="cardCream" style={{ marginBottom: '12px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#374151' }}>
+            {t.selectShop}
+          </label>
+          <select
+            className="input"
+            value={selectedShopId || ''}
+            onChange={(e) => setSelectedShopId(Number(e.target.value))}
+            style={{
+              width: '100%',
+              padding: '10px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              backgroundColor: 'white',
+              cursor: 'pointer',
+            }}
+          >
+            {shops.map(shop => (
+              <option key={shop.id} value={shop.id}>
+                {shop.title || shop.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Search */}
       <div className="cardCream" style={{ marginBottom: '12px' }}>
         <input
@@ -386,6 +478,48 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
                 {t.sku}: {product.sku || 'N/A'}
               </div>
               
+              {/* Stock Badges */}
+              <div style={{
+                display: 'flex',
+                gap: '6px',
+                marginBottom: '8px',
+                flexWrap: 'wrap',
+              }}>
+                {/* FBO Stock */}
+                <div style={{
+                  padding: '4px 8px',
+                  backgroundColor: '#dbeafe',
+                  color: '#1e40af',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                }}>
+                  FBO: {product.quantityActive || 0}
+                </div>
+                {/* FBS Stock */}
+                <div style={{
+                  padding: '4px 8px',
+                  backgroundColor: '#fef3c7',
+                  color: '#92400e',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                }}>
+                  FBS: {product.quantityFbs || 0}
+                </div>
+                {/* DBS Stock */}
+                <div style={{
+                  padding: '4px 8px',
+                  backgroundColor: '#dcfce7',
+                  color: '#166534',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                }}>
+                  DBS: {product.quantityAdditional || 0}
+                </div>
+              </div>
+              
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -398,22 +532,131 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
                 }}>
                   {product.price ? formatPrice(product.price) : 'N/A'}
                 </div>
-                {product.stock !== undefined && (
-                  <div style={{
-                    padding: '2px 8px',
-                    backgroundColor: product.stock > 0 ? '#dcfce7' : '#fee2e2',
-                    color: product.stock > 0 ? '#166534' : '#991b1b',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                  }}>
-                    {product.stock}
-                  </div>
-                )}
               </div>
+
+              {/* Update FBS Stock Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingStock({ sku: product.sku, currentStock: product.quantityFbs || 0 });
+                  setNewStockValue(String(product.quantityFbs || 0));
+                }}
+                style={{
+                  marginTop: '8px',
+                  width: '100%',
+                  padding: '8px',
+                  backgroundColor: '#fbbf24',
+                  color: '#78350f',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                {t.updateStock}
+              </button>
             </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Stock Edit Modal */}
+      {editingStock && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => setEditingStock(null)}
+        >
+          <div
+            className="cardCream"
+            style={{
+              maxWidth: '400px',
+              width: '90%',
+              padding: '20px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ marginBottom: '16px', fontSize: '18px', fontWeight: 700 }}>
+              {t.updateStock}
+            </h3>
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600 }}>
+                SKU: {editingStock.sku}
+              </label>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: '#666' }}>
+                {t.stockFBS}: {editingStock.currentStock}
+              </label>
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600 }}>
+                {t.newStock}
+              </label>
+              <input
+                type="number"
+                className="input"
+                value={newStockValue}
+                onChange={(e) => setNewStockValue(e.target.value)}
+                min="0"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setEditingStock(null)}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  backgroundColor: '#f3f4f6',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={() => {
+                  const newStock = parseInt(newStockValue);
+                  if (!isNaN(newStock) && newStock >= 0) {
+                    handleUpdateStock(editingStock.sku, newStock);
+                  }
+                }}
+                disabled={loading}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  backgroundColor: loading ? '#d1d5db' : '#7c3aed',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {loading ? t.updating : t.save}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

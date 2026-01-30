@@ -1,0 +1,21 @@
+# Cloudflare Pages Configuration
+# This project is a static SPA (Single Page Application)
+
+name = "sanya"
+compatibility_date = "2026-01-30"
+pages_build_output_dir = "dist"
+
+# For Cloudflare Pages deployment:
+# Build command: npm run build
+# Build output directory: dist
+# Deploy command: wrangler pages deploy (will auto-use pages_build_output_dir)
+
+# Or deploy manually via CLI:
+# npm run cf:deploy
+
+# Environment variables should be set in Cloudflare Pages Dashboard:
+# - VITE_SUPABASE_URL
+# - VITE_SUPABASE_ANON_KEY
+# - VITE_TELEGRAM_BOT_TOKEN
+# - VITE_AI_PROVIDER
+# - VITE_GROQ_API_KEY

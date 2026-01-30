@@ -1,7 +1,7 @@
 // Supabase Edge Function для проксирования запросов к Uzum API
 // Обходит CORS блокировку браузера
 
-// @ts-ignore - Deno types
+// @ts-expect-error - Deno types
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -23,8 +23,8 @@ serve(async (req: Request) => {
       const text = await req.text();
       console.log('[Uzum Proxy] Raw request body:', text);
       requestData = JSON.parse(text);
-    } catch (e) {
-      const error = e as Error;
+    } catch (err) {
+      const error = err as Error;
       console.error('[Uzum Proxy] JSON parse error:', error.message);
       return new Response(
         JSON.stringify({ error: 'Invalid JSON in request body', details: error.message }),
@@ -85,7 +85,7 @@ serve(async (req: Request) => {
     let jsonData;
     try {
       jsonData = JSON.parse(data);
-    } catch (e) {
+    } catch {
       console.error('[Uzum Proxy] Failed to parse JSON:', data);
       jsonData = { raw: data };
     }
