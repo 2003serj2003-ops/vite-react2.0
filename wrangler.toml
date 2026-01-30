@@ -1,0 +1,18 @@
+name = "sanya"
+compatibility_date = "2026-01-30"
+
+# Cloudflare Pages configuration
+pages_build_output_dir = "dist"
+
+# Build configuration for Cloudflare Pages
+[build]
+command = "npm run build"
+cwd = "."
+watch_dir = "src"
+
+# Environment variables will be set in Cloudflare dashboard:
+# - VITE_SUPABASE_URL
+# - VITE_SUPABASE_ANON_KEY
+# - VITE_TELEGRAM_BOT_TOKEN
+# - VITE_AI_PROVIDER
+# - VITE_GROQ_API_KEY

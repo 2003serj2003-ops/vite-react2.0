@@ -13,8 +13,9 @@
     "check": "npm run typecheck && npm run lint && npm run build",
     "crawl": "node scripts/crawl.js",
     "vercel:dev": "vercel dev",
-    "cf:dev": "wrangler pages dev dist --compatibility-date=2025-01-27",
-    "cf:deploy": "wrangler pages deploy dist"
+    "cf:dev": "wrangler pages dev dist --compatibility-date=2026-01-30",
+    "cf:deploy": "wrangler pages deploy dist",
+    "deploy": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.93.1",
