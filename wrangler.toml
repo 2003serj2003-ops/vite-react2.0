@@ -3,12 +3,12 @@
 
 name = "sanya"
 compatibility_date = "2026-01-30"
+pages_build_output_dir = "dist"
 
-# For Cloudflare Pages, we don't use [assets] in wrangler.toml
-# Instead, configure in Cloudflare Dashboard:
+# For Cloudflare Pages deployment:
 # Build command: npm run build
 # Build output directory: dist
-# Deploy command: wrangler pages deploy dist
+# Deploy command: wrangler pages deploy (will auto-use pages_build_output_dir)
 
 # Or deploy manually via CLI:
 # npm run cf:deploy
