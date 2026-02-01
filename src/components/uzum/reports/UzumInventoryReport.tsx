@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getShops, getProducts, getFbsSkuStocks } from '../../../lib/uzum-api';
+import { exportToExcel } from '../../../lib/excel-export';
 import UzumChart from '../UzumChart';
 import { FiPackage } from 'react-icons/fi';
 
@@ -151,7 +152,7 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
     }
   }
 
-  function downloadReport() {
+  async function downloadReport() {
     const headers = [t.product, t.barcode, t.cost, t.inStock, t.costFBO, t.fboQty, t.costFBS, t.fbsQty, t.costFBSFBO];
     const rows = filteredData.map(row => [
       row.name,
@@ -165,14 +166,25 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
       row.costFBSFBO,
     ]);
 
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `inventory-report-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    const totalsRow = {
+      [t.product]: t.total || 'Итого',
+      [t.barcode]: '',
+      [t.cost]: '',
+      [t.inStock]: totals.inStock,
+      [t.costFBO]: totals.costFBO,
+      [t.fboQty]: totals.fboQty,
+      [t.costFBS]: totals.costFBS,
+      [t.fbsQty]: totals.fbsQty,
+      [t.costFBSFBO]: totals.costFBSFBO,
+    };
+
+    await exportToExcel({
+      filename: `sellix_inventory_${new Date().toISOString().split('T')[0]}.xlsx`,
+      sheetName: 'Инвентаризация',
+      headers,
+      data: rows,
+      totals: totalsRow,
+    });
   }
 
   const filteredData = inventoryData.filter(item =>

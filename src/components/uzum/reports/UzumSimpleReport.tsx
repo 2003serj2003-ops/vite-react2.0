@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { getShops, getProducts, getFbsSkuStocks, getFinanceOrders } from '../../../lib/uzum-api';
+import { exportToExcel } from '../../../lib/excel-export';
 
 interface SimpleReportProps {
   lang: 'ru' | 'uz';
@@ -195,6 +196,30 @@ export default function UzumSimpleReport({ lang, token, type }: SimpleReportProp
     return value.toString();
   }
 
+  async function downloadReport() {
+    const headers = [t.product, 'SKU', config.valueLabel[lang], 'Детали'];
+    const rows = products.map(row => [
+      row.name,
+      row.sku,
+      formatValue(row.value),
+      row.details,
+    ]);
+
+    const reportNames = {
+      'non-liquid': 'неликвиды',
+      'paid-storage': 'платное_хранение',
+      'returned': 'возвраты',
+      'paid-out': 'выплаты',
+    };
+
+    await exportToExcel({
+      filename: `sellix_${reportNames[type]}_${new Date().toISOString().split('T')[0]}.xlsx`,
+      sheetName: config.title[lang],
+      headers,
+      data: rows,
+    });
+  }
+
   if (loading) {
     return (
       <div style={{
@@ -240,6 +265,35 @@ export default function UzumSimpleReport({ lang, token, type }: SimpleReportProp
           <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
             {config.icon} {config.title[lang]}
           </h2>
+          {products.length > 0 && (
+            <button
+              onClick={downloadReport}
+              style={{
+                padding: '12px 24px',
+                background: 'linear-gradient(135deg, #1E6FDB 0%, #4CAF50 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                fontSize: '15px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 16px rgba(30,111,219, 0.3)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              ⬇️ {t.download}
+            </button>
+          )}
         </div>
 
         <div>

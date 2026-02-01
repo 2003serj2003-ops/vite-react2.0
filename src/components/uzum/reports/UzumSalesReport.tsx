@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getShops, getProducts, getFinanceOrders, getFbsSkuStocks } from '../../../lib/uzum-api';
+import { exportToExcel } from '../../../lib/excel-export';
 import UzumChart from '../UzumChart';
 import { FiTrendingUp, FiPackage, FiDollarSign } from 'react-icons/fi';
 
@@ -198,8 +199,7 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
     return new Intl.NumberFormat('ru-RU').format(Math.round(price)) + ' сум';
   }
 
-  function downloadReport() {
-    // Create CSV content
+  async function downloadReport() {
     const headers = [t.productName, t.sold, t.inStock, t.fbs, t.revenue, t.toPay, t.net, t.monthlyPotential];
     const rows = salesData.map(row => [
       row.name,
@@ -212,14 +212,24 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
       row.monthlyPotential,
     ]);
 
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `sales-report-${dateRange.start}-${dateRange.end}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    const totalsRow = {
+      [t.productName]: t.total || 'Итого',
+      [t.sold]: totals.sold,
+      [t.inStock]: '',
+      [t.fbs]: '',
+      [t.revenue]: totals.revenue,
+      [t.toPay]: totals.toPay,
+      [t.net]: totals.net,
+      [t.monthlyPotential]: totals.monthlyPotential,
+    };
+
+    await exportToExcel({
+      filename: `sellix_sales_${dateRange.start}_${dateRange.end}_${new Date().toISOString().split('T')[0]}.xlsx`,
+      sheetName: 'Продажи и остатки',
+      headers,
+      data: rows,
+      totals: totalsRow,
+    });
   }
 
   const totals = salesData.reduce((acc, row) => ({

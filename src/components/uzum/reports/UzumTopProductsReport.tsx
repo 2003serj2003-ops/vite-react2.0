@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getShops, getProducts, getFinanceOrders } from '../../../lib/uzum-api';
+import { exportToExcel } from '../../../lib/excel-export';
 
 interface UzumTopProductsReportProps {
   lang: 'ru' | 'uz';
@@ -165,7 +166,7 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
     return new Intl.NumberFormat('ru-RU').format(Math.round(price)) + ' сум';
   }
 
-  function downloadReport() {
+  async function downloadReport() {
     const headers = [t.product, t.sold, t.revenue, t.profit, t.avgPrice];
     const rows = topProducts.map(row => [
       row.name,
@@ -175,14 +176,12 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
       row.avgPrice,
     ]);
 
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `top-products-${dateRange.start}-${dateRange.end}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    await exportToExcel({
+      filename: `sellix_top_products_${dateRange.start}_${dateRange.end}_${new Date().toISOString().split('T')[0]}.xlsx`,
+      sheetName: 'Топ товары',
+      headers,
+      data: rows,
+    });
   }
 
   if (loading) {
