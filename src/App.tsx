@@ -1774,17 +1774,6 @@ export default function App() {
   return (
     <div className="app">
       <div className="phone">
-        <div className="floating-grapes">
-          <div className="grape grape-1">🍇</div>
-          <div className="grape grape-2">🍇</div>
-          <div className="grape grape-3">🍇</div>
-          <div className="grape grape-4">🍇</div>
-          <div className="grape grape-5">🍇</div>
-          <div className="grape grape-6">🍇</div>
-          <div className="grape grape-7">🍇</div>
-          <div className="grape grape-8">🍇</div>
-        </div>
-
         {route.name === "welcome" && (
           <div className="page" style={{ 
             display: "flex", 
