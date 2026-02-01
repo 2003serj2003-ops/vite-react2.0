@@ -299,17 +299,25 @@ export default function App() {
   const t: (typeof T)[Lang] = T[lang];
 
   const [route, setRoute] = useState<Route>(() => {
-    // Режим разработки - автоматический вход
+    // Режим разработки - автоматический вход ТОЛЬКО для локального тестирования
     const isDevelopment = import.meta.env.DEV && window.location.hostname === 'localhost';
+    
     if (isDevelopment) {
-      console.log("[DEV MODE] Auto-login enabled");
+      console.log("[DEV MODE] Auto-login enabled for localhost");
       localStorage.setItem("access_ok", "1");
       localStorage.setItem("user_role", "viewer");
       return { name: "home" };
     }
     
+    // В production проверяем код доступа
     const ok = localStorage.getItem("access_ok") === "1";
-    return ok ? { name: "home" } : { name: "welcome" };
+    
+    if (!ok) {
+      console.log("[PRODUCTION] No access code, showing welcome screen");
+      return { name: "welcome" };
+    }
+    
+    return { name: "home" };
   });
 
   const [search, setSearch] = useState("");
