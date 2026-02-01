@@ -120,12 +120,20 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
     setLoadingDetails(true);
     try {
       const result = await getShopInvoiceProducts(token, shopId, { invoiceId });
-      console.log('📦 Invoice products:', result);
+      console.log('📦 Invoice products API response:', result);
       if (result.success && result.products) {
+        console.log('📦 Products count:', result.products.length);
+        if (result.products.length > 0) {
+          console.log('📦 Sample product structure:', result.products[0]);
+        }
         setInvoiceProducts(result.products);
+      } else {
+        console.log('⚠️ No products found or error:', result.error);
+        setInvoiceProducts([]);
       }
     } catch (error) {
-      console.error('Error loading invoice details:', error);
+      console.error('❌ Error loading invoice details:', error);
+      setInvoiceProducts([]);
     } finally {
       setLoadingDetails(false);
     }
@@ -417,62 +425,84 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
                               flexDirection: 'column',
                               gap: '8px',
                             }}>
-                              {invoiceProducts.map((product: any, idx: number) => (
-                                <div
-                                  key={idx}
-                                  style={{
-                                    padding: '12px',
-                                    backgroundColor: 'white',
-                                    borderRadius: '8px',
-                                    border: '1px solid #e5e7eb',
-                                  }}
-                                >
-                                  <div style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'flex-start',
-                                    gap: '12px',
-                                  }}>
-                                    <div style={{ flex: 1 }}>
-                                      <div style={{
-                                        fontWeight: '600',
-                                        marginBottom: '4px',
-                                        color: '#111827',
-                                      }}>
-                                        {product.name || product.title || product.productName}
-                                      </div>
-                                      <div style={{
-                                        fontSize: '14px',
-                                        color: '#6b7280',
-                                      }}>
-                                        {t.quantity}: {product.quantity || product.amount || 0}
-                                      </div>
-                                    </div>
+                              {invoiceProducts.map((product: any, idx: number) => {
+                                // Попробуем разные варианты полей
+                                const productName = product.name || product.title || product.productName || product.sku || `Товар ${idx + 1}`;
+                                const quantity = product.quantity || product.amount || product.qty || product.count || 0;
+                                const price = product.price || product.unitPrice || product.sellPrice || 0;
+                                const totalPrice = product.totalPrice || product.total || (price * quantity) || 0;
+                                
+                                return (
+                                  <div
+                                    key={idx}
+                                    style={{
+                                      padding: '16px',
+                                      backgroundColor: 'white',
+                                      borderRadius: '12px',
+                                      border: '2px solid #e5e7eb',
+                                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                    }}
+                                  >
                                     <div style={{
-                                      textAlign: 'right',
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'flex-start',
+                                      gap: '16px',
+                                      flexWrap: 'wrap',
                                     }}>
-                                      {product.price && (
+                                      <div style={{ flex: 1, minWidth: '200px' }}>
                                         <div style={{
-                                          fontSize: '16px',
-                                          fontWeight: '600',
-                                          color: '#22c55e',
+                                          fontWeight: '700',
+                                          marginBottom: '8px',
+                                          color: '#111827',
+                                          fontSize: '15px',
                                         }}>
-                                          {formatPrice(product.price)}
+                                          {productName}
                                         </div>
-                                      )}
-                                      {product.totalPrice && (
                                         <div style={{
                                           fontSize: '14px',
                                           color: '#6b7280',
-                                          marginTop: '4px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '6px',
                                         }}>
-                                          {t.total}: {formatPrice(product.totalPrice)}
+                                          <span style={{
+                                            padding: '4px 12px',
+                                            backgroundColor: '#f3f4f6',
+                                            borderRadius: '6px',
+                                            fontWeight: '600',
+                                          }}>
+                                            {t.quantity}: {quantity}
+                                          </span>
                                         </div>
-                                      )}
+                                      </div>
+                                      <div style={{
+                                        textAlign: 'right',
+                                      }}>
+                                        {price > 0 && (
+                                          <div style={{
+                                            fontSize: '18px',
+                                            fontWeight: '700',
+                                            color: '#22c55e',
+                                            marginBottom: '4px',
+                                          }}>
+                                            {formatPrice(price)}
+                                          </div>
+                                        )}
+                                        {totalPrice > 0 && totalPrice !== price && (
+                                          <div style={{
+                                            fontSize: '14px',
+                                            color: '#6b7280',
+                                            fontWeight: '600',
+                                          }}>
+                                            {t.total}: {formatPrice(totalPrice)}
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}

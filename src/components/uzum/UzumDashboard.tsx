@@ -164,24 +164,36 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           // Load warehouse stocks
           try {
             const stocksResult = await getFbsSkuStocks(token, { limit: 1000 });
-            console.log('📊 Stocks result:', stocksResult);
+            console.log('📊 Stocks API response:', stocksResult);
             
-            if (stocksResult.success && stocksResult.stocks) {
+            if (stocksResult.success && stocksResult.stocks && Array.isArray(stocksResult.stocks)) {
               const stocks = stocksResult.stocks;
               let fboTotal = 0;
               let fbsTotal = 0;
               let dbsTotal = 0;
               
+              console.log('📊 First stock item sample:', stocks[0]);
+              
               stocks.forEach((item: any) => {
-                // API возвращает объект с полями: fbo, fbs, dbs
-                // Каждое поле - это количество товара на соответствующем складе
-                const fboQty = item.fbo || 0;
-                const fbsQty = item.fbs || 0;
-                const dbsQty = item.dbs || 0;
+                // Проверяем разные возможные структуры ответа API
+                // Вариант 1: прямые поля fbo, fbs, dbs
+                if (typeof item.fbo === 'number') fboTotal += item.fbo;
+                if (typeof item.fbs === 'number') fbsTotal += item.fbs;
+                if (typeof item.dbs === 'number') dbsTotal += item.dbs;
                 
-                fboTotal += fboQty;
-                fbsTotal += fbsQty;
-                dbsTotal += dbsQty;
+                // Вариант 2: поле stock с подполями
+                if (item.stock) {
+                  if (typeof item.stock.fbo === 'number') fboTotal += item.stock.fbo;
+                  if (typeof item.stock.fbs === 'number') fbsTotal += item.stock.fbs;
+                  if (typeof item.stock.dbs === 'number') dbsTotal += item.stock.dbs;
+                }
+                
+                // Вариант 3: поле quantity или amount
+                if (!item.fbo && !item.stock) {
+                  const qty = item.quantity || item.amount || item.stock || 0;
+                  // Если нет разделения по типам, добавляем в FBS по умолчанию
+                  fbsTotal += qty;
+                }
               });
               
               setStats(prev => ({
@@ -191,10 +203,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                 dbsStock: dbsTotal,
               }));
               
-              console.log('📦 Warehouse stocks:', { fboTotal, fbsTotal, dbsTotal });
+              console.log('📦 Calculated warehouse stocks:', { fboTotal, fbsTotal, dbsTotal, totalItems: stocks.length });
+            } else {
+              console.log('⚠️ No stocks data or invalid format');
             }
           } catch (error) {
-            console.error('Error loading stocks:', error);
+            console.error('❌ Error loading stocks:', error);
           }
 
           // Load orders count - sequential to avoid rate limiting
@@ -330,6 +344,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           });
 
           console.log(`💸 Filtered expenses for period (${datePeriod} days): ${filteredExpenses.length}`);
+          if (filteredExpenses.length > 0) {
+            console.log('💸 Sample expense:', filteredExpenses[0]);
+          }
 
           // Calculate expenses by category
           const expensesByCategory = {
@@ -340,17 +357,29 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           };
 
           filteredExpenses.forEach(expense => {
-            const amount = (expense.paymentPrice || 0) * (expense.amount || 1);
-            const source = expense.source?.toLowerCase() || '';
+            const amount = Math.abs(expense.paymentPrice || expense.amount || 0);
+            const type = (expense.type || '').toLowerCase();
+            const source = (expense.source || '').toLowerCase();
+            const description = (expense.description || '').toLowerCase();
             
-            if (source.includes('marketing')) {
+            // Пробуем классифицировать по разным полям
+            const allText = `${type} ${source} ${description}`;
+            
+            if (allText.includes('market') || allText.includes('маркет')) {
               expensesByCategory.marketing += amount;
-            } else if (source.includes('logist')) {
+            } else if (allText.includes('commi') || allText.includes('комисс')) {
+              expensesByCategory.commission += amount;
+            } else if (allText.includes('logist') || allText.includes('логист') || allText.includes('delivery') || allText.includes('доставк')) {
               expensesByCategory.logistics += amount;
-            } else if (source.includes('uzum') || source.includes('market')) {
-              expensesByCategory.fines += amount; // FBS штрафы/комиссии
+            } else if (allText.includes('fine') || allText.includes('штраф') || allText.includes('penalty')) {
+              expensesByCategory.fines += amount;
+            } else {
+              // Если не удалось классифицировать, добавляем в комиссию
+              expensesByCategory.commission += amount;
             }
           });
+
+          console.log('💸 Expenses by category:', expensesByCategory);
 
           // Calculate total expenses
           const totalExpenses = filteredExpenses.reduce((sum, expense) => {

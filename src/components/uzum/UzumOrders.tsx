@@ -395,26 +395,27 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
       maxWidth: '100%',
       overflow: 'visible',
     }}>
-      {/* Status Filter */}
+      {/* Status Filter - Fixed and Always Visible */}
       <div style={{
         backgroundColor: 'white',
         borderRadius: '16px',
-        padding: '16px',
-        marginBottom: '16px',
+        padding: '20px',
+        marginBottom: '20px',
         overflowX: 'auto',
         overflowY: 'visible',
         WebkitOverflowScrolling: 'touch',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-        border: '1px solid #e5e7eb',
-        position: 'relative',
-        zIndex: 10,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        border: '2px solid #e5e7eb',
+        position: 'sticky',
+        top: '0',
+        zIndex: 100,
         width: '100%',
       }}>
         <div style={{
           display: 'flex',
-          gap: '8px',
+          gap: '10px',
           minWidth: 'max-content',
-          paddingBottom: '4px',
+          paddingBottom: '8px',
         }}>
           {statusOptions.map((option) => {
             const count = getStatusCount(option.value);
@@ -424,31 +425,44 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                 key={option.value}
                 onClick={() => setStatusFilter(option.value)}
                 style={{
-                  padding: '12px 18px',
+                  padding: '14px 20px',
                   backgroundColor: isActive ? '#22c55e' : '#f9fafb',
                   color: isActive ? 'white' : '#374151',
                   border: isActive ? 'none' : '2px solid #d1d5db',
                   borderRadius: '12px',
                   cursor: 'pointer',
-                  fontSize: '14px',
+                  fontSize: '15px',
                   fontWeight: '600',
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
+                  minWidth: 'fit-content',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: '10px',
                   transition: 'all 0.2s',
-                  boxShadow: isActive ? '0 2px 4px rgba(34, 197, 94, 0.3)' : 'none',
+                  boxShadow: isActive ? '0 4px 8px rgba(34, 197, 94, 0.4)' : '0 2px 4px rgba(0,0,0,0.05)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = '#f3f4f6';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = '#f9fafb';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }
                 }}
               >
                 <span>{option.label}</span>
                 <span style={{
-                  padding: '4px 10px',
-                  backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : '#e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '13px',
+                  padding: '6px 12px',
+                  backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : '#e5e7eb',
+                  borderRadius: '10px',
+                  fontSize: '14px',
                   fontWeight: '700',
-                  minWidth: '24px',
+                  minWidth: '28px',
                   textAlign: 'center',
                 }}>
                   {count}
@@ -585,27 +599,72 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                           📋 {t.details}
                         </div>
                         <div style={{
-                          padding: '12px',
+                          padding: '16px',
                           backgroundColor: 'white',
-                          borderRadius: '8px',
+                          borderRadius: '12px',
                           border: '1px solid #e5e7eb',
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                          display: 'flex',
+                          flexDirection: 'column',
                           gap: '12px',
                         }}>
-                          {Object.entries(orderDetails[orderId]).map(([key, value]: [string, any]) => {
-                            if (typeof value === 'object' || key === 'items') return null;
-                            return (
-                              <div key={key} style={{ fontSize: '14px' }}>
-                                <div style={{ color: '#6b7280', marginBottom: '4px' }}>
-                                  {key}:
+                          {(() => {
+                            const details = orderDetails[orderId];
+                            const fieldMap: {[key: string]: string} = {
+                              id: '🔢 ID заказа',
+                              status: '📊 Статус',
+                              dateCreated: '📅 Дата создания',
+                              acceptUntil: '⏰ Принять до',
+                              deliverUntil: '🚚 Доставить до',
+                              identifierRequired: '🆔 Требуется идентификатор',
+                              orderNumber: '📋 Номер заказа',
+                              warehouseName: '🏢 Склад',
+                              deliveryType: '📦 Тип доставки',
+                              paymentType: '💳 Тип оплаты',
+                            };
+
+                            return Object.entries(details).map(([key, value]: [string, any]) => {
+                              if (typeof value === 'object' || key === 'items') return null;
+                              
+                              const label = fieldMap[key] || key;
+                              let displayValue = String(value);
+                              
+                              // Форматирование дат
+                              if ((key.includes('date') || key.includes('Until')) && !isNaN(Number(value))) {
+                                const date = new Date(Number(value));
+                                displayValue = date.toLocaleString('ru-RU', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                });
+                              }
+                              
+                              // Форматирование булевых значений
+                              if (value === true) displayValue = '✅ Да';
+                              if (value === false) displayValue = '❌ Нет';
+                              
+                              return (
+                                <div key={key} style={{ 
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  padding: '10px',
+                                  backgroundColor: '#f9fafb',
+                                  borderRadius: '8px',
+                                  flexWrap: 'wrap',
+                                  gap: '8px',
+                                }}>
+                                  <div style={{ color: '#6b7280', fontSize: '14px', fontWeight: '500' }}>
+                                    {label}
+                                  </div>
+                                  <div style={{ color: '#111827', fontSize: '14px', fontWeight: '700' }}>
+                                    {displayValue}
+                                  </div>
                                 </div>
-                                <div style={{ color: '#111827', fontWeight: '600' }}>
-                                  {String(value)}
-                                </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            });
+                          })()}
                         </div>
                       </div>
                     )}
