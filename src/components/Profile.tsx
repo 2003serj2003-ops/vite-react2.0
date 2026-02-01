@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getIntegrationStatus, disconnectIntegration, checkIntegrationHealth, type IntegrationStatus } from '../lib/integration-api';
 import { FiShoppingCart, FiCheckCircle, FiXCircle, FiClock, FiShield } from 'react-icons/fi';
+import { Theme, toggleTheme as toggleThemeUtil, getStoredTheme } from '../lib/theme';
+import ThemeToggle from './ThemeToggle';
 
 interface ProfileProps {
   lang: 'ru' | 'uz';
@@ -11,6 +13,12 @@ interface ProfileProps {
 export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: ProfileProps) {
   const [, setLoading] = useState(true);
   const [uzumStatus, setUzumStatus] = useState<IntegrationStatus | null>(null);
+  const [theme, setTheme] = useState<Theme>(() => getStoredTheme());
+
+  const handleToggleTheme = () => {
+    const newTheme = toggleThemeUtil();
+    setTheme(newTheme);
+  };
   const [checking, setChecking] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
 
@@ -175,38 +183,46 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
         maxWidth: '480px',
         margin: '0 auto',
       }}>
-        {/* Back Button */}
-        {onNavigateBack && (
-          <button
-            onClick={onNavigateBack}
-            style={{
-              background: 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '12px',
-              color: 'white',
-              padding: '10px 20px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              marginBottom: '20px',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.3s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.25)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
-          >
-            ← {t.back}
-          </button>
-        )}
+        {/* Header with Back Button and Theme Toggle */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+        }}>
+          {onNavigateBack && (
+            <button
+              onClick={onNavigateBack}
+              style={{
+                background: 'rgba(255,255,255,0.15)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '12px',
+                color: 'white',
+                padding: '10px 20px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.3s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.25)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              ← {t.back}
+            </button>
+          )}
+          
+          <ThemeToggle theme={theme} onToggle={handleToggleTheme} />
+        </div>
 
         {/* UZUM MEMBERSHIP Passport */}
         <div style={{

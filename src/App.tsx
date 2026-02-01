@@ -16,6 +16,8 @@ import UzumOnboarding from "./components/UzumOnboarding";
 import UzumTour from "./components/UzumTour";
 import UzumNavigation from "./components/UzumNavigation";
 import Profile from "./components/Profile";
+import { initTheme, toggleTheme as toggleThemeUtil, type Theme } from "./lib/theme";
+import ThemeToggle from "./components/ThemeToggle";
 
 type Lang = "ru" | "uz";
 
@@ -299,6 +301,14 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 export default function App() {
   const [lang, setLang] = useState<Lang>((localStorage.getItem("lang") as Lang) || "ru");
   const t: (typeof T)[Lang] = T[lang];
+  
+  // Theme state
+  const [theme, setTheme] = useState<Theme>(() => initTheme());
+  
+  const handleToggleTheme = () => {
+    const newTheme = toggleThemeUtil();
+    setTheme(newTheme);
+  };
 
   const [route, setRoute] = useState<Route>(() => {
     // Режим разработки - автоматический вход ТОЛЬКО для локального тестирования
@@ -1782,8 +1792,18 @@ export default function App() {
             alignItems: "center",
             justifyContent: "center",
             padding: "16px",
-            minHeight: "100vh"
+            minHeight: "100vh",
+            position: "relative"
           }}>
+            {/* Theme Toggle */}
+            <div style={{
+              position: "absolute",
+              top: "16px",
+              right: "16px"
+            }}>
+              <ThemeToggle theme={theme} onToggle={handleToggleTheme} />
+            </div>
+            
             <div style={{ 
               width: "100%", 
               maxWidth: "440px",
@@ -1800,19 +1820,19 @@ export default function App() {
                 <div className="logoBox" style={{
                   width: "90px",
                   height: "90px",
-                  background: "linear-gradient(145deg, #ffffff, #f8f7ff)",
+                  background: "var(--bg-card)",
                   borderRadius: "24px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  boxShadow: "0 6px 24px rgba(30,111,219,.2), 0 2px 6px rgba(0,0,0,.05)",
-                  border: "2px solid rgba(255,255,255,.9)",
+                  boxShadow: "var(--shadow-md)",
+                  border: "2px solid var(--border-secondary)",
                   padding: "12px"
                 }}>
                   <img 
                     className="logoImg" 
-                    src="/uzum-logo.png" 
-                    alt="Uzum" 
+                    src="/logo.png" 
+                    alt="Logo" 
                     style={{
                       width: "100%",
                       height: "100%",
@@ -1820,6 +1840,15 @@ export default function App() {
                     }}
                   />
                 </div>
+              </div>
+
+              {/* Theme Toggle */}
+              <div style={{
+                position: "absolute",
+                top: "16px",
+                right: "16px"
+              }}>
+                <ThemeToggle theme={theme} onToggle={handleToggleTheme} />
               </div>
 
               {/* Заголовок */}
@@ -2497,12 +2526,12 @@ export default function App() {
           <div className="page">
             {/* Connected: Show Navigation and Pages */}
             {uzumConnected && (
-              <>
+              <>  
                 {/* Page Content */}
                 <div style={{ 
                   flex: 1, 
                   overflow: 'auto',
-                  paddingBottom: '80px' // Отступ для нижней навигации
+                  paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' // Отступ для нижней навигации
                 }}>
                   {uzumCurrentPage === 'dashboard' && (
                     <UzumDashboard 
@@ -2558,14 +2587,12 @@ export default function App() {
                   )}
                 </div>
                 
-                {/* Bottom Navigation - hide on stocks page */}
-                {uzumCurrentPage !== 'stocks' && (
-                  <UzumNavigation 
-                    currentPage={uzumCurrentPage as any}
-                    onNavigate={(page) => setUzumCurrentPage(page as any)}
-                    lang={lang}
-                  />
-                )}
+                {/* Bottom Navigation */}
+                <UzumNavigation 
+                  currentPage={uzumCurrentPage as any}
+                  onNavigate={(page) => setUzumCurrentPage(page as any)}
+                  lang={lang}
+                />
               </>
             )}
             

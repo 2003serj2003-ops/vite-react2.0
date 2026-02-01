@@ -437,6 +437,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
           display: 'grid',
           gridTemplateColumns: window.innerWidth > 1024 ? 'repeat(2, 1fr)' : '1fr',
           gap: '16px',
+          paddingBottom: '100px', // Отступ для нижней навигации
         }}>
           {filteredStocks.map((item) => {
             const hasEdit = editedStocks[item.skuId] !== undefined;

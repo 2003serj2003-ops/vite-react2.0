@@ -19,13 +19,13 @@ interface UzumDashboardProps {
   lang: 'ru' | 'uz';
   token: string;
   onNavigate: (page: 'products' | 'orders' | 'finance' | 'stocks') => void;
-  onNavigateBack: () => void;
+  onNavigateBack?: () => void;
   onDisconnect?: () => void;
   onChangeLang?: () => void;
   onShowTour?: () => void;
 }
 
-export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack, onDisconnect, onChangeLang, onShowTour }: UzumDashboardProps) {
+export default function UzumDashboard({ lang, token, onNavigate, onDisconnect, onShowTour }: UzumDashboardProps) {
   const [shopId, setShopId] = useState<number | null>(null);
   const [shops, setShops] = useState<any[]>([]);
   const [stats, setStats] = useState({
@@ -569,123 +569,110 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
 
   return (
     <div className="list" style={{ padding: '0' }}>
-      {/* Top Bar with 4 buttons */}
+      {/* Stylized Top App Bar */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: window.innerWidth > 640 ? '16px 20px' : '12px 16px',
-        backgroundColor: '#1E6FDB',
-        boxShadow: '0 2px 8px rgba(30,111,219, 0.3)',
-        flexWrap: 'wrap',
-        gap: '8px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        backgroundColor: 'white',
+        borderBottom: '2px solid #e5e7eb',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
       }}>
-        <button
-          onClick={onNavigateBack}
-          style={{
-            padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            color: 'white',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: window.innerWidth > 640 ? '14px' : '12px',
-            fontWeight: 600,
-            transition: 'all 0.2s',
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '12px 16px',
+          maxWidth: '100%',
+        }}>
+          {/* Левая часть: Название */}
+          <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-          }}
-        >
-          🏠 {window.innerWidth > 640 ? (lang === 'ru' ? 'Обратно в приложение' : 'Ilovaga qaytish') : ''}
-        </button>
+            gap: '12px',
+            flex: 1,
+            minWidth: 0,
+          }}>
+            <h1 style={{
+              fontSize: '20px',
+              fontWeight: 700,
+              color: '#1E6FDB',
+              margin: 0,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {lang === 'ru' ? 'Главная' : 'Asosiy'}
+            </h1>
+          </div>
 
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            style={{
-              padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
-              backgroundColor: refreshing ? 'rgba(156, 163, 175, 0.5)' : 'rgba(76,175,80, 0.9)',
-              color: 'white',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '8px',
-              cursor: refreshing ? 'not-allowed' : 'pointer',
-              fontSize: window.innerWidth > 640 ? '14px' : '12px',
-              fontWeight: 600,
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              opacity: refreshing ? 0.7 : 1,
-            }}
-            onMouseEnter={(e) => {
-              if (!refreshing) e.currentTarget.style.backgroundColor = 'rgba(22, 163, 74, 0.9)';
-            }}
-            onMouseLeave={(e) => {
-              if (!refreshing) e.currentTarget.style.backgroundColor = 'rgba(76,175,80, 0.9)';
-            }}
-          >
-            {refreshing ? '⏳' : '🔄'} {window.innerWidth > 640 ? t.refresh : ''}
-          </button>
+          {/* Правая часть: Компактные иконки */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              title={t.refresh}
+              style={{
+                width: '36px',
+                height: '36px',
+                backgroundColor: refreshing ? '#e5e7eb' : '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: refreshing ? 'not-allowed' : 'pointer',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                opacity: refreshing ? 0.6 : 1,
+              }}
+            >
+              {refreshing ? '⏳' : '🔄'}
+            </button>
 
-          <button
-            onClick={onChangeLang || (() => {})}
-            style={{
-              padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              color: 'white',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: window.innerWidth > 640 ? '14px' : '12px',
-              fontWeight: 600,
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-            }}
-          >
-            🌐 {window.innerWidth > 640 ? (lang === 'ru' ? 'O\'zbekcha' : 'Русский') : lang === 'ru' ? 'UZ' : 'RU'}
-          </button>
+            <button
+              onClick={onShowTour}
+              title={lang === 'ru' ? 'Помощь' : 'Yordam'}
+              style={{
+                width: '36px',
+                height: '36px',
+                backgroundColor: '#FF9F1C',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}
+            >
+              ❓
+            </button>
 
-          <button
-            onClick={onDisconnect || (() => {})}
-            style={{
-              padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
-              backgroundColor: 'rgba(239, 68, 68, 0.9)',
-              color: 'white',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: window.innerWidth > 640 ? '14px' : '12px',
-              fontWeight: 600,
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.9)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
-            }}
-          >
-            🚪 {window.innerWidth > 640 ? (lang === 'ru' ? 'Отключить' : 'Uzish') : ''}
-          </button>
+            <button
+              onClick={onDisconnect || (() => {})}
+              title={lang === 'ru' ? 'Отключить' : 'Uzish'}
+              style={{
+                width: '36px',
+                height: '36px',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}
+            >
+              🚪
+            </button>
+          </div>
         </div>
       </div>
 

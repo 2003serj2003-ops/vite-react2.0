@@ -1,11 +1,11 @@
 :root{
+  /* Legacy colors (for compatibility) */
   --bg:#0a0a14;
   --accent:#1E6FDB;
   --accentHover:#3FA9F5;
   --accentLight:#3FA9F5;
   --cream:#FFF8E8;
   --dark:#0f0d18;
-
   --border:#1E6FDB;
   --muted:rgba(20,18,26,.65);
 
@@ -21,6 +21,20 @@
   --gradient-primary: linear-gradient(135deg, #1E6FDB 0%, #3FA9F5 100%);
   --gradient-secondary: linear-gradient(135deg, #FFF8E8 0%, #FFE8B8 100%);
   --gradient-glow: radial-gradient(circle at 50% 50%, rgba(30,111,219,.3), transparent 70%);
+}
+
+/* Light theme specific adjustments */
+[data-theme="light"] {
+  --bg: #FFFFFF;
+  --dark: #F8F9FA;
+  --cream: #FFF8E8;
+}
+
+/* Dark theme specific adjustments */
+[data-theme="dark"] {
+  --bg: #0B1C2D;
+  --dark: #0F2438;
+  --cream: #132A42;
 }
 
 /* Reduce motion для производительности */
@@ -70,19 +84,33 @@ body{
   margin:0;
   padding:0;
   font-family: 'Inter', "iCielCrocante", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif, system-ui, Segoe UI, Roboto, Arial, sans-serif;
-  color:#fff;
-  background:
-    radial-gradient(1200px 600px at 50% -200px, rgba(30,111,219,.28), transparent 68%),
-    radial-gradient(1000px 600px at 0% 0%, rgba(63,169,245,.15), transparent 60%),
-    radial-gradient(800px 500px at 100% 100%, rgba(30,111,219,.12), transparent 55%),
-    linear-gradient(180deg, #0a0a14 0%, #0f0d18 100%);
+  color: var(--text-primary);
+  background: var(--bg-primary);
   font-smooth: always;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Light theme body gradient */
+[data-theme="light"] body{
+  background:
+    radial-gradient(1200px 600px at 50% -200px, rgba(30,111,219,.08), transparent 68%),
+    radial-gradient(1000px 600px at 0% 0%, rgba(63,169,245,.05), transparent 60%),
+    radial-gradient(800px 500px at 100% 100%, rgba(30,111,219,.04), transparent 55%),
+    linear-gradient(180deg, #FFFFFF 0%, #F8F9FA 100%);
+}
+
+/* Dark theme body gradient */
+[data-theme="dark"] body{
+  background:
+    radial-gradient(1200px 600px at 50% -200px, rgba(30,111,219,.28), transparent 68%),
+    radial-gradient(1000px 600px at 0% 0%, rgba(63,169,245,.15), transparent 60%),
+    radial-gradient(800px 500px at 100% 100%, rgba(30,111,219,.12), transparent 55%),
+    linear-gradient(180deg, #0B1C2D 0%, #0F2438 100%);
+}
+
 .app{
-  height:100vh;
+  height: 100dvh;
   width:100vw;
   display:flex;
   align-items:center;
@@ -95,10 +123,10 @@ body{
 .phone{
   width:100%;
   max-width:360px;
-  height:100vh;
+  height: 100dvh;
   max-height:800px;
   border-radius:calc(var(--r-xl) + 4px);
-  overflow:hidden;
+  overflow:auto; /* Разрешаем скролл для контента */
   position:relative;
   background: linear-gradient(180deg, #ffffff 0%, #fefefe 100%);
   border:2px solid rgba(30,111,219,.2);
@@ -114,8 +142,8 @@ body{
 @media (max-width: 380px), (max-height: 700px) {
   .phone {
     max-width: 100%;
-    max-height: 100vh;
-    height: 100vh;
+    max-height: 100dvh;
+    height: 100dvh;
     border-radius: 0;
     border: none;
     box-shadow: none;
