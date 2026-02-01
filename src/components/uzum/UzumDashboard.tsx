@@ -173,17 +173,15 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
               let dbsTotal = 0;
               
               stocks.forEach((item: any) => {
-                // Предполагаем, что в API есть поле типа склада
-                const stockType = item.warehouseType || item.type || 'FBS';
-                const quantity = item.stock || item.quantity || 0;
+                // API возвращает объект с полями: fbo, fbs, dbs
+                // Каждое поле - это количество товара на соответствующем складе
+                const fboQty = item.fbo || 0;
+                const fbsQty = item.fbs || 0;
+                const dbsQty = item.dbs || 0;
                 
-                if (stockType.toUpperCase().includes('FBO')) {
-                  fboTotal += quantity;
-                } else if (stockType.toUpperCase().includes('DBS')) {
-                  dbsTotal += quantity;
-                } else {
-                  fbsTotal += quantity; // По умолчанию FBS
-                }
+                fboTotal += fboQty;
+                fbsTotal += fbsQty;
+                dbsTotal += dbsQty;
               });
               
               setStats(prev => ({
@@ -548,7 +546,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                     padding: '6px 12px',
                     fontSize: '12px',
                     backgroundColor: datePeriod === 30 ? '#7c3aed' : '#f3f4f6',
-                    color: datePeriod === 30 ? 'white' : '#374151',
+                    color: datePeriod === 30 ? 'white' : '#374141',
                     border: 'none',
                     borderRadius: '6px',
                     cursor: 'pointer',
@@ -557,6 +555,24 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                   }}
                 >
                   {t.last30days}
+                </button>
+                <button
+                  onClick={() => setShowWeeklyChart(true)}
+                  disabled={!shopId}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: shopId ? 'pointer' : 'not-allowed',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    opacity: shopId ? 1 : 0.5,
+                  }}
+                >
+                  📊 {t.weeklyChart}
                 </button>
               </div>
             </div>

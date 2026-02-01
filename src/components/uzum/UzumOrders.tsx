@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShops, getFbsOrders, confirmFbsOrder, cancelFbsOrder, getFbsOrderLabel } from '../../lib/uzum-api';
+import { getShops, getFbsOrders, getFbsOrder, confirmFbsOrder, cancelFbsOrder, getFbsOrderLabel } from '../../lib/uzum-api';
 
 interface UzumOrdersProps {
   lang: 'ru' | 'uz';
@@ -11,7 +11,8 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [expandedOrderId, setExpandedOrderId] = useState<string | number | null>(null);
+  const [orderDetails, setOrderDetails] = useState<{[key: string]: any}>({});
   const [actionLoading, setActionLoading] = useState(false);
   const [printingLabel, setPrintingLabel] = useState(false);
 
@@ -239,6 +240,39 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   }
 
   // Функция печати этикетки и отправки в Telegram
+  // Функция для загрузки детальной информации о заказе
+  async function loadOrderDetails(orderId: string | number) {
+    if (orderDetails[orderId]) {
+      // Уже загружено
+      return;
+    }
+
+    try {
+      console.log('🔍 Loading order details for:', orderId);
+      const result = await getFbsOrder(token, orderId);
+      console.log('📦 Order details result:', result);
+      
+      if (result.success && result.order) {
+        setOrderDetails(prev => ({
+          ...prev,
+          [orderId]: result.order,
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading order details:', error);
+    }
+  }
+
+  // Обработчик раскрытия заказа
+  function handleToggleOrder(orderId: string | number) {
+    if (expandedOrderId === orderId) {
+      setExpandedOrderId(null);
+    } else {
+      setExpandedOrderId(orderId);
+      loadOrderDetails(orderId);
+    }
+  }
+
   async function handlePrintLabel(orderId: string | number) {
     setPrintingLabel(true);
     try {
@@ -464,7 +498,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                     cursor: 'pointer',
                     userSelect: 'none',
                   }}
-                  onClick={() => setExpandedOrderId(isExpanded ? null : orderId)}
+                  onClick={() => handleToggleOrder(orderId)}
                 >
                   <div style={{
                     display: 'flex',
@@ -539,6 +573,43 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                     padding: '20px',
                     backgroundColor: '#f9fafb',
                   }}>
+                    {/* Detailed Order Info from API */}
+                    {orderDetails[orderId] && (
+                      <div style={{ marginBottom: '20px' }}>
+                        <div style={{
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          marginBottom: '12px',
+                          color: '#111827',
+                        }}>
+                          📋 {t.details}
+                        </div>
+                        <div style={{
+                          padding: '12px',
+                          backgroundColor: 'white',
+                          borderRadius: '8px',
+                          border: '1px solid #e5e7eb',
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                          gap: '12px',
+                        }}>
+                          {Object.entries(orderDetails[orderId]).map(([key, value]: [string, any]) => {
+                            if (typeof value === 'object' || key === 'items') return null;
+                            return (
+                              <div key={key} style={{ fontSize: '14px' }}>
+                                <div style={{ color: '#6b7280', marginBottom: '4px' }}>
+                                  {key}:
+                                </div>
+                                <div style={{ color: '#111827', fontWeight: '600' }}>
+                                  {String(value)}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Order Items */}
                     {order.items && order.items.length > 0 && (
                       <div style={{ marginBottom: '20px' }}>
