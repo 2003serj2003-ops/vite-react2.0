@@ -8,9 +8,11 @@ interface UzumDashboardProps {
   token: string;
   onNavigate: (page: 'products' | 'orders' | 'finance') => void;
   onNavigateBack: () => void;
+  onDisconnect?: () => void;
+  onChangeLang?: () => void;
 }
 
-export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack }: UzumDashboardProps) {
+export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack, onDisconnect, onChangeLang }: UzumDashboardProps) {
   const [shopId, setShopId] = useState<number | null>(null);
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -464,16 +466,97 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
 
   return (
     <div className="list" style={{ padding: '0' }}>
+      {/* Top Bar with 3 buttons */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: window.innerWidth > 640 ? '16px 20px' : '12px 16px',
+        backgroundColor: '#7c3aed',
+        boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
+      }}>
+        <button
+          onClick={onNavigateBack}
+          style={{
+            padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            color: 'white',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: window.innerWidth > 640 ? '14px' : '12px',
+            fontWeight: 600,
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+          }}
+        >
+          🏠 {window.innerWidth > 640 ? (lang === 'ru' ? 'Обратно в приложение' : 'Ilovaga qaytish') : ''}
+        </button>
+
+        <button
+          onClick={onChangeLang || (() => {})}
+          style={{
+            padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            color: 'white',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: window.innerWidth > 640 ? '14px' : '12px',
+            fontWeight: 600,
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+          }}
+        >
+          🌐 {window.innerWidth > 640 ? (lang === 'ru' ? 'O\'zbekcha' : 'Русский') : lang === 'ru' ? 'UZ' : 'RU'}
+        </button>
+
+        <button
+          onClick={onDisconnect || (() => {})}
+          style={{
+            padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
+            backgroundColor: 'rgba(239, 68, 68, 0.9)',
+            color: 'white',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: window.innerWidth > 640 ? '14px' : '12px',
+            fontWeight: 600,
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.9)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
+          }}
+        >
+          ❌ {window.innerWidth > 640 ? (lang === 'ru' ? 'Отключить интеграцию' : 'Integratsiyani o\'chirish') : ''}
+        </button>
+      </div>
+
       {/* Header */}
-      <div className="uzum-header">
+      <div className="uzum-header" style={{ marginTop: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
-          <button
-            onClick={onNavigateBack}
-            className="split"
-            style={{ flexShrink: 0 }}
-          >
-            ← {t.back}
-          </button>
           <h1 className="uzum-header-title" style={{ 
             fontSize: '20px',
             fontWeight: 700,

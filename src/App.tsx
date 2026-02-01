@@ -553,12 +553,41 @@ export default function App() {
       // Используем userId если есть, иначе используем фиксированный ID
       const actualUserId = userId || 'default_user';
       
-      const { data, error } = await supabase
-        .from('integrations')
-        .select('*')
-        .eq('user_id', actualUserId)
-        .eq('provider', 'uzum')
-        .single();
+      // Попытка поиска по telegram_user_id если доступно
+      const tgUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+      
+      let data = null;
+      let error = null;
+
+      // Сначала пытаемся найти по telegram_user_id
+      if (tgUserId) {
+        const result = await supabase
+          .from('integrations')
+          .select('*')
+          .eq('telegram_user_id', tgUserId)
+          .eq('provider', 'uzum')
+          .single();
+        
+        data = result.data;
+        error = result.error;
+        
+        if (data) {
+          console.log('[Uzum] ✓ Integration found by Telegram ID:', tgUserId);
+        }
+      }
+
+      // Если не нашли по telegram_user_id, ищем по user_id
+      if (!data) {
+        const result = await supabase
+          .from('integrations')
+          .select('*')
+          .eq('user_id', actualUserId)
+          .eq('provider', 'uzum')
+          .single();
+        
+        data = result.data;
+        error = result.error;
+      }
 
       if (error && error.code !== 'PGRST116') {
         console.error('[Uzum] Load error:', error);
@@ -667,6 +696,9 @@ export default function App() {
         lastVerified: new Date().toISOString()
       };
 
+      // Get Telegram user ID if available
+      const tgUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+
       // Save to database
       const { data, error } = await supabase
         .from('integrations')
@@ -677,6 +709,7 @@ export default function App() {
           token_iv: encrypted.iv,
           token_salt: encrypted.salt,
           kdf_iterations: 200000,
+          telegram_user_id: tgUserId,
           metadata
         }, {
           onConflict: 'user_id,provider'
@@ -2867,6 +2900,8 @@ export default function App() {
                       token={uzumDecryptedToken} 
                       onNavigate={(page) => setUzumCurrentPage(page)}
                       onNavigateBack={() => setRoute({ name: 'home' })}
+                      onDisconnect={handleDisconnect}
+                      onChangeLang={() => setLang(lang === 'ru' ? 'uz' : 'ru')}
                     />
                   )}
                   {uzumCurrentPage === 'products' && (

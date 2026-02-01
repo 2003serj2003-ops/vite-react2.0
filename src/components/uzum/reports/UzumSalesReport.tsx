@@ -103,8 +103,11 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
 
     setLoading(true);
     try {
+      console.log('📊 [SalesReport] Loading data for shop:', selectedShop);
+      
       // Load products
       const productsResult = await getProducts(token, selectedShop);
+      console.log('📊 [SalesReport] Products:', productsResult);
       
       // Load finance orders for the period
       const startMs = new Date(dateRange.start).getTime();
@@ -114,9 +117,11 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
         size: 1000,
         page: 0,
       });
+      console.log('📊 [SalesReport] Orders:', ordersResult);
 
       // Load stock info
       const stocksResult = await getFbsSkuStocks(token, { limit: 1000 });
+      console.log('📊 [SalesReport] Stocks:', stocksResult);
 
       // Process data
       if (productsResult.success && productsResult.products) {

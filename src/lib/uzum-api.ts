@@ -455,10 +455,12 @@ export async function cancelFbsOrder(
 /**
  * GET /v1/fbs/order/{orderId}/labels/print - Получить этикетку для FBS заказа
  * Возвращает PDF файл в формате base64 или URL
+ * @param size - LARGE (58x40mm) или BIG (43x25mm)
  */
 export async function getFbsOrderLabel(
   token: string,
-  orderId: string | number
+  orderId: string | number,
+  size: 'LARGE' | 'BIG' = 'LARGE'
 ): Promise<{
   success: boolean;
   label?: any;
@@ -466,8 +468,9 @@ export async function getFbsOrderLabel(
   labelPdf?: string; // base64 encoded PDF
   error?: string;
 }> {
+  // Добавляем параметр size в URL
   const result = await apiRequest<any>(
-    `/v1/fbs/order/${orderId}/labels/print`,
+    `/v1/fbs/order/${orderId}/labels/print?size=${size}`,
     token,
     { method: 'GET' }
   );
@@ -564,7 +567,34 @@ export async function getFbsSkuStocks(
     return { success: false, error: result.error };
   }
 
-  return { success: true, stocks: result.data };
+  console.log('📊 [getFbsSkuStocks] Raw API response:', JSON.stringify(result.data, null, 2));
+  
+  // API может возвращать разные структуры:
+  // Вариант 1: Прямой массив [...]
+  // Вариант 2: { items: [...] }
+  // Вариант 3: { stocks: [...] }
+  // Вариант 4: { data: [...] }
+  let stocks = null;
+  
+  if (result.data) {
+    if (Array.isArray(result.data)) {
+      stocks = result.data;
+    } else if (Array.isArray(result.data.items)) {
+      stocks = result.data.items;
+    } else if (Array.isArray(result.data.stocks)) {
+      stocks = result.data.stocks;
+    } else if (Array.isArray(result.data.data)) {
+      stocks = result.data.data;
+    }
+  }
+
+  console.log('📊 [getFbsSkuStocks] Parsed stocks:', { 
+    success: !!stocks, 
+    count: stocks ? stocks.length : 0,
+    sample: stocks ? stocks[0] : null 
+  });
+
+  return { success: true, stocks: stocks || [] };
 }
 
 /**

@@ -16,6 +16,8 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   const [orderDetails, setOrderDetails] = useState<{[key: string]: any}>({});
   const [actionLoading, setActionLoading] = useState(false);
   const [printingLabel, setPrintingLabel] = useState(false);
+  const [labelSize, setLabelSize] = useState<{[key: string]: 'LARGE' | 'BIG'}>({});
+  const [cancelingOrder, setCancelingOrder] = useState(false);
 
   const T = {
     ru: {
@@ -57,6 +59,12 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
       printing: 'Печать...',
       labelSent: 'Этикетка отправлена в Telegram',
       labelError: 'Ошибка при получении этикетки',
+      labelSizeLarge: 'LARGE (58x40mm)',
+      labelSizeBig: 'BIG (43x25mm)',
+      selectSize: 'Размер',
+      canceling: 'Отмена...',
+      cancelOrder: 'Отменить заказ',
+      cancelConfirm: 'Вы уверены, что хотите отменить этот заказ?',
     },
     uz: {
       title: 'Buyurtmalar',
@@ -97,6 +105,12 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
       printing: 'Chop etilmoqda...',
       labelSent: 'Yorliq Telegramga yuborildi',
       labelError: 'Yorliqni olishda xatolik',
+      labelSizeLarge: 'LARGE (58x40mm)',
+      labelSizeBig: 'BIG (43x25mm)',
+      selectSize: 'O\'lchami',
+      canceling: 'Bekor qilinmoqda...',
+      cancelOrder: 'Buyurtmani bekor qilish',
+      cancelConfirm: 'Siz ushbu buyurtmani bekor qilishni xohlaysizmi?',
     },
   };
 
@@ -274,10 +288,11 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
     }
   }
 
-  async function handlePrintLabel(orderId: string | number) {
+  async function handlePrintLabel(orderId: string | number, size: 'LARGE' | 'BIG' = 'LARGE') {
     setPrintingLabel(true);
     try {
-      const result = await getFbsOrderLabel(token, orderId);
+      // Добавляем параметр size в запрос
+      const result = await getFbsOrderLabel(token, orderId, size);
       
       if (result.success && (result.label || result.labelPdf || result.labelUrl)) {
         // Отправка этикетки в Telegram через бота
@@ -779,40 +794,36 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                         }}>
                           {(() => {
                             const details = orderDetails[orderId];
-                            const fieldMap: {[key: string]: string} = {
-                              id: '🔢 ID заказа',
-                              status: '📊 Статус',
-                              dateCreated: '📅 Дата создания',
-                              acceptUntil: '⏰ Принять до',
-                              deliverUntil: '🚚 Доставить до',
-                              identifierRequired: '🆔 Требуется идентификатор',
-                              orderNumber: '📋 Номер заказа',
-                              warehouseName: '🏢 Склад',
-                              deliveryType: '📦 Тип доставки',
-                              paymentType: '💳 Тип оплаты',
-                            };
+                            
+                            // Отображаем только: ID, дату заказа, дату изменения статуса
+                            const fieldsToShow = [
+                              { key: 'id', label: '🔢 ID заказа', value: details.id },
+                              { key: 'dateCreated', label: '📅 Дата заказа', value: details.dateCreated || details.created_at || details.createdAt },
+                              { key: 'dateUpdated', label: '🔄 Дата изменения статуса', value: details.dateUpdated || details.updated_at || details.updatedAt || details.dateCreated },
+                            ];
 
-                            return Object.entries(details).map(([key, value]: [string, any]) => {
-                              if (typeof value === 'object' || key === 'items') return null;
+                            return fieldsToShow.map(({ key, label, value }) => {
+                              if (!value) return null;
                               
-                              const label = fieldMap[key] || key;
                               let displayValue = String(value);
                               
                               // Форматирование дат
-                              if ((key.includes('date') || key.includes('Until')) && !isNaN(Number(value))) {
-                                const date = new Date(Number(value));
-                                displayValue = date.toLocaleString('ru-RU', {
-                                  day: '2-digit',
-                                  month: '2-digit',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                });
+                              if (key.includes('date') || key.includes('Date')) {
+                                const timestamp = typeof value === 'string' && !isNaN(Number(value)) ? Number(value) : 
+                                                  typeof value === 'number' ? value : 
+                                                  new Date(value).getTime();
+                                
+                                if (!isNaN(timestamp)) {
+                                  const date = new Date(timestamp);
+                                  displayValue = date.toLocaleString('ru-RU', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  });
+                                }
                               }
-                              
-                              // Форматирование булевых значений
-                              if (value === true) displayValue = '✅ Да';
-                              if (value === false) displayValue = '❌ Нет';
                               
                               return (
                                 <div key={key} style={{ 
@@ -839,7 +850,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                       </div>
                     )}
 
-                    {/* Order Items */}
+                    {/* Order Items - только SKU */}
                     {order.items && order.items.length > 0 && (
                       <div style={{ marginBottom: '20px' }}>
                         <div style={{
@@ -848,80 +859,30 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                           marginBottom: '12px',
                           color: '#111827',
                         }}>
-                          {t.items} ({order.items.length})
+                          📦 SKU товаров ({order.items.length})
                         </div>
                         <div style={{
                           display: 'flex',
-                          flexDirection: 'column',
+                          flexWrap: 'wrap',
                           gap: '8px',
                         }}>
                           {order.items.map((item: any, idx: number) => (
                             <div
                               key={idx}
                               style={{
-                                padding: '12px',
+                                padding: '8px 12px',
                                 backgroundColor: 'white',
                                 borderRadius: '8px',
                                 border: '1px solid #e5e7eb',
+                                fontFamily: 'monospace',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                color: '#111827',
                               }}
                             >
-                              <div style={{ 
-                                fontWeight: '600', 
-                                marginBottom: '4px',
-                                color: '#111827',
-                              }}>
-                                {item.title || item.name || 'N/A'}
-                              </div>
-                              <div style={{ 
-                                fontSize: '14px', 
-                                color: '#6b7280',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                              }}>
-                                <span>{item.quantity || 1} шт.</span>
-                                <span style={{ fontWeight: '600', color: '#22c55e' }}>
-                                  {formatPrice(item.price || 0)}
-                                </span>
-                              </div>
+                              {item.sku || item.skuId || item.id || `SKU-${idx + 1}`}
                             </div>
                           ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Customer Info */}
-                    {(order.customer || order.phone || order.address) && (
-                      <div style={{ marginBottom: '20px' }}>
-                        <div style={{
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          marginBottom: '12px',
-                          color: '#111827',
-                        }}>
-                          {t.customer}
-                        </div>
-                        <div style={{
-                          padding: '12px',
-                          backgroundColor: 'white',
-                          borderRadius: '8px',
-                          border: '1px solid #e5e7eb',
-                        }}>
-                          {order.customer && (
-                            <div style={{ marginBottom: '8px', color: '#111827' }}>
-                              👤 {order.customer}
-                            </div>
-                          )}
-                          {order.phone && (
-                            <div style={{ marginBottom: '8px', color: '#111827' }}>
-                              📞 {order.phone}
-                            </div>
-                          )}
-                          {order.address && (
-                            <div style={{ color: '#111827' }}>
-                              📍 {order.address}
-                            </div>
-                          )}
                         </div>
                       </div>
                     )}
@@ -929,46 +890,145 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                     {/* Action Buttons */}
                     <div style={{
                       display: 'flex',
+                      flexDirection: 'column',
                       gap: '12px',
-                      flexWrap: 'wrap',
                     }}>
-                      {/* Print Label Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePrintLabel(orderId);
-                        }}
-                        disabled={printingLabel}
-                        style={{
-                          flex: 1,
-                          minWidth: '140px',
-                          padding: '14px',
-                          backgroundColor: '#3b82f6',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '12px',
-                          fontSize: '15px',
-                          fontWeight: '600',
-                          cursor: printingLabel ? 'not-allowed' : 'pointer',
-                          opacity: printingLabel ? 0.6 : 1,
-                          transition: 'all 0.2s',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!printingLabel) {
-                            e.currentTarget.style.backgroundColor = '#2563eb';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#3b82f6';
-                        }}
-                      >
-                        <span>🖨️</span>
-                        <span>{printingLabel ? t.printing : t.printLabel}</span>
-                      </button>
+                      {/* Label Size Selector */}
+                      <div style={{
+                        display: 'flex',
+                        gap: '8px',
+                        alignItems: 'center',
+                      }}>
+                        <span style={{ fontSize: '13px', color: '#666', fontWeight: 600 }}>
+                          {t.selectSize}:
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLabelSize(prev => ({ ...prev, [orderId]: 'LARGE' }));
+                          }}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: (labelSize[orderId] || 'LARGE') === 'LARGE' ? '#7c3aed' : '#f3f4f6',
+                            color: (labelSize[orderId] || 'LARGE') === 'LARGE' ? 'white' : '#666',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          {t.labelSizeLarge}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLabelSize(prev => ({ ...prev, [orderId]: 'BIG' }));
+                          }}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: labelSize[orderId] === 'BIG' ? '#7c3aed' : '#f3f4f6',
+                            color: labelSize[orderId] === 'BIG' ? 'white' : '#666',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          {t.labelSizeBig}
+                        </button>
+                      </div>
+
+                      {/* Print and Cancel Buttons */}
+                      <div style={{
+                        display: 'flex',
+                        gap: '12px',
+                        flexWrap: 'wrap',
+                      }}>
+                        {/* Print Label Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePrintLabel(orderId, labelSize[orderId] || 'LARGE');
+                          }}
+                          disabled={printingLabel}
+                          style={{
+                            flex: 1,
+                            minWidth: '140px',
+                            padding: '14px',
+                            backgroundColor: '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '12px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            cursor: printingLabel ? 'not-allowed' : 'pointer',
+                            opacity: printingLabel ? 0.6 : 1,
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!printingLabel) {
+                              e.currentTarget.style.backgroundColor = '#2563eb';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#3b82f6';
+                          }}
+                        >
+                          <span>🖨️</span>
+                          <span>{printingLabel ? t.printing : t.printLabel}</span>
+                        </button>
+
+                        {/* Cancel Order Button */}
+                        {order.status !== 'CANCELED' && order.status !== 'COMPLETED' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm(t.cancelConfirm)) {
+                                handleCancelOrder(orderId);
+                              }
+                            }}
+                            disabled={cancelingOrder || actionLoading}
+                            style={{
+                              flex: 1,
+                              minWidth: '140px',
+                              padding: '14px',
+                              backgroundColor: '#ef4444',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '12px',
+                              fontSize: '15px',
+                              fontWeight: '600',
+                              cursor: (cancelingOrder || actionLoading) ? 'not-allowed' : 'pointer',
+                              opacity: (cancelingOrder || actionLoading) ? 0.6 : 1,
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!cancelingOrder && !actionLoading) {
+                                e.currentTarget.style.backgroundColor = '#dc2626';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '#ef4444';
+                            }}
+                          >
+                            <span>❌</span>
+                            <span>{cancelingOrder ? t.canceling : t.cancelOrder}</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
 
                       {/* Confirm Button */}
                       {order.status === 'pending' && (
