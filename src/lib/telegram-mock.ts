@@ -62,7 +62,7 @@ export function initTelegramMock() {
     close: () => console.log('[TG MOCK] close()'),
     MainButton: {
       text: '',
-      color: '#7000FF',
+      color: '#1E6FDB',
       textColor: '#FFFFFF',
       isVisible: false,
       isActive: true,
@@ -120,13 +120,13 @@ function addMockUserSwitcher() {
   `;
 
   switcher.innerHTML = `
-    <div style="margin-bottom: 10px; font-weight: bold; color: #7000FF;">🤖 TG Mock Mode</div>
+    <div style="margin-bottom: 10px; font-weight: bold; color: #1E6FDB;">🤖 TG Mock Mode</div>
     <select id="mock-user-select" style="width: 100%; padding: 5px; margin-bottom: 10px; border-radius: 4px;">
       <option value="admin">Admin User</option>
       <option value="editor">Editor User</option>
       <option value="viewer">Viewer User</option>
     </select>
-    <button id="mock-user-apply" style="width: 100%; padding: 5px; background: #7000FF; color: white; border: none; border-radius: 4px; cursor: pointer;">
+    <button id="mock-user-apply" style="width: 100%; padding: 5px; background: #1E6FDB; color: white; border: none; border-radius: 4px; cursor: pointer;">
       Apply & Reload
     </button>
     <div style="margin-top: 10px; font-size: 10px; opacity: 0.7;">

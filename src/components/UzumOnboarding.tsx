@@ -197,7 +197,7 @@ export default function UzumOnboarding({ lang, onComplete }: UzumOnboardingProps
       }}>
         {/* Header with gradient */}
         <div style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #1E6FDB 0%, #3FA9F5 100%)',
           padding: '32px',
           color: 'white',
           position: 'relative',
@@ -380,7 +380,7 @@ export default function UzumOnboarding({ lang, onComplete }: UzumOnboardingProps
                   minWidth: '24px',
                   height: '24px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'linear-gradient(135deg, #1E6FDB 0%, #3FA9F5 100%)',
                   color: 'white',
                   display: 'flex',
                   alignItems: 'center',
@@ -445,7 +445,7 @@ export default function UzumOnboarding({ lang, onComplete }: UzumOnboardingProps
                 display: 'block',
                 textAlign: 'center',
                 padding: '14px 24px',
-                backgroundColor: '#667eea',
+                backgroundColor: '#1E6FDB',
                 color: 'white',
                 borderRadius: '12px',
                 textDecoration: 'none',
@@ -460,7 +460,7 @@ export default function UzumOnboarding({ lang, onComplete }: UzumOnboardingProps
                 e.currentTarget.style.boxShadow = '0 10px 20px rgba(102, 126, 234, 0.3)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = '#667eea';
+                e.currentTarget.style.backgroundColor = '#1E6FDB';
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
               }}
@@ -521,7 +521,7 @@ export default function UzumOnboarding({ lang, onComplete }: UzumOnboardingProps
             }}
             style={{
               padding: '12px 32px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #1E6FDB 0%, #3FA9F5 100%)',
               border: 'none',
               borderRadius: '12px',
               cursor: 'pointer',

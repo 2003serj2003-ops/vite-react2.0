@@ -220,7 +220,7 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
           }}
           style={{
             padding: '10px 20px',
-            backgroundColor: '#10b981',
+            backgroundColor: '#4CAF50',
             color: 'white',
             border: 'none',
             borderRadius: '8px',
@@ -251,7 +251,7 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
           style={{
             flex: 1,
             padding: '14px',
-            backgroundColor: activeTab === 'invoices' ? '#22c55e' : 'transparent',
+            backgroundColor: activeTab === 'invoices' ? '#4CAF50' : 'transparent',
             color: activeTab === 'invoices' ? 'white' : '#6b7280',
             border: 'none',
             borderRadius: '12px',
@@ -268,7 +268,7 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
           style={{
             flex: 1,
             padding: '14px',
-            backgroundColor: activeTab === 'returns' ? '#22c55e' : 'transparent',
+            backgroundColor: activeTab === 'returns' ? '#4CAF50' : 'transparent',
             color: activeTab === 'returns' ? 'white' : '#6b7280',
             border: 'none',
             borderRadius: '12px',
@@ -310,7 +310,7 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
                   borderRadius: '16px',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   transition: 'all 0.2s',
-                  border: isExpanded ? '2px solid #22c55e' : '2px solid transparent',
+                  border: isExpanded ? '2px solid #4CAF50' : '2px solid transparent',
                   overflow: 'hidden',
                 }}
               >
@@ -363,7 +363,7 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
                         <div style={{
                           display: 'inline-block',
                           padding: '6px 12px',
-                          backgroundColor: '#10b981',
+                          backgroundColor: '#4CAF50',
                           color: 'white',
                           borderRadius: '6px',
                           fontSize: '13px',
@@ -380,7 +380,7 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
                         <div style={{
                           fontSize: '24px',
                           fontWeight: '700',
-                          color: activeTab === 'invoices' ? '#22c55e' : '#ef4444',
+                          color: activeTab === 'invoices' ? '#4CAF50' : '#ef4444',
                           marginBottom: '4px',
                         }}>
                           {formatPrice(item.totalAmount)}
@@ -415,7 +415,7 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
                           width: '32px',
                           height: '32px',
                           border: '3px solid #f3f4f6',
-                          borderTopColor: '#22c55e',
+                          borderTopColor: '#4CAF50',
                           borderRadius: '50%',
                           animation: 'spin 1s linear infinite',
                           margin: '0 auto 12px',
@@ -497,7 +497,7 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
                                           <div style={{
                                             fontSize: '18px',
                                             fontWeight: '700',
-                                            color: '#22c55e',
+                                            color: '#4CAF50',
                                             marginBottom: '4px',
                                           }}>
                                             {formatPrice(price)}

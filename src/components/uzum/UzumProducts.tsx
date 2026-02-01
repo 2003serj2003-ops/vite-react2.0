@@ -206,7 +206,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
           </button>
           <div style={{
             padding: '6px 12px',
-            backgroundColor: '#7c3aed',
+            backgroundColor: '#1E6FDB',
             color: 'white',
             borderRadius: '8px',
             fontWeight: 600,
@@ -343,7 +343,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
                 <div style={{
                   fontSize: '16px',
                   fontWeight: 700,
-                  color: '#7c3aed',
+                  color: '#1E6FDB',
                 }}>
                   {product.price ? formatPrice(product.price) : 'N/A'}
                 </div>
@@ -501,7 +501,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
                               width: '8px',
                               height: '8px',
                               borderRadius: '50%',
-                              backgroundColor: idx === currentImageIndex ? '#7c3aed' : '#d1d5db',
+                              backgroundColor: idx === currentImageIndex ? '#1E6FDB' : '#d1d5db',
                               cursor: 'pointer',
                               transition: 'all 0.2s',
                             }}
@@ -547,7 +547,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
                 <span style={{
                   fontSize: '20px',
                   fontWeight: 700,
-                  color: '#7c3aed',
+                  color: '#1E6FDB',
                   marginLeft: '8px',
                 }}>
                   {selectedProduct.price ? formatPrice(selectedProduct.price) : 'N/A'}

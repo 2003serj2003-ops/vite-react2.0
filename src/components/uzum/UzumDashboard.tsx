@@ -575,8 +575,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: window.innerWidth > 640 ? '16px 20px' : '12px 16px',
-        backgroundColor: '#7c3aed',
-        boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
+        backgroundColor: '#1E6FDB',
+        boxShadow: '0 2px 8px rgba(30,111,219, 0.3)',
         flexWrap: 'wrap',
         gap: '8px',
       }}>
@@ -612,7 +612,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             disabled={refreshing}
             style={{
               padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
-              backgroundColor: refreshing ? 'rgba(156, 163, 175, 0.5)' : 'rgba(34, 197, 94, 0.9)',
+              backgroundColor: refreshing ? 'rgba(156, 163, 175, 0.5)' : 'rgba(76,175,80, 0.9)',
               color: 'white',
               border: '1px solid rgba(255, 255, 255, 0.3)',
               borderRadius: '8px',
@@ -629,7 +629,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               if (!refreshing) e.currentTarget.style.backgroundColor = 'rgba(22, 163, 74, 0.9)';
             }}
             onMouseLeave={(e) => {
-              if (!refreshing) e.currentTarget.style.backgroundColor = 'rgba(34, 197, 94, 0.9)';
+              if (!refreshing) e.currentTarget.style.backgroundColor = 'rgba(76,175,80, 0.9)';
             }}
           >
             {refreshing ? '⏳' : '🔄'} {window.innerWidth > 640 ? t.refresh : ''}
@@ -714,7 +714,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               }}
               style={{
                 padding: '6px 12px',
-                background: 'linear-gradient(135deg, #7E22CE 0%, #6F00FF 100%)',
+                background: 'linear-gradient(135deg, #1E6FDB 0%, #1E6FDB 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
@@ -748,7 +748,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             }}
             style={{
               padding: '6px 12px',
-              backgroundColor: '#10b981',
+              backgroundColor: '#4CAF50',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -771,7 +771,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               onClick={onShowTour}
               style={{
                 padding: '6px 12px',
-                backgroundColor: '#3b82f6',
+                backgroundColor: '#1E6FDB',
                 color: 'white',
                 border: 'none',
                 borderRadius: '6px',
@@ -831,7 +831,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   style={{
                     padding: window.innerWidth > 640 ? '6px 12px' : '5px 8px',
                     fontSize: window.innerWidth > 640 ? '12px' : '11px',
-                    backgroundColor: datePeriod === 7 ? '#7c3aed' : '#f3f4f6',
+                    backgroundColor: datePeriod === 7 ? '#1E6FDB' : '#f3f4f6',
                     color: datePeriod === 7 ? 'white' : '#374151',
                     border: 'none',
                     borderRadius: '6px',
@@ -848,7 +848,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   style={{
                     padding: window.innerWidth > 640 ? '6px 12px' : '5px 8px',
                     fontSize: window.innerWidth > 640 ? '12px' : '11px',
-                    backgroundColor: datePeriod === 10 ? '#7c3aed' : '#f3f4f6',
+                    backgroundColor: datePeriod === 10 ? '#1E6FDB' : '#f3f4f6',
                     color: datePeriod === 10 ? 'white' : '#374151',
                     border: 'none',
                     borderRadius: '6px',
@@ -865,7 +865,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   style={{
                     padding: window.innerWidth > 640 ? '6px 12px' : '5px 8px',
                     fontSize: window.innerWidth > 640 ? '12px' : '11px',
-                    backgroundColor: datePeriod === 30 ? '#7c3aed' : '#f3f4f6',
+                    backgroundColor: datePeriod === 30 ? '#1E6FDB' : '#f3f4f6',
                     color: datePeriod === 30 ? 'white' : '#374151',
                     border: 'none',
                     borderRadius: '6px',
@@ -906,7 +906,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   alignItems: 'center',
                   gap: '8px',
                 }}>
-                  <FiTrendingUp color="#10b981" size={24} />
+                  <FiTrendingUp color="#4CAF50" size={24} />
                   {formatNumber(stats.revenue)}
                 </div>
               </div>
@@ -928,12 +928,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                 <div style={{
                   fontSize: '28px',
                   fontWeight: 700,
-                  color: '#22c55e',
+                  color: '#4CAF50',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
                 }}>
-                  <FiDollarSign color="#22c55e" size={24} />
+                  <FiDollarSign color="#4CAF50" size={24} />
                   {formatNumber(stats.toPay)}
                 </div>
               </div>
@@ -955,12 +955,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                 <div style={{
                   fontSize: '28px',
                   fontWeight: 700,
-                  color: stats.profit < 0 ? '#ef4444' : '#22c55e',
+                  color: stats.profit < 0 ? '#ef4444' : '#4CAF50',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
                 }}>
-                  {stats.profit < 0 ? <FiTrendingDown color="#ef4444" size={24} /> : <FiTrendingUp color="#22c55e" size={24} />}
+                  {stats.profit < 0 ? <FiTrendingDown color="#ef4444" size={24} /> : <FiTrendingUp color="#4CAF50" size={24} />}
                   {formatNumber(stats.profit)}
                 </div>
               </div>
@@ -986,7 +986,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                 <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>
                   {t.fboQty}
                 </div>
-                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#6366f1' }}>
+                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#1E6FDB' }}>
                   {stats.fboStock}
                 </div>
               </div>
@@ -994,7 +994,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                 <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>
                   {t.fbsQty}
                 </div>
-                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#22c55e' }}>
+                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#4CAF50' }}>
                   {stats.fbsStock}
                 </div>
               </div>
@@ -1002,7 +1002,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                 <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>
                   {t.dbsQty}
                 </div>
-                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#f59e0b' }}>
+                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#FF9F1C' }}>
                   {stats.dbsStock}
                 </div>
               </div>
@@ -1039,7 +1039,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               className="uzum-btn"
               style={{ 
                 width: '100%',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #1E6FDB 0%, #3FA9F5 100%)',
                 color: 'white',
                 padding: window.innerWidth > 640 ? '12px 24px' : '10px 20px',
               }}
@@ -1085,7 +1085,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   style={{
                     padding: '6px 12px',
                     fontSize: '12px',
-                    backgroundColor: expenseDatePeriod === 1 ? '#7c3aed' : '#f3f4f6',
+                    backgroundColor: expenseDatePeriod === 1 ? '#1E6FDB' : '#f3f4f6',
                     color: expenseDatePeriod === 1 ? 'white' : '#374151',
                     border: 'none',
                     borderRadius: '6px',
@@ -1101,7 +1101,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   style={{
                     padding: '6px 12px',
                     fontSize: '12px',
-                    backgroundColor: expenseDatePeriod === 7 ? '#7c3aed' : '#f3f4f6',
+                    backgroundColor: expenseDatePeriod === 7 ? '#1E6FDB' : '#f3f4f6',
                     color: expenseDatePeriod === 7 ? 'white' : '#374151',
                     border: 'none',
                     borderRadius: '6px',
@@ -1117,7 +1117,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   style={{
                     padding: '6px 12px',
                     fontSize: '12px',
-                    backgroundColor: expenseDatePeriod === 14 ? '#7c3aed' : '#f3f4f6',
+                    backgroundColor: expenseDatePeriod === 14 ? '#1E6FDB' : '#f3f4f6',
                     color: expenseDatePeriod === 14 ? 'white' : '#374151',
                     border: 'none',
                     borderRadius: '6px',
@@ -1133,7 +1133,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   style={{
                     padding: '6px 12px',
                     fontSize: '12px',
-                    backgroundColor: expenseDatePeriod === 30 ? '#7c3aed' : '#f3f4f6',
+                    backgroundColor: expenseDatePeriod === 30 ? '#1E6FDB' : '#f3f4f6',
                     color: expenseDatePeriod === 30 ? 'white' : '#374151',
                     border: 'none',
                     borderRadius: '6px',
@@ -1147,10 +1147,10 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
-                { icon: '📱', label: t.marketing, value: financeBreakdown.marketing, color: '#8b5cf6' },
-                { icon: '💵', label: t.commission, value: financeBreakdown.commission, color: '#3b82f6' },
-                { icon: '🚚', label: t.logistics, value: financeBreakdown.logistics, color: '#f43f5e' },
-                { icon: '⚠️', label: t.fines, value: financeBreakdown.fines, color: '#f59e0b' },
+                { icon: '📱', label: t.marketing, value: financeBreakdown.marketing, color: '#3FA9F5' },
+                { icon: '💵', label: t.commission, value: financeBreakdown.commission, color: '#1E6FDB' },
+                { icon: '🚚', label: t.logistics, value: financeBreakdown.logistics, color: '#FF9F1C' },
+                { icon: '⚠️', label: t.fines, value: financeBreakdown.fines, color: '#FF9F1C' },
               ].map((item, i) => (
                 <div key={i}>
                   <div style={{
@@ -1213,12 +1213,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           }}
         >
           <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-            <FiPackage size={window.innerWidth > 640 ? 32 : 28} color="#7c3aed" />
+            <FiPackage size={window.innerWidth > 640 ? 32 : 28} color="#1E6FDB" />
           </div>
           <div style={{
             fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
-            color: '#7c3aed',
+            color: '#1E6FDB',
             marginBottom: '4px',
           }}>
             {stats.totalProducts}
@@ -1243,12 +1243,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           }}
         >
           <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-            <FiShoppingCart size={window.innerWidth > 640 ? 32 : 28} color="#22c55e" />
+            <FiShoppingCart size={window.innerWidth > 640 ? 32 : 28} color="#4CAF50" />
           </div>
           <div style={{
             fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
-            color: '#22c55e',
+            color: '#4CAF50',
             marginBottom: '4px',
           }}>
             {stats.activeOrders}
@@ -1273,12 +1273,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           }}
         >
           <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-            <FiDollarSign size={window.innerWidth > 640 ? 32 : 28} color="#f59e0b" />
+            <FiDollarSign size={window.innerWidth > 640 ? 32 : 28} color="#FF9F1C" />
           </div>
           <div style={{
             fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
-            color: '#f59e0b',
+            color: '#FF9F1C',
             marginBottom: '4px',
           }}>
             {formatNumber(stats.toPay)}
@@ -1303,12 +1303,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           }}
         >
           <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-            <FiBox size={window.innerWidth > 640 ? 32 : 28} color="#3b82f6" />
+            <FiBox size={window.innerWidth > 640 ? 32 : 28} color="#1E6FDB" />
           </div>
           <div style={{
             fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
-            color: '#3b82f6',
+            color: '#1E6FDB',
             marginBottom: '4px',
           }}>
             {stats.fbsStock}
@@ -1339,12 +1339,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           }}
         >
           <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-            <FiBarChart2 size={window.innerWidth > 640 ? 32 : 28} color="#8b5cf6" />
+            <FiBarChart2 size={window.innerWidth > 640 ? 32 : 28} color="#3FA9F5" />
           </div>
           <div style={{
             fontSize: window.innerWidth > 640 ? '16px' : '14px',
             fontWeight: 700,
-            color: '#8b5cf6',
+            color: '#3FA9F5',
             marginBottom: '4px',
           }}>
             {t.menu}

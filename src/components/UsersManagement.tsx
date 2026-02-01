@@ -95,7 +95,7 @@ export default function UsersManagement({ userRole }: UsersManagementProps) {
           overflow: 'hidden',
         }}>
           <thead>
-            <tr style={{ backgroundColor: '#7000FF', color: '#fff' }}>
+            <tr style={{ backgroundColor: '#1E6FDB', color: '#fff' }}>
               <th style={thStyle}>Name</th>
               <th style={thStyle}>Telegram ID</th>
               <th style={thStyle}>Role</th>
@@ -221,7 +221,7 @@ const btnStyle: React.CSSProperties = {
   padding: '6px 12px',
   borderRadius: '4px',
   border: 'none',
-  backgroundColor: '#7000FF',
+  backgroundColor: '#1E6FDB',
   color: '#fff',
   cursor: 'pointer',
   fontSize: '12px',

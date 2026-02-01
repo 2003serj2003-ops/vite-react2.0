@@ -23,7 +23,7 @@ export default function CoolLoader({ text = 'Загрузка' }: CoolLoaderProp
               width: '100%',
               height: '100%',
               border: '4px solid transparent',
-              borderTopColor: i === 0 ? '#22c55e' : i === 1 ? '#7c3aed' : '#f59e0b',
+              borderTopColor: i === 0 ? '#4CAF50' : i === 1 ? '#1E6FDB' : '#FF9F1C',
               borderRadius: '50%',
               animation: `spin ${1 + i * 0.3}s linear infinite`,
               animationDelay: `${i * 0.15}s`,
@@ -50,7 +50,7 @@ export default function CoolLoader({ text = 'Загрузка' }: CoolLoaderProp
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                backgroundColor: '#22c55e',
+                backgroundColor: '#4CAF50',
                 animation: `bounce 1.4s infinite ease-in-out`,
                 animationDelay: `${i * 0.16}s`,
               }}
@@ -70,7 +70,7 @@ export default function CoolLoader({ text = 'Загрузка' }: CoolLoaderProp
         <div style={{
           height: '100%',
           width: '100%',
-          background: 'linear-gradient(90deg, #22c55e 0%, #7c3aed 50%, #f59e0b 100%)',
+          background: 'linear-gradient(90deg, #4CAF50 0%, #1E6FDB 50%, #FF9F1C 100%)',
           animation: 'slide 1.5s infinite',
         }} />
       </div>

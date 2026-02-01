@@ -263,7 +263,7 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
     const pointSpacing = chartWidth / (weekData.length - 1 || 1);
 
     // Sold line (green)
-    ctx.strokeStyle = '#10b981';
+    ctx.strokeStyle = '#4CAF50';
     ctx.lineWidth = 3;
     ctx.beginPath();
     weekData.forEach((data, i) => {
@@ -282,7 +282,7 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
       const x = padding + i * pointSpacing;
       const y = padding + chartHeight - (data.sold / maxValue) * chartHeight;
       
-      ctx.fillStyle = '#10b981';
+      ctx.fillStyle = '#4CAF50';
       ctx.beginPath();
       ctx.arc(x, y, 5, 0, Math.PI * 2);
       ctx.fill();

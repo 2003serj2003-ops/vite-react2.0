@@ -74,9 +74,9 @@ export default function ContextualTooltip({
             width: '24px',
             height: '24px',
             borderRadius: '50%',
-            background: 'rgba(111,0,255,0.15)',
-            border: '2px solid rgba(111,0,255,0.3)',
-            color: '#6F00FF',
+            background: 'rgba(30,111,219,0.15)',
+            border: '2px solid rgba(30,111,219,0.3)',
+            color: '#1E6FDB',
             fontSize: '12px',
             fontWeight: 900,
             cursor: 'pointer',
@@ -87,12 +87,12 @@ export default function ContextualTooltip({
             padding: 0,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(111,0,255,0.25)';
-            e.currentTarget.style.borderColor = 'rgba(111,0,255,0.5)';
+            e.currentTarget.style.background = 'rgba(30,111,219,0.25)';
+            e.currentTarget.style.borderColor = 'rgba(30,111,219,0.5)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(111,0,255,0.15)';
-            e.currentTarget.style.borderColor = 'rgba(111,0,255,0.3)';
+            e.currentTarget.style.background = 'rgba(30,111,219,0.15)';
+            e.currentTarget.style.borderColor = 'rgba(30,111,219,0.3)';
           }}
         >
           i
@@ -107,7 +107,7 @@ export default function ContextualTooltip({
           style={{
             position: 'absolute',
             ...positionStyles[position],
-            background: 'linear-gradient(135deg, #6F00FF, #9D4EFF)',
+            background: 'linear-gradient(135deg, #1E6FDB, #3FA9F5)',
             color: '#fff',
             padding: '10px 12px',
             borderRadius: '8px',
@@ -117,7 +117,7 @@ export default function ContextualTooltip({
             maxWidth: '200px',
             zIndex: 1000,
             whiteSpace: 'normal',
-            boxShadow: '0 4px 12px rgba(111,0,255,0.3)',
+            boxShadow: '0 4px 12px rgba(30,111,219,0.3)',
             animation: 'fadeIn 0.2s ease',
           }}
         >
@@ -129,7 +129,7 @@ export default function ContextualTooltip({
               position: 'absolute',
               width: '8px',
               height: '8px',
-              background: '#6F00FF',
+              background: '#1E6FDB',
               transform: 'rotate(45deg)',
               ...(position === 'top' && {
                 bottom: '-4px',

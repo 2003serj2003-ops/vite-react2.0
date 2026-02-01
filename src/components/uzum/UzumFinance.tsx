@@ -170,7 +170,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
     <div style={{ width: '100%', minHeight: '100vh', background: '#f8f9fa', paddingBottom: '80px' }}>
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #7c3aed 50%, #a855f7 100%)',
+        background: 'linear-gradient(135deg, #0B1C2D 0%, #1E6FDB 50%, #3FA9F5 100%)',
         padding: '24px 20px',
         color: 'white',
       }}>
@@ -188,11 +188,11 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
           gap: '12px',
         }}>
           <div style={{
-            background: 'rgba(34, 197, 94, 0.2)',
+            background: 'rgba(76,175,80, 0.2)',
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             padding: '16px',
-            border: '1px solid rgba(34, 197, 94, 0.3)',
+            border: '1px solid rgba(76,175,80, 0.3)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <FiTrendingUp size={20} />
@@ -225,13 +225,13 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
 
           <div style={{
             background: totals.profit >= 0 
-              ? 'rgba(59, 130, 246, 0.2)' 
+              ? 'rgba(30,111,219, 0.2)' 
               : 'rgba(239, 68, 68, 0.2)',
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             padding: '16px',
             border: totals.profit >= 0 
-              ? '1px solid rgba(59, 130, 246, 0.3)' 
+              ? '1px solid rgba(30,111,219, 0.3)' 
               : '1px solid rgba(239, 68, 68, 0.3)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
@@ -269,7 +269,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
               fontWeight: '600',
               cursor: 'pointer',
               background: activeTab === 'orders' 
-                ? 'linear-gradient(135deg, #7c3aed 0%, #22c55e 100%)' 
+                ? 'linear-gradient(135deg, #1E6FDB 0%, #4CAF50 100%)' 
                 : 'transparent',
               color: activeTab === 'orders' ? 'white' : '#6b7280',
               transition: 'all 0.2s',
@@ -288,7 +288,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
               fontWeight: '600',
               cursor: 'pointer',
               background: activeTab === 'expenses' 
-                ? 'linear-gradient(135deg, #7c3aed 0%, #22c55e 100%)' 
+                ? 'linear-gradient(135deg, #1E6FDB 0%, #4CAF50 100%)' 
                 : 'transparent',
               color: activeTab === 'expenses' ? 'white' : '#6b7280',
               transition: 'all 0.2s',
@@ -309,7 +309,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
           gap: '12px',
           border: '2px solid #93c5fd',
         }}>
-          <FiCalendar size={24} style={{ color: '#3b82f6' }} />
+          <FiCalendar size={24} style={{ color: '#1E6FDB' }} />
           <div style={{ fontSize: '14px', color: '#1e3a8a' }}>
             <strong>{t.dateFrom}:</strong> 01.01.2026 – <strong>{t.dateTo}:</strong> {new Date().toLocaleDateString('ru-RU')}
           </div>
@@ -409,7 +409,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                       fontSize: '14px',
                       fontWeight: '600',
                       textAlign: 'right',
-                      color: '#22c55e',
+                      color: '#4CAF50',
                     }}>
                       {formatPrice(order.amount || 0)}
                     </td>

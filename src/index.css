@@ -1,11 +1,22 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Sellix Brand Colors */
+  --color-primary-blue: #1E6FDB;
+  --color-primary-green: #4CAF50;
+  --color-accent-orange: #FF9F1C;
+  --color-bg-dark: #0B1C2D;
+  --color-secondary-blue: #3FA9F5;
+  --color-neutral-white: #FFFFFF;
+  --color-light-gray: #E5E7EB;
+  --color-text-dark: #1F2937;
+
+  /* Sellix Fonts */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--color-text-dark);
+  background-color: var(--color-neutral-white);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,11 +26,11 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--color-primary-blue);
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: var(--color-secondary-blue);
 }
 
 body {
@@ -28,6 +39,11 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
 }
 
 h1 {
@@ -41,13 +57,14 @@ button {
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--color-primary-blue);
+  color: var(--color-neutral-white);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  background-color: var(--color-secondary-blue);
 }
 button:focus,
 button:focus-visible {
@@ -56,13 +73,13 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: var(--color-text-dark);
+    background-color: var(--color-neutral-white);
   }
   a:hover {
-    color: #747bff;
+    color: var(--color-secondary-blue);
   }
   button {
-    background-color: #f9f9f9;
+    background-color: var(--color-primary-blue);
   }
 }

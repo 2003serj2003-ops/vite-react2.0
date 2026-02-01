@@ -231,7 +231,7 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
           <div style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>
             {t.totalStock}
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: '#10b981' }}>
+          <div style={{ fontSize: '24px', fontWeight: 700, color: '#4CAF50' }}>
             {totalStock}
           </div>
         </div>
@@ -268,7 +268,7 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
             style={{
               flex: 1,
               padding: '12px',
-              backgroundColor: updating ? '#9ca3af' : '#10b981',
+              backgroundColor: updating ? '#9ca3af' : '#4CAF50',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -381,7 +381,7 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
                         <span style={{
                           padding: '4px 8px',
                           backgroundColor: '#dcfce7',
-                          color: '#16a34a',
+                          color: '#4CAF50',
                           borderRadius: '4px',
                           fontWeight: 600,
                         }}>
@@ -432,7 +432,7 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
                           fontSize: '16px',
                           fontWeight: 600,
                           textAlign: 'center',
-                          border: hasEdit ? '2px solid #10b981' : '1px solid #e5e7eb',
+                          border: hasEdit ? '2px solid #4CAF50' : '1px solid #e5e7eb',
                           borderRadius: '8px',
                           outline: 'none',
                           backgroundColor: hasEdit ? '#f0fdf4' : 'white',

@@ -94,7 +94,7 @@ export default function AccessCodesManagement() {
           onClick={() => setShowCreateForm(!showCreateForm)}
           style={{
             padding: '10px 20px',
-            backgroundColor: '#7000FF',
+            backgroundColor: '#1E6FDB',
             color: '#fff',
             border: 'none',
             borderRadius: '8px',
@@ -227,7 +227,7 @@ export default function AccessCodesManagement() {
 
       <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff', borderRadius: '8px' }}>
         <thead>
-          <tr style={{ backgroundColor: '#7000FF', color: '#fff' }}>
+          <tr style={{ backgroundColor: '#1E6FDB', color: '#fff' }}>
             <th style={{ padding: '12px', textAlign: 'left' }}>Role</th>
             <th style={{ padding: '12px', textAlign: 'left' }}>Uses</th>
             <th style={{ padding: '12px', textAlign: 'left' }}>Expires</th>
@@ -243,7 +243,7 @@ export default function AccessCodesManagement() {
                 <span style={{
                   padding: '4px 8px',
                   borderRadius: '4px',
-                  backgroundColor: '#7000FF',
+                  backgroundColor: '#1E6FDB',
                   color: '#fff',
                   fontSize: '12px',
                 }}>

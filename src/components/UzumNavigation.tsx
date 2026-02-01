@@ -36,12 +36,12 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
   const t = T[lang];
 
   const navItems = [
-    { id: 'dashboard', icon: FiHome, label: t.dashboard, color: '#7c3aed' },
-    { id: 'products', icon: FiPackage, label: t.products, color: '#f59e0b' },
-    { id: 'orders', icon: FiShoppingCart, label: t.orders, color: '#22c55e' },
-    { id: 'finance', icon: FiDollarSign, label: t.finance, color: '#10b981' },
-    { id: 'invoices', icon: FiFileText, label: t.invoices, color: '#3b82f6' },
-    { id: 'reports', icon: FiBarChart2, label: t.reports, color: '#8b5cf6' },
+    { id: 'dashboard', icon: FiHome, label: t.dashboard, color: '#1E6FDB' },
+    { id: 'products', icon: FiPackage, label: t.products, color: '#FF9F1C' },
+    { id: 'orders', icon: FiShoppingCart, label: t.orders, color: '#4CAF50' },
+    { id: 'finance', icon: FiDollarSign, label: t.finance, color: '#4CAF50' },
+    { id: 'invoices', icon: FiFileText, label: t.invoices, color: '#1E6FDB' },
+    { id: 'reports', icon: FiBarChart2, label: t.reports, color: '#3FA9F5' },
   ] as const;
 
   return (

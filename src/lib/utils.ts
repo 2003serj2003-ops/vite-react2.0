@@ -116,14 +116,14 @@ export function formatOrderStatus(status: string, lang: 'ru' | 'uz' = 'ru'): str
  */
 export function getOrderStatusColor(status: string): string {
   const colorMap: { [key: string]: string } = {
-    CREATED: '#3b82f6', // blue
-    PACKING: '#f59e0b', // amber
-    PENDING_DELIVERY: '#8b5cf6', // purple
+    CREATED: '#1E6FDB', // blue
+    PACKING: '#FF9F1C', // amber
+    PENDING_DELIVERY: '#3FA9F5', // purple
     DELIVERING: '#06b6d4', // cyan
-    DELIVERED: '#10b981', // green
-    ACCEPTED_AT_DP: '#10b981', // green
-    DELIVERED_TO_CUSTOMER_DELIVERY_POINT: '#10b981', // green
-    COMPLETED: '#22c55e', // green
+    DELIVERED: '#4CAF50', // green
+    ACCEPTED_AT_DP: '#4CAF50', // green
+    DELIVERED_TO_CUSTOMER_DELIVERY_POINT: '#4CAF50', // green
+    COMPLETED: '#4CAF50', // green
     CANCELED: '#ef4444', // red
     PENDING_CANCELLATION: '#f97316', // orange
     RETURNED: '#dc2626', // red

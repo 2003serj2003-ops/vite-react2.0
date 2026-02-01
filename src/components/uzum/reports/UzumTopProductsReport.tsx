@@ -198,7 +198,7 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
           width: '48px',
           height: '48px',
           border: '4px solid #f3f4f6',
-          borderTopColor: '#22c55e',
+          borderTopColor: '#4CAF50',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
         }} />
@@ -233,7 +233,7 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
             onClick={downloadReport}
             style={{
               padding: '12px 24px',
-              backgroundColor: '#22c55e',
+              backgroundColor: '#4CAF50',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
@@ -404,7 +404,7 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
                 }}>
                   <div>
                     <div style={{ fontSize: '12px', color: '#1f2937' }}>{t.sold}</div>
-                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#22c55e' }}>
+                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#4CAF50' }}>
                       {product.sold}
                     </div>
                   </div>
@@ -416,7 +416,7 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
                   </div>
                   <div>
                     <div style={{ fontSize: '12px', color: '#1f2937' }}>{t.profit}</div>
-                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#22c55e' }}>
+                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#4CAF50' }}>
                       {formatPrice(product.profit)}
                     </div>
                   </div>

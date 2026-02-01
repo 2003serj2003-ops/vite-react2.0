@@ -48,14 +48,14 @@ export default function GettingStartedBlock({
       title: t.profitCalc,
       subtitle: t.profitCalcSub,
       onClick: onNavigateCalculator,
-      color: '#6F00FF',
+      color: '#1E6FDB',
     },
     {
       icon: '💰',
       title: t.commissions,
       subtitle: t.commissionsSub,
       onClick: onNavigateCommissions,
-      color: '#9D4EFF',
+      color: '#3FA9F5',
     },
     {
       icon: '�',

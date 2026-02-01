@@ -39,7 +39,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Недельный график заказов',
             'Финансовые показатели'
           ],
-          color: '#7c3aed'
+          color: '#1E6FDB'
         },
         {
           icon: FiPackage,
@@ -52,7 +52,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Цены и статусы',
             'Детальная информация'
           ],
-          color: '#f59e0b'
+          color: '#FF9F1C'
         },
         {
           icon: FiShoppingCart,
@@ -65,7 +65,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Детали доставки',
             'Печать этикеток'
           ],
-          color: '#22c55e'
+          color: '#4CAF50'
         },
         {
           icon: FiDollarSign,
@@ -78,7 +78,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Комиссии Uzum',
             'Логистические затраты'
           ],
-          color: '#10b981'
+          color: '#4CAF50'
         },
         {
           icon: FiFileText,
@@ -91,7 +91,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Детальный состав',
             'Статусы обработки'
           ],
-          color: '#3b82f6'
+          color: '#1E6FDB'
         },
         {
           icon: FiBarChart2,
@@ -104,7 +104,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Графики и диаграммы',
             'Экспорт данных'
           ],
-          color: '#8b5cf6'
+          color: '#3FA9F5'
         }
       ]
     },
@@ -126,7 +126,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Haftalik buyurtmalar grafigi',
             'Moliyaviy ko\'rsatkichlar'
           ],
-          color: '#7c3aed'
+          color: '#1E6FDB'
         },
         {
           icon: FiPackage,
@@ -139,7 +139,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Narxlar va holatlar',
             'Batafsil ma\'lumot'
           ],
-          color: '#f59e0b'
+          color: '#FF9F1C'
         },
         {
           icon: FiShoppingCart,
@@ -152,7 +152,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Yetkazib berish tafsilotlari',
             'Yorliqlarni chop etish'
           ],
-          color: '#22c55e'
+          color: '#4CAF50'
         },
         {
           icon: FiDollarSign,
@@ -165,7 +165,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Uzum komissiyalari',
             'Logistika xarajatlari'
           ],
-          color: '#10b981'
+          color: '#4CAF50'
         },
         {
           icon: FiFileText,
@@ -178,7 +178,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Batafsil tarkib',
             'Qayta ishlash holati'
           ],
-          color: '#3b82f6'
+          color: '#1E6FDB'
         },
         {
           icon: FiBarChart2,
@@ -191,7 +191,7 @@ export default function UzumTour({ lang, onComplete }: UzumTourProps) {
             'Grafiklar va diagrammalar',
             'Ma\'lumotlarni eksport'
           ],
-          color: '#8b5cf6'
+          color: '#3FA9F5'
         }
       ]
     }

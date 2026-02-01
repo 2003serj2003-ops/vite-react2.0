@@ -666,9 +666,9 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   function getStatusColor(status: string): string {
     switch (status) {
       case 'pending':
-        return '#f59e0b';
+        return '#FF9F1C';
       case 'confirmed':
-        return '#22c55e';
+        return '#4CAF50';
       case 'cancelled':
         return '#ef4444';
       default:
@@ -739,7 +739,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                 onClick={() => setStatusFilter(option.value)}
                 style={{
                   padding: window.innerWidth > 640 ? '14px 20px' : '10px 14px',
-                  backgroundColor: isActive ? '#22c55e' : '#f9fafb',
+                  backgroundColor: isActive ? '#4CAF50' : '#f9fafb',
                   color: isActive ? 'white' : '#374151',
                   border: isActive ? 'none' : '2px solid #d1d5db',
                   borderRadius: '12px',
@@ -753,7 +753,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                   alignItems: 'center',
                   gap: window.innerWidth > 640 ? '10px' : '6px',
                   transition: 'all 0.2s',
-                  boxShadow: isActive ? '0 4px 8px rgba(34, 197, 94, 0.4)' : '0 2px 4px rgba(0,0,0,0.05)',
+                  boxShadow: isActive ? '0 4px 8px rgba(76,175,80, 0.4)' : '0 2px 4px rgba(0,0,0,0.05)',
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
@@ -811,7 +811,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                 key={orderId}
                 className="uzum-order-item"
                 style={{
-                  border: isExpanded ? '2px solid #22c55e' : '2px solid transparent',
+                  border: isExpanded ? '2px solid #4CAF50' : '2px solid transparent',
                 }}
               >
                 {/* Order Header - Always Visible */}
@@ -874,7 +874,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                       <div style={{
                         fontSize: '24px',
                         fontWeight: '700',
-                        color: '#22c55e',
+                        color: '#4CAF50',
                         marginBottom: '4px',
                       }}>
                         {order.total || order.totalPrice || order.price ? 
@@ -1038,7 +1038,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                           }}
                           style={{
                             padding: '6px 12px',
-                            backgroundColor: (labelSize[orderId] || 'LARGE') === 'LARGE' ? '#7c3aed' : '#f3f4f6',
+                            backgroundColor: (labelSize[orderId] || 'LARGE') === 'LARGE' ? '#1E6FDB' : '#f3f4f6',
                             color: (labelSize[orderId] || 'LARGE') === 'LARGE' ? 'white' : '#666',
                             border: 'none',
                             borderRadius: '6px',
@@ -1057,7 +1057,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                           }}
                           style={{
                             padding: '6px 12px',
-                            backgroundColor: labelSize[orderId] === 'BIG' ? '#7c3aed' : '#f3f4f6',
+                            backgroundColor: labelSize[orderId] === 'BIG' ? '#1E6FDB' : '#f3f4f6',
                             color: labelSize[orderId] === 'BIG' ? 'white' : '#666',
                             border: 'none',
                             borderRadius: '6px',
@@ -1088,7 +1088,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                             flex: 1,
                             minWidth: '140px',
                             padding: '14px',
-                            backgroundColor: '#3b82f6',
+                            backgroundColor: '#1E6FDB',
                             color: 'white',
                             border: 'none',
                             borderRadius: '12px',
@@ -1104,11 +1104,11 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                           }}
                           onMouseEnter={(e) => {
                             if (!printingLabel) {
-                              e.currentTarget.style.backgroundColor = '#2563eb';
+                              e.currentTarget.style.backgroundColor = '#1E6FDB';
                             }
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#3b82f6';
+                            e.currentTarget.style.backgroundColor = '#1E6FDB';
                           }}
                         >
                           <span>🖨️</span>

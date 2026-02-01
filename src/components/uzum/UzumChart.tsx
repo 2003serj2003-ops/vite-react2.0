@@ -42,8 +42,8 @@ export default function UzumChart({ data, type, height = 300, showValues = true,
 
     // Colors
     const defaultColors = [
-      '#7c3aed', '#22c55e', '#f59e0b', '#3b82f6', '#ef4444',
-      '#8b5cf6', '#10b981', '#f97316', '#06b6d4', '#ec4899'
+      '#1E6FDB', '#4CAF50', '#FF9F1C', '#1E6FDB', '#ef4444',
+      '#3FA9F5', '#4CAF50', '#f97316', '#06b6d4', '#ec4899'
     ];
 
     if (type === 'bar') {

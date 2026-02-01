@@ -191,8 +191,8 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
 
   // Chart data
   const stockByType = [
-    { label: 'FBO', value: totals.fboQty, color: '#3b82f6' },
-    { label: 'FBS', value: totals.fbsQty, color: '#22c55e' },
+    { label: 'FBO', value: totals.fboQty, color: '#1E6FDB' },
+    { label: 'FBS', value: totals.fbsQty, color: '#4CAF50' },
   ];
 
   const topStockProducts = [...filteredData]
@@ -218,7 +218,7 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
           width: '48px',
           height: '48px',
           border: '4px solid #f3f4f6',
-          borderTopColor: '#22c55e',
+          borderTopColor: '#4CAF50',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
         }} />
@@ -247,14 +247,14 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
           gap: '16px',
         }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0, color: '#1f2937', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FiPackage size={28} style={{ color: '#7c3aed' }} />
+            <FiPackage size={28} style={{ color: '#1E6FDB' }} />
             {t.title}
           </h2>
           <button
             onClick={downloadReport}
             style={{
               padding: '12px 24px',
-              background: 'linear-gradient(135deg, #7c3aed 0%, #22c55e 100%)',
+              background: 'linear-gradient(135deg, #1E6FDB 0%, #4CAF50 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
@@ -268,7 +268,7 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 16px rgba(124, 58, 237, 0.3)';
+              e.currentTarget.style.boxShadow = '0 8px 16px rgba(30,111,219, 0.3)';
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
@@ -337,11 +337,11 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
         }}>
           {/* Summary Cards */}
           <div style={{
-            background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+            background: 'linear-gradient(135deg, #1E6FDB 0%, #3FA9F5 100%)',
             borderRadius: '16px',
             padding: '24px',
             color: 'white',
-            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+            boxShadow: '0 4px 12px rgba(30,111,219, 0.3)',
             position: 'relative',
             overflow: 'hidden',
           }}>
@@ -355,11 +355,11 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
           </div>
 
           <div style={{
-            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+            background: 'linear-gradient(135deg, #1E6FDB 0%, #1E6FDB 100%)',
             borderRadius: '16px',
             padding: '24px',
             color: 'white',
-            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+            boxShadow: '0 4px 12px rgba(30,111,219, 0.3)',
             position: 'relative',
             overflow: 'hidden',
           }}>
@@ -376,11 +376,11 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
           </div>
 
           <div style={{
-            background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+            background: 'linear-gradient(135deg, #4CAF50 0%, #4CAF50 100%)',
             borderRadius: '16px',
             padding: '24px',
             color: 'white',
-            boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)',
+            boxShadow: '0 4px 12px rgba(76,175,80, 0.3)',
             position: 'relative',
             overflow: 'hidden',
           }}>
@@ -503,9 +503,9 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
                     <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{row.cost.toLocaleString()}</td>
                     <td style={{ padding: '12px', textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>{row.inStock}</td>
                     <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{row.costFBO.toLocaleString()}</td>
-                    <td style={{ padding: '12px', textAlign: 'right', color: '#3b82f6' }}>{row.fboQty}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', color: '#1E6FDB' }}>{row.fboQty}</td>
                     <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{row.costFBS.toLocaleString()}</td>
-                    <td style={{ padding: '12px', textAlign: 'right', color: '#22c55e' }}>{row.fbsQty}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', color: '#4CAF50' }}>{row.fbsQty}</td>
                     <td style={{ padding: '12px', textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>{row.costFBSFBO.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -514,9 +514,9 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
                   <td colSpan={3} style={{ padding: '12px', color: '#1f2937' }}>{t.total}</td>
                   <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{totals.inStock}</td>
                   <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{totals.costFBO.toLocaleString()}</td>
-                  <td style={{ padding: '12px', textAlign: 'right', color: '#3b82f6' }}>{totals.fboQty}</td>
+                  <td style={{ padding: '12px', textAlign: 'right', color: '#1E6FDB' }}>{totals.fboQty}</td>
                   <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{totals.costFBS.toLocaleString()}</td>
-                  <td style={{ padding: '12px', textAlign: 'right', color: '#22c55e' }}>{totals.fbsQty}</td>
+                  <td style={{ padding: '12px', textAlign: 'right', color: '#4CAF50' }}>{totals.fbsQty}</td>
                   <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{totals.costFBSFBO.toLocaleString()}</td>
                 </tr>
               </>

@@ -46,20 +46,20 @@ export default function UzumReports({ lang, token }: UzumReportsProps) {
   const t = T[lang];
 
   const reports = [
-    { id: 'sales' as ReportType, icon: FiTrendingUp, label: t.salesReport, available: true, color: '#7c3aed' },
-    { id: 'top-products' as ReportType, icon: FiAward, label: t.topProducts, available: true, color: '#22c55e' },
-    { id: 'non-liquid' as ReportType, icon: FiAlertTriangle, label: t.nonLiquid, available: true, color: '#f59e0b' },
-    { id: 'paid-storage' as ReportType, icon: FiDollarSign, label: t.paidStorage, available: true, color: '#3b82f6' },
+    { id: 'sales' as ReportType, icon: FiTrendingUp, label: t.salesReport, available: true, color: '#1E6FDB' },
+    { id: 'top-products' as ReportType, icon: FiAward, label: t.topProducts, available: true, color: '#4CAF50' },
+    { id: 'non-liquid' as ReportType, icon: FiAlertTriangle, label: t.nonLiquid, available: true, color: '#FF9F1C' },
+    { id: 'paid-storage' as ReportType, icon: FiDollarSign, label: t.paidStorage, available: true, color: '#1E6FDB' },
     { id: 'returned' as ReportType, icon: FiRotateCcw, label: t.returned, available: true, color: '#ef4444' },
-    { id: 'paid-out' as ReportType, icon: FiCreditCard, label: t.paidOut, available: true, color: '#8b5cf6' },
-    { id: 'inventory' as ReportType, icon: FiPackage, label: t.inventoryReport, available: true, color: '#10b981' },
+    { id: 'paid-out' as ReportType, icon: FiCreditCard, label: t.paidOut, available: true, color: '#3FA9F5' },
+    { id: 'inventory' as ReportType, icon: FiPackage, label: t.inventoryReport, available: true, color: '#4CAF50' },
   ];
 
   return (
     <div style={{ width: '100%', minHeight: '100vh', background: '#f8f9fa', paddingBottom: '80px' }}>
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #7c3aed 50%, #a855f7 100%)',
+        background: 'linear-gradient(135deg, #0B1C2D 0%, #1E6FDB 50%, #3FA9F5 100%)',
         padding: '24px 20px',
         color: 'white',
       }}>

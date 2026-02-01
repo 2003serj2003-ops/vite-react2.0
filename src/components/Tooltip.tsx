@@ -41,8 +41,8 @@ export default function Tooltip({ text, position = 'top' }: TooltipProps) {
       <button
         onMouseEnter={(e) => {
           setShow(true);
-          e.currentTarget.style.borderColor = '#7c3aed';
-          e.currentTarget.style.color = '#7c3aed';
+          e.currentTarget.style.borderColor = '#1E6FDB';
+          e.currentTarget.style.color = '#1E6FDB';
         }}
         onMouseLeave={(e) => {
           setShow(false);

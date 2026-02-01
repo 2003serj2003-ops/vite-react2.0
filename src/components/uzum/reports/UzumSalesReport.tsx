@@ -243,7 +243,7 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
           width: '48px',
           height: '48px',
           border: '4px solid #f3f4f6',
-          borderTopColor: '#22c55e',
+          borderTopColor: '#4CAF50',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
         }} />
@@ -288,14 +288,14 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
           gap: '16px',
         }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FiTrendingUp size={28} style={{ color: '#7c3aed' }} />
+            <FiTrendingUp size={28} style={{ color: '#1E6FDB' }} />
             {t.title}
           </h2>
           <button
             onClick={downloadReport}
             style={{
               padding: '12px 24px',
-              background: 'linear-gradient(135deg, #7c3aed 0%, #22c55e 100%)',
+              background: 'linear-gradient(135deg, #1E6FDB 0%, #4CAF50 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
@@ -309,7 +309,7 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 16px rgba(124, 58, 237, 0.3)';
+              e.currentTarget.style.boxShadow = '0 8px 16px rgba(30,111,219, 0.3)';
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
@@ -399,11 +399,11 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
             gap: '16px',
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+              background: 'linear-gradient(135deg, #1E6FDB 0%, #3FA9F5 100%)',
               borderRadius: '16px',
               padding: '20px',
               color: 'white',
-              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+              boxShadow: '0 4px 12px rgba(30,111,219, 0.3)',
             }}>
               <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
                 {t.sold}
@@ -415,11 +415,11 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
             </div>
 
             <div style={{
-              background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+              background: 'linear-gradient(135deg, #4CAF50 0%, #4CAF50 100%)',
               borderRadius: '16px',
               padding: '20px',
               color: 'white',
-              boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)',
+              boxShadow: '0 4px 12px rgba(76,175,80, 0.3)',
             }}>
               <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
                 {t.revenue}
@@ -431,11 +431,11 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
             </div>
 
             <div style={{
-              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+              background: 'linear-gradient(135deg, #1E6FDB 0%, #1E6FDB 100%)',
               borderRadius: '16px',
               padding: '20px',
               color: 'white',
-              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+              boxShadow: '0 4px 12px rgba(30,111,219, 0.3)',
             }}>
               <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
                 {t.toPay}
@@ -447,7 +447,7 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
             </div>
 
             <div style={{
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              background: 'linear-gradient(135deg, #FF9F1C 0%, #d97706 100%)',
               borderRadius: '16px',
               padding: '20px',
               color: 'white',
@@ -568,7 +568,7 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
                     <td style={{ padding: '12px', textAlign: 'right' }}>{row.inStock}</td>
                     <td style={{ padding: '12px', textAlign: 'right' }}>{row.fbs}</td>
                     <td style={{ padding: '12px', textAlign: 'right' }}>{formatPrice(row.revenue)}</td>
-                    <td style={{ padding: '12px', textAlign: 'right', color: '#22c55e', fontWeight: '600' }}>{formatPrice(row.toPay)}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', color: '#4CAF50', fontWeight: '600' }}>{formatPrice(row.toPay)}</td>
                     <td style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>{formatPrice(row.net)}</td>
                     <td style={{ padding: '12px', textAlign: 'right' }}>{row.monthlyPotential}</td>
                   </tr>
@@ -580,7 +580,7 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
                   <td style={{ padding: '12px' }}></td>
                   <td style={{ padding: '12px' }}></td>
                   <td style={{ padding: '12px', textAlign: 'right' }}>{formatPrice(totals.revenue)}</td>
-                  <td style={{ padding: '12px', textAlign: 'right', color: '#22c55e' }}>{formatPrice(totals.toPay)}</td>
+                  <td style={{ padding: '12px', textAlign: 'right', color: '#4CAF50' }}>{formatPrice(totals.toPay)}</td>
                   <td style={{ padding: '12px', textAlign: 'right' }}>{formatPrice(totals.net)}</td>
                   <td style={{ padding: '12px', textAlign: 'right' }}>{totals.monthlyPotential}</td>
                 </tr>

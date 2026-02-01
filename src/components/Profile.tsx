@@ -148,7 +148,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
     <div style={{
       minHeight: '100vh',
       overflowY: 'auto',
-      background: 'linear-gradient(135deg, #7E22CE 0%, #6F00FF 50%, #5B21B6 100%)',
+      background: 'linear-gradient(135deg, #1E6FDB 0%, #1E6FDB 50%, #5B21B6 100%)',
       padding: '16px',
       paddingBottom: '100px',
       scrollbarWidth: 'none',
@@ -163,8 +163,8 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
           100% { background-position: 1000px 0; }
         }
         @keyframes pulse-border {
-          0%, 100% { border-color: #10b981; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-          50% { border-color: #22c55e; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+          0%, 100% { border-color: #4CAF50; box-shadow: 0 0 0 0 rgba(76,175,80, 0.7); }
+          50% { border-color: #4CAF50; box-shadow: 0 0 0 4px rgba(76,175,80, 0); }
         }
         .valid-stamp {
           animation: pulse-border 2s ease-in-out infinite;
@@ -214,11 +214,11 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
           borderRadius: '20px',
           overflow: 'hidden',
           boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)',
-          border: '3px solid #7c3aed',
+          border: '3px solid #1E6FDB',
         }}>
           {/* Passport Header */}
           <div style={{
-            background: 'linear-gradient(135deg, #7E22CE 0%, #6F00FF 100%)',
+            background: 'linear-gradient(135deg, #1E6FDB 0%, #1E6FDB 100%)',
             padding: '24px',
             position: 'relative',
             overflow: 'hidden',
@@ -394,7 +394,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                     <div style={{
                       fontSize: '14px',
                       fontWeight: 700,
-                      color: '#7c3aed',
+                      color: '#1E6FDB',
                     }}>
                       @{username}
                     </div>
@@ -440,7 +440,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                 ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)'
                 : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
               borderRadius: '12px',
-              border: uzumStatus?.connected ? '3px solid #10b981' : '3px solid #ef4444',
+              border: uzumStatus?.connected ? '3px solid #4CAF50' : '3px solid #ef4444',
               boxShadow: uzumStatus?.connected 
                 ? '0 8px 24px rgba(16,185,129,0.25)' 
                 : '0 8px 24px rgba(239,68,68,0.25)',
@@ -470,7 +470,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                 right: '12px',
                 width: '70px',
                 height: '70px',
-                border: `4px solid ${uzumStatus?.connected ? '#10b981' : '#ef4444'}`,
+                border: `4px solid ${uzumStatus?.connected ? '#4CAF50' : '#ef4444'}`,
                 borderRadius: '50%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -481,14 +481,14 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                 zIndex: 2,
               }}>
                 {uzumStatus?.connected ? (
-                  <FiCheckCircle size={24} color="#10b981" />
+                  <FiCheckCircle size={24} color="#4CAF50" />
                 ) : (
                   <FiXCircle size={24} color="#ef4444" />
                 )}
                 <div style={{
                   fontSize: '9px',
                   fontWeight: 900,
-                  color: uzumStatus?.connected ? '#10b981' : '#ef4444',
+                  color: uzumStatus?.connected ? '#4CAF50' : '#ef4444',
                   marginTop: '4px',
                   letterSpacing: '0.5px',
                 }}>
@@ -507,7 +507,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                   gap: '12px',
                   marginBottom: '16px',
                 }}>
-                  <FiShield size={32} color={uzumStatus?.connected ? '#10b981' : '#ef4444'} />
+                  <FiShield size={32} color={uzumStatus?.connected ? '#4CAF50' : '#ef4444'} />
                   <div>
                     <div style={{
                       fontSize: '10px',
@@ -555,7 +555,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                     <div style={{
                       fontSize: '14px',
                       fontWeight: 900,
-                      color: uzumStatus?.connected ? '#10b981' : '#ef4444',
+                      color: uzumStatus?.connected ? '#4CAF50' : '#ef4444',
                       letterSpacing: '0.5px',
                       display: 'flex',
                       alignItems: 'center',
@@ -630,7 +630,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                       <div style={{
                         fontSize: '18px',
                         fontWeight: 900,
-                        color: '#7c3aed',
+                        color: '#1E6FDB',
                       }}>
                         {uzumStatus.shop_ids.length}
                       </div>
@@ -681,7 +681,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                             flex: 1,
                             minWidth: '160px',
                             padding: '14px 16px',
-                            background: 'linear-gradient(135deg, #7E22CE 0%, #6F00FF 100%)',
+                            background: 'linear-gradient(135deg, #1E6FDB 0%, #1E6FDB 100%)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '10px',
@@ -715,7 +715,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                           flex: 1,
                           minWidth: '100px',
                           padding: '14px 16px',
-                          background: checking ? '#9ca3af' : '#3b82f6',
+                          background: checking ? '#9ca3af' : '#1E6FDB',
                           color: 'white',
                           border: 'none',
                           borderRadius: '10px',
@@ -753,7 +753,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                       style={{
                         width: '100%',
                         padding: '14px 16px',
-                        background: 'linear-gradient(135deg, #7E22CE 0%, #6F00FF 100%)',
+                        background: 'linear-gradient(135deg, #1E6FDB 0%, #1E6FDB 100%)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '10px',

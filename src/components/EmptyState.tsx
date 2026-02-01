@@ -78,21 +78,21 @@ export default function EmptyState({
             padding: '10px 20px',
             borderRadius: '8px',
             border: 'none',
-            background: '#6F00FF',
+            background: '#1E6FDB',
             color: '#fff',
             fontWeight: 700,
             fontSize: '13px',
             cursor: 'pointer',
             transition: 'all .2s',
-            boxShadow: '0 2px 8px rgba(111,0,255,0.2)',
+            boxShadow: '0 2px 8px rgba(30,111,219,0.2)',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(111,0,255,0.3)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(30,111,219,0.3)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(111,0,255,0.2)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(30,111,219,0.2)';
           }}
         >
           {actionText}

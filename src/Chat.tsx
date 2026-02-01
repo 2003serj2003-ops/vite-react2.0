@@ -249,7 +249,7 @@ ${manualContext ? `HUJJATLAR:\n${manualContext}` : 'DIQQAT: Ushbu so\'rov bo\'yi
                   width: '32px', 
                   height: '32px', 
                   borderRadius: '50%', 
-                  backgroundColor: '#6F00FF', 
+                  backgroundColor: '#1E6FDB', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
@@ -265,7 +265,7 @@ ${manualContext ? `HUJJATLAR:\n${manualContext}` : 'DIQQAT: Ushbu so\'rov bo\'yi
                 maxWidth: '70%', 
                 padding: '12px 16px', 
                 borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px', 
-                backgroundColor: msg.role === 'user' ? '#6F00FF' : 'white', 
+                backgroundColor: msg.role === 'user' ? '#1E6FDB' : 'white', 
                 color: msg.role === 'user' ? 'white' : '#333', 
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)', 
                 wordWrap: 'break-word',
@@ -328,7 +328,7 @@ ${manualContext ? `HUJJATLAR:\n${manualContext}` : 'DIQQAT: Ushbu so\'rov bo\'yi
               width: '32px', 
               height: '32px', 
               borderRadius: '50%', 
-              backgroundColor: '#6F00FF', 
+              backgroundColor: '#1E6FDB', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
@@ -345,9 +345,9 @@ ${manualContext ? `HUJJATLAR:\n${manualContext}` : 'DIQQAT: Ushbu so\'rov bo\'yi
               backgroundColor: 'white', 
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
-              <span style={{ color: '#6F00FF' }}>●</span>
-              <span style={{ color: '#6F00FF', animation: 'blink 1s infinite' }}>●</span>
-              <span style={{ color: '#6F00FF', animation: 'blink 1s infinite 0.2s' }}>●</span>
+              <span style={{ color: '#1E6FDB' }}>●</span>
+              <span style={{ color: '#1E6FDB', animation: 'blink 1s infinite' }}>●</span>
+              <span style={{ color: '#1E6FDB', animation: 'blink 1s infinite 0.2s' }}>●</span>
             </div>
           </div>
         )}
@@ -382,7 +382,7 @@ ${manualContext ? `HUJJATLAR:\n${manualContext}` : 'DIQQAT: Ushbu so\'rov bo\'yi
             padding: '12px 20px', 
             border: 'none', 
             borderRadius: '24px', 
-            backgroundColor: isLoading ? '#ccc' : '#6F00FF', 
+            backgroundColor: isLoading ? '#ccc' : '#1E6FDB', 
             color: 'white', 
             cursor: isLoading ? 'not-allowed' : 'pointer', 
             fontSize: '16px', 

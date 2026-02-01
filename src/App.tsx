@@ -1805,7 +1805,7 @@ export default function App() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  boxShadow: "0 6px 24px rgba(111,0,255,.2), 0 2px 6px rgba(0,0,0,.05)",
+                  boxShadow: "0 6px 24px rgba(30,111,219,.2), 0 2px 6px rgba(0,0,0,.05)",
                   border: "2px solid rgba(255,255,255,.9)",
                   padding: "12px"
                 }}>
@@ -1831,7 +1831,7 @@ export default function App() {
                   fontSize: "28px",
                   fontWeight: 900,
                   margin: 0,
-                  background: "linear-gradient(135deg, #6F00FF, #9d4edd)",
+                  background: "linear-gradient(135deg, #1E6FDB, #3FA9F5)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
@@ -1847,8 +1847,8 @@ export default function App() {
                 background: "linear-gradient(145deg, #ffffff, #fdfcff)",
                 borderRadius: "20px",
                 padding: "20px 18px",
-                boxShadow: "0 8px 32px rgba(111,0,255,.1), 0 3px 8px rgba(0,0,0,.05)",
-                border: "2px solid rgba(111,0,255,.1)"
+                boxShadow: "0 8px 32px rgba(30,111,219,.1), 0 3px 8px rgba(0,0,0,.05)",
+                border: "2px solid rgba(30,111,219,.1)"
               }}>
                 {/* Поле ввода кода */}
                 <div style={{ marginBottom: "14px" }}>
@@ -1891,9 +1891,9 @@ export default function App() {
                     style={{
                       width: "100%",
                       padding: "11px 14px",
-                      border: "2px solid rgba(111,0,255,.2)",
+                      border: "2px solid rgba(30,111,219,.2)",
                       borderRadius: "12px",
-                      background: rulesExpanded ? "rgba(111,0,255,.05)" : "transparent",
+                      background: rulesExpanded ? "rgba(30,111,219,.05)" : "transparent",
                       color: "rgba(20,18,26,.85)",
                       fontWeight: 700,
                       fontSize: "13px",
@@ -1921,9 +1921,9 @@ export default function App() {
                     <div style={{
                       marginTop: "10px",
                       padding: "12px",
-                      background: "rgba(111,0,255,.04)",
+                      background: "rgba(30,111,219,.04)",
                       borderRadius: "10px",
-                      border: "1px solid rgba(111,0,255,.1)"
+                      border: "1px solid rgba(30,111,219,.1)"
                     }}>
                       <ul style={{ 
                         margin: 0, 
@@ -1949,10 +1949,10 @@ export default function App() {
                     alignItems: "center",
                     gap: "10px",
                     padding: "11px",
-                    background: "rgba(111,0,255,.03)",
+                    background: "rgba(30,111,219,.03)",
                     borderRadius: "10px",
                     cursor: "pointer",
-                    border: "2px solid " + (rules ? "rgba(111,0,255,.25)" : "rgba(111,0,255,.1)"),
+                    border: "2px solid " + (rules ? "rgba(30,111,219,.25)" : "rgba(30,111,219,.1)"),
                     transition: "all .2s ease",
                     marginBottom: "14px"
                   }}
@@ -2016,10 +2016,10 @@ export default function App() {
                 {/* Информация о получении кода */}
                 <div style={{
                   padding: "12px",
-                  background: "linear-gradient(135deg, rgba(111,0,255,.06), rgba(111,0,255,.08))",
+                  background: "linear-gradient(135deg, rgba(30,111,219,.06), rgba(30,111,219,.08))",
                   borderRadius: "12px",
                   textAlign: "center",
-                  border: "1px solid rgba(111,0,255,.15)"
+                  border: "1px solid rgba(30,111,219,.15)"
                 }}>
                   <div style={{ 
                     fontSize: "11px", 
@@ -2035,7 +2035,7 @@ export default function App() {
                     style={{ 
                       fontSize: "13px",
                       fontWeight: 800,
-                      color: "#6F00FF",
+                      color: "#1E6FDB",
                       textDecoration: "none",
                       cursor: "pointer",
                       display: "inline-block",
@@ -2098,10 +2098,10 @@ export default function App() {
                 >
                   <div style={{ 
                     padding: "24px 20px", 
-                    borderBottom: "2px solid rgba(111,0,255,.15)",
+                    borderBottom: "2px solid rgba(30,111,219,.15)",
                     background: "linear-gradient(145deg, #FFF8E8, #FFECD2)"
                   }}>
-                    <div style={{ fontSize: "20px", fontWeight: 900, color: "#6F00FF", marginBottom: "4px" }}>
+                    <div style={{ fontSize: "20px", fontWeight: 900, color: "#1E6FDB", marginBottom: "4px" }}>
                       Меню
                     </div>
                     <div style={{ fontSize: "13px", color: "rgba(0,0,0,.6)" }}>
@@ -2162,7 +2162,7 @@ export default function App() {
                   
                   <div style={{ 
                     padding: "16px", 
-                    borderTop: "2px solid rgba(111,0,255,.15)",
+                    borderTop: "2px solid rgba(30,111,219,.15)",
                     background: "linear-gradient(145deg, #FFF8E8, #FFECD2)"
                   }}>
                     <button
@@ -2200,9 +2200,9 @@ export default function App() {
                     padding: "8px"
                   }}
                 >
-                  <span style={{ display: "block", width: "20px", height: "2px", background: "#6F00FF", borderRadius: "1px" }}></span>
-                  <span style={{ display: "block", width: "20px", height: "2px", background: "#6F00FF", borderRadius: "1px" }}></span>
-                  <span style={{ display: "block", width: "20px", height: "2px", background: "#6F00FF", borderRadius: "1px" }}></span>
+                  <span style={{ display: "block", width: "20px", height: "2px", background: "#1E6FDB", borderRadius: "1px" }}></span>
+                  <span style={{ display: "block", width: "20px", height: "2px", background: "#1E6FDB", borderRadius: "1px" }}></span>
+                  <span style={{ display: "block", width: "20px", height: "2px", background: "#1E6FDB", borderRadius: "1px" }}></span>
                 </button>
               }
               searchDropdown={renderSearchResults()}
@@ -2211,8 +2211,8 @@ export default function App() {
             {/* Приветственный блок */}
             <div style={{ 
               padding: "20px 16px",
-              background: "linear-gradient(135deg, #7000FF 0%, #9D4EFF 100%)",
-              borderBottom: "2px solid rgba(157,78,255,.4)",
+              background: "linear-gradient(135deg, #1E6FDB 0%, #3FA9F5 100%)",
+              borderBottom: "2px solid rgba(63,169,245,.4)",
               position: "relative",
               overflow: "hidden"
             }}>
@@ -2341,12 +2341,12 @@ export default function App() {
                   onClick={() => setRoute({ name: "news" })}
                   style={{
                     padding: "6px 12px",
-                    border: "2px solid rgba(111,0,255,.2)",
+                    border: "2px solid rgba(30,111,219,.2)",
                     borderRadius: "8px",
                     background: "#FFF8E8",
                     fontSize: "12px",
                     fontWeight: 700,
-                    color: "#6F00FF",
+                    color: "#1E6FDB",
                     cursor: "pointer"
                   }}
                 >
@@ -2377,7 +2377,7 @@ export default function App() {
               right: 0,
               height: "64px",
               background: "linear-gradient(180deg, #FFF8E8, #FFECD2)",
-              borderTop: "2px solid rgba(111,0,255,.15)",
+              borderTop: "2px solid rgba(30,111,219,.15)",
               boxShadow: "0 -4px 16px rgba(0,0,0,.08)",
               display: "flex",
               alignItems: "center",
@@ -2399,7 +2399,7 @@ export default function App() {
                 }}
               >
                 <span style={{ fontSize: "24px" }}>❓</span>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "#6F00FF" }}>FAQ</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#1E6FDB" }}>FAQ</span>
               </button>
               
               <button
@@ -2416,7 +2416,7 @@ export default function App() {
                 }}
               >
                 <span style={{ fontSize: "24px" }}>📂</span>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "#6F00FF" }}>Разделы</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#1E6FDB" }}>Разделы</span>
               </button>
               
               <button
@@ -2433,7 +2433,7 @@ export default function App() {
                 }}
               >
                 <span style={{ fontSize: "20px" }}>🛒</span>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "#6F00FF" }}>Uzum</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#1E6FDB" }}>Uzum</span>
               </button>
               
               <button
@@ -2573,7 +2573,7 @@ export default function App() {
             {!uzumConnected && (
               <>
                 <div className="headerBlock" style={{
-                  background: "linear-gradient(135deg, #7E22CE, #6F00FF)",
+                  background: "linear-gradient(135deg, #1E6FDB, #1E6FDB)",
                   color: "white",
                   padding: "24px 20px",
                   position: "relative",
@@ -2652,7 +2652,7 @@ export default function App() {
                       fontSize: "18px",
                       fontWeight: 900,
                       marginBottom: "8px",
-                      color: "#6F00FF",
+                      color: "#1E6FDB",
                       display: "flex",
                       alignItems: "center",
                       gap: "8px",
@@ -2667,7 +2667,7 @@ export default function App() {
                           onClick={() => setShowUzumOnboarding(true)}
                           style={{
                             padding: "6px 12px",
-                            backgroundColor: "#3b82f6",
+                            backgroundColor: "#1E6FDB",
                             color: "white",
                             border: "none",
                             borderRadius: "6px",
@@ -2682,7 +2682,7 @@ export default function App() {
                           onClick={() => window.open("https://t.me/CloudGrove", "_blank")}
                           style={{
                             padding: "6px 12px",
-                            backgroundColor: "#10b981",
+                            backgroundColor: "#4CAF50",
                             color: "white",
                             border: "none",
                             borderRadius: "6px",
@@ -2753,7 +2753,7 @@ export default function App() {
                             right: "45px",
                             top: "50%",
                             transform: "translateY(-50%)",
-                            color: "#10b981",
+                            color: "#4CAF50",
                             fontSize: "12px",
                             fontWeight: 600
                           }}>
@@ -2813,7 +2813,7 @@ export default function App() {
                             right: "45px",
                             top: "50%",
                             transform: "translateY(-50%)",
-                            color: uzumPin.length >= 6 && uzumPin.length <= 10 ? "#10b981" : "#f59e0b",
+                            color: uzumPin.length >= 6 && uzumPin.length <= 10 ? "#4CAF50" : "#FF9F1C",
                             fontSize: "12px",
                             fontWeight: 600
                           }}>
@@ -2855,13 +2855,13 @@ export default function App() {
                   {uzumShops.length > 0 && (
                     <div className="cardCream" style={{
                       background: "linear-gradient(135deg, #dcfce7, #bbf7d0)",
-                      border: "2px solid #10b981"
+                      border: "2px solid #4CAF50"
                     }}>
                       <div style={{
                         fontSize: "16px",
                         fontWeight: 900,
                         marginBottom: "12px",
-                        color: "#047857",
+                        color: "#4CAF50",
                         display: "flex",
                         alignItems: "center",
                         gap: "8px"
@@ -2881,7 +2881,7 @@ export default function App() {
                               padding: "12px",
                               background: "white",
                               borderRadius: "8px",
-                              border: "1px solid rgba(16, 185, 129, 0.3)"
+                              border: "1px solid rgba(76,175,80, 0.3)"
                             }}
                           >
                             <div style={{
@@ -2920,7 +2920,7 @@ export default function App() {
                       </div>
                       <div style={{
                         fontSize: "13px",
-                        color: "#047857",
+                        color: "#4CAF50",
                         marginTop: "12px",
                         fontWeight: 600,
                         textAlign: "center"
@@ -2933,13 +2933,13 @@ export default function App() {
                   {/* Info Card */}
                   <div className="cardCream" style={{
                     background: "linear-gradient(135deg, #FFF8E8, #FFECD2)",
-                    border: "2px solid rgba(111,0,255,0.15)"
+                    border: "2px solid rgba(30,111,219,0.15)"
                   }}>
                     <div style={{
                       fontSize: "16px",
                       fontWeight: 900,
                       marginBottom: "12px",
-                      color: "#6F00FF",
+                      color: "#1E6FDB",
                       display: "flex",
                       alignItems: "center",
                       gap: "8px"
@@ -2971,14 +2971,14 @@ export default function App() {
 
                   {/* Security Notice */}
                   <div className="cardCream" style={{
-                    background: "rgba(59, 130, 246, 0.1)",
-                    border: "2px solid rgba(59, 130, 246, 0.3)"
+                    background: "rgba(30,111,219, 0.1)",
+                    border: "2px solid rgba(30,111,219, 0.3)"
                   }}>
                     <div style={{
                       fontSize: "14px",
                       fontWeight: 900,
                       marginBottom: "8px",
-                      color: "#2563eb",
+                      color: "#1E6FDB",
                       display: "flex",
                       alignItems: "center",
                       gap: "8px"
@@ -3004,7 +3004,7 @@ export default function App() {
                   fontSize: "16px",
                   fontWeight: 900,
                   marginBottom: "12px",
-                  color: "#6F00FF",
+                  color: "#1E6FDB",
                   display: "flex",
                   alignItems: "center",
                   gap: "8px"
@@ -3022,7 +3022,7 @@ export default function App() {
                     alignItems: "flex-start",
                     gap: "12px",
                     padding: "12px",
-                    background: "rgba(111,0,255,0.05)",
+                    background: "rgba(30,111,219,0.05)",
                     borderRadius: "8px"
                   }}>
                     <span style={{ fontSize: "20px" }}>📦</span>
@@ -3040,7 +3040,7 @@ export default function App() {
                     alignItems: "flex-start",
                     gap: "12px",
                     padding: "12px",
-                    background: "rgba(111,0,255,0.05)",
+                    background: "rgba(30,111,219,0.05)",
                     borderRadius: "8px"
                   }}>
                     <span style={{ fontSize: "20px" }}>📊</span>
@@ -3058,7 +3058,7 @@ export default function App() {
                     alignItems: "flex-start",
                     gap: "12px",
                     padding: "12px",
-                    background: "rgba(111,0,255,0.05)",
+                    background: "rgba(30,111,219,0.05)",
                     borderRadius: "8px"
                   }}>
                     <span style={{ fontSize: "20px" }}>🔔</span>
@@ -3134,14 +3134,14 @@ export default function App() {
                 style={{
                   width: "100%",
                   padding: "14px",
-                  background: showCalculator ? "#6F00FF" : "linear-gradient(135deg, #6F00FF, #9D4EFF)",
+                  background: showCalculator ? "#1E6FDB" : "linear-gradient(135deg, #1E6FDB, #3FA9F5)",
                   color: "#fff",
                   border: "none",
                   borderRadius: "12px",
                   fontSize: "15px",
                   fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: "0 4px 12px rgba(111,0,255,.3)",
+                  boxShadow: "0 4px 12px rgba(30,111,219,.3)",
                   transition: "all .2s"
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"}
@@ -3153,13 +3153,13 @@ export default function App() {
               {/* Калькулятор прибыли */}
               {showCalculator && (
                 <div className="cardCream" style={{
-                  background: "linear-gradient(145deg, rgba(111,0,255,.08), rgba(111,0,255,.03))",
-                  border: "3px solid #6F00FF",
+                  background: "linear-gradient(145deg, rgba(30,111,219,.08), rgba(30,111,219,.03))",
+                  border: "3px solid #1E6FDB",
                   position: "relative"
                 }}>
                   {/* Заголовок с иконкой информации */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-                    <div style={{ fontSize: "16px", fontWeight: 900, color: "#6F00FF" }}>
+                    <div style={{ fontSize: "16px", fontWeight: 900, color: "#1E6FDB" }}>
                       💰 {lang === "ru" ? "Калькулятор прибыли" : "Foyda kalkulyatori"}
                     </div>
                     <button
@@ -3168,9 +3168,9 @@ export default function App() {
                         width: "28px",
                         height: "28px",
                         borderRadius: "50%",
-                        background: showCalcInstruction ? "#6F00FF" : "rgba(111,0,255,.15)",
-                        color: showCalcInstruction ? "#fff" : "#6F00FF",
-                        border: "2px solid #6F00FF",
+                        background: showCalcInstruction ? "#1E6FDB" : "rgba(30,111,219,.15)",
+                        color: showCalcInstruction ? "#fff" : "#1E6FDB",
+                        border: "2px solid #1E6FDB",
                         fontSize: "14px",
                         fontWeight: 900,
                         cursor: "pointer",
@@ -3181,12 +3181,12 @@ export default function App() {
                       }}
                       onMouseEnter={(e) => {
                         if (!showCalcInstruction) {
-                          e.currentTarget.style.background = "rgba(111,0,255,.25)";
+                          e.currentTarget.style.background = "rgba(30,111,219,.25)";
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (!showCalcInstruction) {
-                          e.currentTarget.style.background = "rgba(111,0,255,.15)";
+                          e.currentTarget.style.background = "rgba(30,111,219,.15)";
                         }
                       }}
                     >
@@ -3198,13 +3198,13 @@ export default function App() {
                   {showCalcInstruction && (
                     <div style={{
                       padding: "14px",
-                      background: "linear-gradient(135deg, rgba(111,0,255,.95), rgba(157,78,255,.95))",
+                      background: "linear-gradient(135deg, rgba(30,111,219,.95), rgba(63,169,245,.95))",
                       borderRadius: "10px",
                       marginBottom: "16px",
                       color: "#fff",
                       fontSize: "12px",
                       lineHeight: "1.6",
-                      boxShadow: "0 4px 12px rgba(111,0,255,.3)"
+                      boxShadow: "0 4px 12px rgba(30,111,219,.3)"
                     }}>
                       <div style={{ fontWeight: 900, marginBottom: "8px", fontSize: "13px" }}>
                         ℹ️ {lang === "ru" ? "Как пользоваться калькулятором:" : "Kalkulyatordan qanday foydalanish:"}
@@ -3269,7 +3269,7 @@ export default function App() {
                           width: "100%",
                           padding: "10px",
                           borderRadius: "10px",
-                          border: "2px solid rgba(111,0,255,.2)",
+                          border: "2px solid rgba(30,111,219,.2)",
                           background: "#fff",
                           fontSize: "13px",
                           fontWeight: 600,
@@ -3308,9 +3308,9 @@ export default function App() {
                               style={{
                                 flex: 1,
                                 padding: "10px",
-                                background: calcCommType === type ? "#6F00FF" : "#fff",
+                                background: calcCommType === type ? "#1E6FDB" : "#fff",
                                 color: calcCommType === type ? "#fff" : "#111",
-                                border: `2px solid ${calcCommType === type ? "#6F00FF" : "rgba(111,0,255,.2)"}`,
+                                border: `2px solid ${calcCommType === type ? "#1E6FDB" : "rgba(30,111,219,.2)"}`,
                                 borderRadius: "10px",
                                 fontSize: "13px",
                                 fontWeight: 700,
@@ -3337,9 +3337,9 @@ export default function App() {
                               style={{
                                 flex: 1,
                                 padding: "10px",
-                                background: calcGabarit === gab ? "#6F00FF" : "#fff",
+                                background: calcGabarit === gab ? "#1E6FDB" : "#fff",
                                 color: calcGabarit === gab ? "#fff" : "#111",
-                                border: `2px solid ${calcGabarit === gab ? "#6F00FF" : "rgba(111,0,255,.2)"}`,
+                                border: `2px solid ${calcGabarit === gab ? "#1E6FDB" : "rgba(30,111,219,.2)"}`,
                                 borderRadius: "10px",
                                 fontSize: "13px",
                                 fontWeight: 700,
@@ -3373,7 +3373,7 @@ export default function App() {
                             width: "100%",
                             padding: "12px",
                             borderRadius: "10px",
-                            border: "2px solid rgba(111,0,255,.2)",
+                            border: "2px solid rgba(30,111,219,.2)",
                             background: "#fff",
                             fontSize: "14px",
                             fontWeight: 600,
@@ -3386,7 +3386,7 @@ export default function App() {
                       {calcSaleAmount && parseFloat(calcSaleAmount) > 0 && (
                         <div style={{
                           padding: "16px",
-                          background: "linear-gradient(135deg, #6F00FF, #9D4EFF)",
+                          background: "linear-gradient(135deg, #1E6FDB, #3FA9F5)",
                           borderRadius: "12px",
                           color: "#fff"
                         }}>
@@ -3450,7 +3450,7 @@ export default function App() {
                     width: "100%",
                     padding: "12px",
                     borderRadius: "12px",
-                    border: "2px solid rgba(111,0,255,.2)",
+                    border: "2px solid rgba(30,111,219,.2)",
                     background: "#fff",
                     fontSize: "14px",
                     fontWeight: 600,
@@ -3458,8 +3458,8 @@ export default function App() {
                     outline: "none",
                     transition: "border-color .2s"
                   }}
-                  onFocus={(e) => e.target.style.borderColor = "#6F00FF"}
-                  onBlur={(e) => e.target.style.borderColor = "rgba(111,0,255,.2)"}
+                  onFocus={(e) => e.target.style.borderColor = "#1E6FDB"}
+                  onBlur={(e) => e.target.style.borderColor = "rgba(30,111,219,.2)"}
                 />
 
                 {/* Выпадающий список результатов */}
@@ -3468,7 +3468,7 @@ export default function App() {
                     marginTop: "12px",
                     maxHeight: "300px",
                     overflowY: "auto",
-                    border: "2px solid rgba(111,0,255,.15)",
+                    border: "2px solid rgba(30,111,219,.15)",
                     borderRadius: "12px",
                     background: "#fff"
                   }}>
@@ -3497,14 +3497,14 @@ export default function App() {
                           style={{
                             width: "100%",
                             padding: "12px",
-                            borderBottom: "1px solid rgba(111,0,255,.1)",
+                            borderBottom: "1px solid rgba(30,111,219,.1)",
                             background: "transparent",
                             textAlign: "left",
                             cursor: "pointer",
                             border: "none",
                             transition: "background .2s"
                           }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(111,0,255,.05)"}
+                          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(30,111,219,.05)"}
                           onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                         >
                           <div style={{ fontSize: "13px", fontWeight: 700, color: "#111", marginBottom: "4px" }}>
@@ -3523,10 +3523,10 @@ export default function App() {
               {/* Результат выбора */}
               {selectedCommission && (
                 <div className="cardCream" style={{
-                  background: "linear-gradient(145deg, rgba(111,0,255,.05), rgba(111,0,255,.02))",
-                  border: "3px solid #6F00FF"
+                  background: "linear-gradient(145deg, rgba(30,111,219,.05), rgba(30,111,219,.02))",
+                  border: "3px solid #1E6FDB"
                 }}>
-                  <div style={{ fontSize: "16px", fontWeight: 900, color: "#6F00FF", marginBottom: "12px" }}>
+                  <div style={{ fontSize: "16px", fontWeight: 900, color: "#1E6FDB", marginBottom: "12px" }}>
                     {lang === "ru" ? "Найденная комиссия" : "Topilgan komissiya"}
                   </div>
                   
@@ -3557,34 +3557,34 @@ export default function App() {
                   }}>
                     <div style={{
                       padding: "16px",
-                      background: "rgba(111,0,255,.1)",
+                      background: "rgba(30,111,219,.1)",
                       borderRadius: "12px",
                       textAlign: "center"
                     }}>
                       <div style={{ fontSize: "11px", color: "rgba(0,0,0,.6)", marginBottom: "6px" }}>FBO</div>
-                      <div style={{ fontSize: "24px", fontWeight: 900, color: "#6F00FF" }}>
+                      <div style={{ fontSize: "24px", fontWeight: 900, color: "#1E6FDB" }}>
                         {selectedCommission.comm_fbo}%
                       </div>
                     </div>
                     <div style={{
                       padding: "16px",
-                      background: "rgba(111,0,255,.1)",
+                      background: "rgba(30,111,219,.1)",
                       borderRadius: "12px",
                       textAlign: "center"
                     }}>
                       <div style={{ fontSize: "11px", color: "rgba(0,0,0,.6)", marginBottom: "6px" }}>FBS</div>
-                      <div style={{ fontSize: "24px", fontWeight: 900, color: "#6F00FF" }}>
+                      <div style={{ fontSize: "24px", fontWeight: 900, color: "#1E6FDB" }}>
                         {selectedCommission.comm_fbs}%
                       </div>
                     </div>
                     <div style={{
                       padding: "16px",
-                      background: "rgba(111,0,255,.1)",
+                      background: "rgba(30,111,219,.1)",
                       borderRadius: "12px",
                       textAlign: "center"
                     }}>
                       <div style={{ fontSize: "11px", color: "rgba(0,0,0,.6)", marginBottom: "6px" }}>DBS</div>
-                      <div style={{ fontSize: "24px", fontWeight: 900, color: "#6F00FF" }}>
+                      <div style={{ fontSize: "24px", fontWeight: 900, color: "#1E6FDB" }}>
                         {selectedCommission.comm_dbs}%
                       </div>
                     </div>
@@ -3601,9 +3601,9 @@ export default function App() {
                       marginTop: "16px",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: "2px solid rgba(111,0,255,.2)",
+                      border: "2px solid rgba(30,111,219,.2)",
                       background: "#fff",
-                      color: "#6F00FF",
+                      color: "#1E6FDB",
                       fontWeight: 700,
                       fontSize: "14px",
                       cursor: "pointer"
@@ -3779,9 +3779,9 @@ export default function App() {
                               alignItems: "center",
                               justifyContent: "center",
                               height: "48px",
-                              border: "3px solid rgba(111,0,255,.3)",
+                              border: "3px solid rgba(30,111,219,.3)",
                               borderRadius: "14px",
-                              backgroundColor: "rgba(111,0,255,.08)",
+                              backgroundColor: "rgba(30,111,219,.08)",
                               color: "var(--accent)",
                               fontWeight: "950",
                               fontSize: "14px",
@@ -3790,10 +3790,10 @@ export default function App() {
                               transition: "all .12s ease",
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = "rgba(111,0,255,.15)";
+                              e.currentTarget.style.backgroundColor = "rgba(30,111,219,.15)";
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = "rgba(111,0,255,.08)";
+                              e.currentTarget.style.backgroundColor = "rgba(30,111,219,.08)";
                             }}
                           >
                             📥 Скачать файл
@@ -3811,7 +3811,7 @@ export default function App() {
                             width="100%"
                             height="400"
                             style={{
-                              border: "2px solid rgba(111,0,255,.2)",
+                              border: "2px solid rgba(30,111,219,.2)",
                               borderRadius: "12px",
                               display: "block",
                             }}
@@ -3857,13 +3857,13 @@ export default function App() {
                 padding: "14px",
                 borderRadius: "var(--r-lg)",
                 border: "3px solid var(--accent)",
-                background: "linear-gradient(135deg, rgba(111,0,255,.1), rgba(111,0,255,.05))",
+                background: "linear-gradient(135deg, rgba(30,111,219,.1), rgba(30,111,219,.05))",
                 color: "var(--accent)",
                 fontWeight: 950,
                 fontSize: 16,
                 cursor: "pointer",
                 transition: "all .2s ease",
-                boxShadow: "0 4px 12px rgba(111,0,255,.15)",
+                boxShadow: "0 4px 12px rgba(30,111,219,.15)",
               }}
             >
               📂 {t.allSections}
@@ -3995,7 +3995,7 @@ export default function App() {
 
             <div className="list">
               <div className="cardCream">
-                <div style={{ padding: "12px", background: "rgba(111,0,255,.05)", borderRadius: "8px", marginBottom: "16px", fontSize: "13px", color: "#666" }}>
+                <div style={{ padding: "12px", background: "rgba(30,111,219,.05)", borderRadius: "8px", marginBottom: "16px", fontSize: "13px", color: "#666" }}>
                   {userRole === "owner" && "👑 Владелец - полный доступ ко всему"}
                   {userRole === "admin" && "⚙️ Админ - управление новостями, FAQ, кодами"}
                   {userRole === "editor" && "✏️ Редактор - редактирование разделов и карточек"}
@@ -4079,7 +4079,7 @@ export default function App() {
                     {sections.map((s) => (
                       <div key={s.id} style={{ 
                         padding: "12px 16px", 
-                        background: "rgba(111,0,255,.05)", 
+                        background: "rgba(30,111,219,.05)", 
                         borderRadius: "8px",
                         display: "flex",
                         alignItems: "center",
@@ -4200,7 +4200,7 @@ export default function App() {
                       return (
                         <div key={c.id} style={{ 
                           padding: "12px 16px", 
-                          background: "rgba(111,0,255,.05)", 
+                          background: "rgba(30,111,219,.05)", 
                           borderRadius: "8px",
                           display: "flex",
                           alignItems: "center",
@@ -4322,7 +4322,7 @@ export default function App() {
                     {news.map((n) => (
                       <div key={n.id} style={{ 
                         padding: "12px 16px", 
-                        background: "rgba(111,0,255,.05)", 
+                        background: "rgba(30,111,219,.05)", 
                         borderRadius: "8px",
                         display: "flex",
                         alignItems: "center",
@@ -4355,7 +4355,7 @@ export default function App() {
                 <div className="cardCream">
                   <div style={{ fontWeight: 950, marginBottom: 12, fontSize: "18px" }}>🔐 {t.manageCodes}</div>
                   
-                  <div style={{ padding: "12px", background: "rgba(111,0,255,.05)", borderRadius: "8px", marginBottom: "16px", fontSize: "13px", color: "#666" }}>
+                  <div style={{ padding: "12px", background: "rgba(30,111,219,.05)", borderRadius: "8px", marginBottom: "16px", fontSize: "13px", color: "#666" }}>
                     🔒 Код должен быть 6 цифр. Оставьте поле пустым для автогенерации. Хеширование SHA-256.
                   </div>
 
@@ -4613,7 +4613,7 @@ export default function App() {
                       faq.map((f) => (
                         <div key={f.id} style={{ 
                           padding: "12px 16px", 
-                          background: "rgba(111,0,255,.05)", 
+                          background: "rgba(30,111,219,.05)", 
                           borderRadius: "8px",
                           display: "flex",
                           alignItems: "flex-start",

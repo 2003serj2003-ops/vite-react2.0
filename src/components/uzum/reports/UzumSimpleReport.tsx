@@ -208,7 +208,7 @@ export default function UzumSimpleReport({ lang, token, type }: SimpleReportProp
           width: '48px',
           height: '48px',
           border: '4px solid #f3f4f6',
-          borderTopColor: '#22c55e',
+          borderTopColor: '#4CAF50',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
         }} />

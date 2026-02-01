@@ -77,7 +77,7 @@ export default function SmartLoader({ type = 'general', text }: SmartLoaderProps
           width: '100%',
           height: '100%',
           border: '4px solid #f3f4f6',
-          borderTopColor: '#7c3aed',
+          borderTopColor: '#1E6FDB',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
         }} />
@@ -90,7 +90,7 @@ export default function SmartLoader({ type = 'general', text }: SmartLoaderProps
           top: '10%',
           left: '10%',
           border: '3px solid #f3f4f6',
-          borderRightColor: '#22c55e',
+          borderRightColor: '#4CAF50',
           borderRadius: '50%',
           animation: 'spin 1.5s linear infinite reverse',
         }} />
@@ -105,7 +105,7 @@ export default function SmartLoader({ type = 'general', text }: SmartLoaderProps
           justifyContent: 'center',
           animation: 'pulse 2s ease-in-out infinite',
         }}>
-          <Icon size={48} color="#7c3aed" />
+          <Icon size={48} color="#1E6FDB" />
         </div>
       </div>
 
@@ -136,7 +136,7 @@ export default function SmartLoader({ type = 'general', text }: SmartLoaderProps
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                backgroundColor: messageIndex === i ? '#7c3aed' : '#e5e7eb',
+                backgroundColor: messageIndex === i ? '#1E6FDB' : '#e5e7eb',
                 animation: messageIndex === i ? 'bounce 0.6s infinite' : 'none',
                 animationDelay: `${i * 0.1}s`,
               }}
@@ -155,7 +155,7 @@ export default function SmartLoader({ type = 'general', text }: SmartLoaderProps
       }}>
         <div style={{
           height: '100%',
-          background: 'linear-gradient(90deg, #7c3aed, #22c55e)',
+          background: 'linear-gradient(90deg, #1E6FDB, #4CAF50)',
           borderRadius: '2px',
           animation: 'slideProgress 2s ease-in-out infinite',
         }} />

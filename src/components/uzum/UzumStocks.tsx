@@ -185,8 +185,8 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
   function getStockLevelColor(level: 'low' | 'medium' | 'high'): string {
     switch (level) {
       case 'low': return '#ef4444';
-      case 'medium': return '#f59e0b';
-      case 'high': return '#22c55e';
+      case 'medium': return '#FF9F1C';
+      case 'high': return '#4CAF50';
     }
   }
 
@@ -216,7 +216,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
     <div style={{ width: '100%', minHeight: '100vh', background: '#f8f9fa', paddingBottom: '80px' }}>
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #7c3aed 50%, #a855f7 100%)',
+        background: 'linear-gradient(135deg, #0B1C2D 0%, #1E6FDB 50%, #3FA9F5 100%)',
         padding: '24px 20px',
         color: 'white',
       }}>
@@ -267,11 +267,11 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
           <div style={{
             background: lowStockCount > 0 
               ? 'rgba(239, 68, 68, 0.2)' 
-              : 'rgba(34, 197, 94, 0.2)',
+              : 'rgba(76,175,80, 0.2)',
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             padding: '16px',
-            border: `1px solid ${lowStockCount > 0 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
+            border: `1px solid ${lowStockCount > 0 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(76,175,80, 0.3)'}`,
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
@@ -315,7 +315,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
               transition: 'border 0.2s',
               backgroundColor: 'white',
             }}
-            onFocus={(e) => e.currentTarget.style.borderColor = '#7c3aed'}
+            onFocus={(e) => e.currentTarget.style.borderColor = '#1E6FDB'}
             onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
           />
         </div>
@@ -325,8 +325,8 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
           {[
             { key: 'all', label: t.all, color: '#6b7280' },
             { key: 'low', label: t.lowStock, color: '#ef4444' },
-            { key: 'medium', label: t.mediumStock, color: '#f59e0b' },
-            { key: 'high', label: t.highStock, color: '#22c55e' },
+            { key: 'medium', label: t.mediumStock, color: '#FF9F1C' },
+            { key: 'high', label: t.highStock, color: '#4CAF50' },
           ].map(({ key, label, color }) => (
             <button
               key={key}
@@ -366,7 +366,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
         {/* Changes Indicator */}
         {hasChanges && (
           <div style={{
-            background: 'linear-gradient(135deg, #7c3aed 0%, #22c55e 100%)',
+            background: 'linear-gradient(135deg, #1E6FDB 0%, #4CAF50 100%)',
             borderRadius: '12px',
             padding: '16px',
             marginBottom: '16px',
@@ -374,7 +374,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+            boxShadow: '0 4px 12px rgba(30,111,219, 0.3)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <FiCheckCircle size={24} />
@@ -414,7 +414,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                 style={{
                   padding: '10px 20px',
                   backgroundColor: 'white',
-                  color: '#7c3aed',
+                  color: '#1E6FDB',
                   border: 'none',
                   borderRadius: '8px',
                   fontSize: '14px',
@@ -452,9 +452,9 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                   borderRadius: '16px',
                   padding: '16px',
                   boxShadow: hasEdit 
-                    ? '0 4px 16px rgba(124, 58, 237, 0.2)' 
+                    ? '0 4px 16px rgba(30,111,219, 0.2)' 
                     : '0 2px 8px rgba(0,0,0,0.06)',
-                  border: hasEdit ? '2px solid #7c3aed' : '2px solid transparent',
+                  border: hasEdit ? '2px solid #1E6FDB' : '2px solid transparent',
                   transition: 'all 0.2s',
                   position: 'relative',
                   overflow: 'hidden',
@@ -533,7 +533,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                       {item.fbsLinked && (
                         <span style={{
                           padding: '3px 8px',
-                          background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+                          background: 'linear-gradient(135deg, #4CAF50 0%, #4CAF50 100%)',
                           color: 'white',
                           borderRadius: '6px',
                           fontSize: '11px',
@@ -545,7 +545,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                       {item.dbsLinked && (
                         <span style={{
                           padding: '3px 8px',
-                          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                          background: 'linear-gradient(135deg, #FF9F1C 0%, #d97706 100%)',
                           color: 'white',
                           borderRadius: '6px',
                           fontSize: '11px',
@@ -571,7 +571,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                           onClick={() => handleQuickChange(item.skuId, displayAmount, 10)}
                           style={{
                             padding: '6px 10px',
-                            background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+                            background: 'linear-gradient(135deg, #4CAF50 0%, #4CAF50 100%)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '6px',
@@ -640,7 +640,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                             fontSize: '18px',
                             fontWeight: '700',
                             textAlign: 'center',
-                            border: hasEdit ? '2px solid #7c3aed' : '2px solid #e5e7eb',
+                            border: hasEdit ? '2px solid #1E6FDB' : '2px solid #e5e7eb',
                             borderRadius: '10px',
                             outline: 'none',
                             background: 'white',

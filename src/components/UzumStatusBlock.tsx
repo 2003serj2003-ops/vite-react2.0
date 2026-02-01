@@ -51,7 +51,7 @@ export default function UzumStatusBlock({
 
   if (isConnected) {
     if (hasData) {
-      statusColor = '#10b981';
+      statusColor = '#4CAF50';
       statusLabel = t.connected;
       statusIcon = '✅';
       description = t.descriptionConnected;
@@ -71,9 +71,9 @@ export default function UzumStatusBlock({
       position: 'relative',
       padding: '24px',
       background: isConnected && hasData 
-        ? 'linear-gradient(135deg, #10b98110 0%, #34d39920 100%)'
+        ? 'linear-gradient(135deg, #4CAF5010 0%, #34d39920 100%)'
         : isConnected 
-        ? 'linear-gradient(135deg, #f59e0b10 0%, #fbbf2420 100%)'
+        ? 'linear-gradient(135deg, #FF9F1C10 0%, #fbbf2420 100%)'
         : 'linear-gradient(135deg, #ef444410 0%, #f8717120 100%)',
       border: `2px solid ${statusColor}30`,
       borderRadius: '20px',
@@ -81,7 +81,7 @@ export default function UzumStatusBlock({
       overflow: 'hidden',
       transition: 'all 0.3s ease',
       boxShadow: isConnected && hasData 
-        ? '0 8px 24px rgba(16, 185, 129, 0.12)'
+        ? '0 8px 24px rgba(76,175,80, 0.12)'
         : '0 4px 16px rgba(0, 0, 0, 0.08)',
     }}>
       {/* Decorative background pattern */}
