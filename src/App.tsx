@@ -567,7 +567,7 @@ export default function App() {
           .select('*')
           .eq('telegram_user_id', tgUserId)
           .eq('provider', 'uzum')
-          .single();
+          .maybeSingle();
         
         data = result.data;
         error = result.error;
@@ -584,7 +584,7 @@ export default function App() {
           .select('*')
           .eq('user_id', actualUserId)
           .eq('provider', 'uzum')
-          .single();
+          .maybeSingle();
         
         data = result.data;
         error = result.error;
