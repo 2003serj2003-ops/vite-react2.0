@@ -432,11 +432,11 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
           </div>
         )}
 
-        {/* Stock Items Grid */}
+        {/* Stock Items List */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: window.innerWidth > 1024 ? 'repeat(2, 1fr)' : '1fr',
-          gap: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
           paddingBottom: '100px', // Отступ для нижней навигации
         }}>
           {filteredStocks.map((item) => {
@@ -471,12 +471,13 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                   background: stockColor,
                 }} />
 
-                <div style={{ display: 'flex', gap: '16px' }}>
+                {/* Product Header */}
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
                   {/* Image */}
                   {(item.image || item.previewImage) && (
                     <div style={{
-                      width: '80px',
-                      height: '80px',
+                      width: '64px',
+                      height: '64px',
                       flexShrink: 0,
                       borderRadius: '12px',
                       overflow: 'hidden',
@@ -494,7 +495,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                     </div>
                   )}
 
-                  {/* Info */}
+                  {/* Product Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       fontSize: '15px',
@@ -513,31 +514,31 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                     <div style={{
                       fontSize: '13px',
                       color: '#6b7280',
-                      marginBottom: '8px',
+                      marginBottom: '6px',
                     }}>
                       {item.skuTitle}
                     </div>
 
                     {/* Tags */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                       <span style={{
-                        padding: '3px 8px',
+                        padding: '4px 10px',
                         backgroundColor: '#f3f4f6',
-                        borderRadius: '6px',
-                        fontSize: '11px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
                         fontWeight: '600',
                         color: '#6b7280',
                         fontFamily: 'monospace',
                       }}>
-                        #{item.skuId}
+                        SKU: {item.skuId}
                       </span>
                       {item.fbsLinked && (
                         <span style={{
-                          padding: '3px 8px',
-                          background: 'linear-gradient(135deg, #4CAF50 0%, #4CAF50 100%)',
+                          padding: '4px 10px',
+                          background: 'var(--accent-success)',
                           color: 'white',
-                          borderRadius: '6px',
-                          fontSize: '11px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
                           fontWeight: '700',
                         }}>
                           {t.fbs}
@@ -545,111 +546,145 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                       )}
                       {item.dbsLinked && (
                         <span style={{
-                          padding: '3px 8px',
-                          background: 'linear-gradient(135deg, var(--accent-warning) 0%, #d97706 100%)',
+                          padding: '4px 10px',
+                          background: 'var(--accent-warning)',
                           color: 'white',
-                          borderRadius: '6px',
-                          fontSize: '11px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
                           fontWeight: '700',
                         }}>
                           {t.dbs}
                         </span>
                       )}
                     </div>
+                  </div>
+                </div>
 
-                    {/* Stock Controls */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px',
-                      background: hasEdit ? '#f0fdf4' : '#f9fafb',
-                      borderRadius: '12px',
-                    }}>
-                      {/* Quick Actions */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <button
-                          onClick={() => handleQuickChange(item.skuId, displayAmount, 10)}
-                          style={{
-                            padding: '6px 10px',
-                            background: 'linear-gradient(135deg, var(--accent-success) 0%, var(--accent-success) 100%)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}
-                        >
-                          <FiTrendingUp size={14} />
-                          +10
-                        </button>
-                        <button
-                          onClick={() => handleQuickChange(item.skuId, displayAmount, -10)}
-                          style={{
-                            padding: '6px 10px',
-                            background: 'linear-gradient(135deg, var(--accent-danger) 0%, #dc2626 100%)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}
-                        >
-                          <FiTrendingDown size={14} />
-                          -10
-                        </button>
-                      </div>
+                {/* Stock Controls - Full Width */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '16px',
+                  background: hasEdit ? '#f0fdf4' : '#f9fafb',
+                  borderRadius: '12px',
+                }}>
+                  {/* Quick Actions */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <button
+                      onClick={() => handleQuickChange(item.skuId, displayAmount, 10)}
+                      style={{
+                        padding: '8px 12px',
+                        background: 'var(--accent-success)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        minWidth: '70px',
+                        justifyContent: 'center',
+                        transition: 'all 0.15s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                      <FiTrendingUp size={14} />
+                      +10
+                    </button>
+                    <button
+                      onClick={() => handleQuickChange(item.skuId, displayAmount, -10)}
+                      style={{
+                        padding: '8px 12px',
+                        background: 'var(--accent-danger)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        minWidth: '70px',
+                        justifyContent: 'center',
+                        transition: 'all 0.15s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                      <FiTrendingDown size={14} />
+                      -10
+                    </button>
+                  </div>
 
-                      {/* Current Stock */}
-                      <div style={{ textAlign: 'center', flex: 1 }}>
-                        <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>
-                          {t.currentStock}
-                        </div>
-                        <div style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: stockColor,
-                        }}>
-                          {item.amount}
-                        </div>
-                      </div>
-
-                      {/* Arrow */}
-                      <div style={{ fontSize: '20px', color: '#d1d5db' }}>→</div>
-
-                      {/* New Stock Input */}
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px', textAlign: 'center' }}>
-                          {t.newStock}
-                        </div>
-                        <input
-                          type="number"
-                          min="0"
-                          value={displayAmount}
-                          onChange={(e) => handleStockChange(item.skuId, e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '10px',
-                            fontSize: '18px',
-                            fontWeight: '700',
-                            textAlign: 'center',
-                            border: hasEdit ? '2px solid #1E6FDB' : '2px solid #e5e7eb',
-                            borderRadius: '10px',
-                            outline: 'none',
-                            background: 'white',
-                            color: '#111',
-                          }}
-                        />
-                      </div>
+                  {/* Current Stock */}
+                  <div style={{ 
+                    textAlign: 'center', 
+                    flex: 1,
+                    padding: '8px',
+                    background: 'white',
+                    borderRadius: '10px',
+                  }}>
+                    <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px', fontWeight: '600' }}>
+                      {t.currentStock}
                     </div>
+                    <div style={{
+                      fontSize: '28px',
+                      fontWeight: '700',
+                      color: stockColor,
+                      lineHeight: '1',
+                    }}>
+                      {item.amount}
+                    </div>
+                  </div>
+
+                  {/* Arrow */}
+                  <div style={{ fontSize: '24px', color: '#d1d5db', fontWeight: '700' }}>→</div>
+
+                  {/* New Stock Input - Larger */}
+                  <div style={{ flex: 1.2 }}>
+                    <div style={{ 
+                      fontSize: '11px', 
+                      color: '#9ca3af', 
+                      marginBottom: '6px', 
+                      textAlign: 'center',
+                      fontWeight: '600',
+                    }}>
+                      {t.newStock}
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      value={displayAmount}
+                      onChange={(e) => handleStockChange(item.skuId, e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        fontSize: '24px',
+                        fontWeight: '700',
+                        textAlign: 'center',
+                        border: hasEdit ? '3px solid #1E6FDB' : '2px solid #e5e7eb',
+                        borderRadius: '12px',
+                        outline: 'none',
+                        background: 'white',
+                        color: '#111',
+                        boxShadow: hasEdit ? '0 0 0 3px rgba(30,111,219,0.1)' : 'none',
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = '#1E6FDB';
+                        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(30,111,219,0.1)';
+                      }}
+                      onBlur={(e) => {
+                        if (!hasEdit) {
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }
+                      }}
+                    />
                   </div>
                 </div>
               </div>
