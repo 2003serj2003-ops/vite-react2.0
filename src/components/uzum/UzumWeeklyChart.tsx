@@ -4,6 +4,7 @@ import { getFbsOrders } from '../../lib/uzum-api';
 interface UzumWeeklyChartProps {
   lang: 'ru' | 'uz';
   token: string;
+  shopId: number;
   onClose: () => void;
 }
 
@@ -19,7 +20,7 @@ const ALL_STATUSES = [
   'COMPLETED', 'CANCELED', 'PENDING_CANCELLATION', 'RETURNED'
 ] as const;
 
-export default function UzumWeeklyChart({ lang, token, onClose }: UzumWeeklyChartProps) {
+export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWeeklyChartProps) {
   const [weekType, setWeekType] = useState<'current' | 'previous'>('previous');
   const [stats, setStats] = useState({
     sold: 0,
@@ -64,7 +65,7 @@ export default function UzumWeeklyChart({ lang, token, onClose }: UzumWeeklyChar
 
   useEffect(() => {
     loadWeeklyData();
-  }, [token, weekType]);
+  }, [token, shopId, weekType]);
 
   useEffect(() => {
     if (weekData.length > 0 && canvasRef.current) {
@@ -81,19 +82,17 @@ export default function UzumWeeklyChart({ lang, token, onClose }: UzumWeeklyChar
       // Get all orders for the week
       const allOrders: any[] = [];
       
-      // First, we need to get shopId - we'll use 0 as default or get from shops
-      const shopId = 0; // You may want to pass this as a prop or get it from API
-      
       for (const status of ALL_STATUSES) {
         try {
           const result = await getFbsOrders(token, shopId, {
             status,
-            page: 1,
-            size: 50
+            page: 0,
+            size: 100
           });
-          if (result?.orders) {
+          if (result?.success && result?.orders) {
             allOrders.push(...result.orders);
           }
+          // Rate limiting delay
           await new Promise(resolve => setTimeout(resolve, 100));
         } catch (err) {
           console.error(`Error loading ${status}:`, err);

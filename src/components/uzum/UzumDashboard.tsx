@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShops, getProducts, getFbsOrdersCount, getFinanceOrders, getFinanceExpenses } from '../../lib/uzum-api';
+import { getShops, getProducts, getFbsOrdersCount, getFinanceOrders, getFinanceExpenses, getFbsSkuStocks } from '../../lib/uzum-api';
 import UzumWeeklyChart from './UzumWeeklyChart';
 
 interface UzumDashboardProps {
@@ -10,6 +10,7 @@ interface UzumDashboardProps {
 }
 
 export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack }: UzumDashboardProps) {
+  const [shopId, setShopId] = useState<number | null>(null);
   const [stats, setStats] = useState({
     totalProducts: 0,
     activeOrders: 0,
@@ -19,6 +20,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
     profit: 0,
     fboStock: 0,
     fbsStock: 0,
+    dbsStock: 0,
   });
   const [financeBreakdown, setFinanceBreakdown] = useState({
     // Расходы
@@ -64,6 +66,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
       fboCost: 'Себес. FBO',
       fbsQty: 'Кол-во FBS',
       fbsCost: 'Себес. FBS',
+      dbsQty: 'Кол-во DBS',
+      dbsCost: 'Себес. DBS',
       recentOrders: 'Последние заказы',
       pending: 'в ожидании',
       delivered: 'доставлено',
@@ -97,6 +101,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
       fboCost: 'FBO tannarxi',
       fbsQty: 'FBS soni',
       fbsCost: 'FBS tannarxi',
+      dbsQty: 'DBS soni',
+      dbsCost: 'DBS tannarxi',
       recentOrders: 'Oxirgi buyurtmalar',
       pending: 'kutilmoqda',
       delivered: 'yetkazildi',
@@ -141,10 +147,11 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
       if (shopsResult.success && shopsResult.shops) {
         // Load products and orders for first shop
         if (shopsResult.shops.length > 0) {
-          const shopId = shopsResult.shops[0].id;
+          const currentShopId = shopsResult.shops[0].id;
+          setShopId(currentShopId);
           
           // Load products
-          const productsResult = await getProducts(token, shopId);
+          const productsResult = await getProducts(token, currentShopId);
           console.log('📦 Products result:', productsResult);
           
           if (productsResult.success) {
@@ -152,6 +159,44 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
               ...prev,
               totalProducts: productsResult.total || 0,
             }));
+          }
+
+          // Load warehouse stocks
+          try {
+            const stocksResult = await getFbsSkuStocks(token, { limit: 1000 });
+            console.log('📊 Stocks result:', stocksResult);
+            
+            if (stocksResult.success && stocksResult.stocks) {
+              const stocks = stocksResult.stocks;
+              let fboTotal = 0;
+              let fbsTotal = 0;
+              let dbsTotal = 0;
+              
+              stocks.forEach((item: any) => {
+                // Предполагаем, что в API есть поле типа склада
+                const stockType = item.warehouseType || item.type || 'FBS';
+                const quantity = item.stock || item.quantity || 0;
+                
+                if (stockType.toUpperCase().includes('FBO')) {
+                  fboTotal += quantity;
+                } else if (stockType.toUpperCase().includes('DBS')) {
+                  dbsTotal += quantity;
+                } else {
+                  fbsTotal += quantity; // По умолчанию FBS
+                }
+              });
+              
+              setStats(prev => ({
+                ...prev,
+                fboStock: fboTotal,
+                fbsStock: fbsTotal,
+                dbsStock: dbsTotal,
+              }));
+              
+              console.log('📦 Warehouse stocks:', { fboTotal, fbsTotal, dbsTotal });
+            }
+          } catch (error) {
+            console.error('Error loading stocks:', error);
           }
 
           // Load orders count - sequential to avoid rate limiting
@@ -162,7 +207,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           // Process sequentially with rate limiting built into apiRequest
           let totalOrders = 0;
           for (const status of statuses) {
-            const result = await getFbsOrdersCount(token, shopId, { status });
+            const result = await getFbsOrdersCount(token, currentShopId, { status });
             totalOrders += result.count || 0;
           }
           
@@ -173,9 +218,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           }));
 
           // Load pending orders sequentially
-          const createdResult = await getFbsOrdersCount(token, shopId, { status: 'CREATED' });
-          const packingResult = await getFbsOrdersCount(token, shopId, { status: 'PACKING' });
-          const pendingResult = await getFbsOrdersCount(token, shopId, { status: 'PENDING_DELIVERY' });
+          const createdResult = await getFbsOrdersCount(token, currentShopId, { status: 'CREATED' });
+          const packingResult = await getFbsOrdersCount(token, currentShopId, { status: 'PACKING' });
+          const pendingResult = await getFbsOrdersCount(token, currentShopId, { status: 'PENDING_DELIVERY' });
           
           const pendingTotal = (createdResult.count || 0) + (packingResult.count || 0) + (pendingResult.count || 0);
           
@@ -588,39 +633,31 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             </h2>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
               gap: '20px',
             }}>
               <div>
                 <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>
                   {t.fboQty}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#111' }}>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#6366f1' }}>
                   {stats.fboStock}
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>
-                  {t.fboCost}
-                </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#111' }}>
-                  0
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>
                   {t.fbsQty}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#111' }}>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#22c55e' }}>
                   {stats.fbsStock}
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>
-                  {t.fbsCost}
+                  {t.dbsQty}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#111' }}>
-                  0
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#f59e0b' }}>
+                  {stats.dbsStock}
                 </div>
               </div>
             </div>
@@ -889,10 +926,11 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
       </div>
 
       {/* Weekly Chart Modal */}
-      {showWeeklyChart && (
-        <UzumWeeklyChart
-          lang={lang}
+      {showWeeklyChart && shopId && (
+        <UzumWeeklyChart 
+          lang={lang} 
           token={token}
+          shopId={shopId}
           onClose={() => setShowWeeklyChart(false)}
         />
       )}
