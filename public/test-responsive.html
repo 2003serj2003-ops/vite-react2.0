@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Responsive Layout Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; }
+    
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f9fafb;
+    }
+
+    .test-header {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .viewport-info {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    .info-item {
+      background: #f3f4f6;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .device-type {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .mobile { background: #fef3c7; color: #92400e; }
+    .tablet { background: #dbeafe; color: #1e3a8a; }
+    .desktop { background: #dcfce7; color: #166534; }
+
+    /* Имитация стилей из App.css */
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
+    .uzum-container {
+      max-width: 100%;
+      overflow-x: hidden;
+      margin-bottom: 20px;
+    }
+
+    .uzum-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .uzum-grid {
+      display: grid;
+      gap: 16px;
+      max-width: 100%;
+    }
+
+    .uzum-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: 100%;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .uzum-filter-chip {
+      padding: 10px 16px;
+      background: #f3f4f6;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .uzum-filter-chip.active {
+      background: #7c3aed;
+      color: white;
+    }
+
+    /* Адаптивные grid layouts */
+    @media (min-width: 768px) {
+      .uzum-grid.auto {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      }
+      .uzum-grid.three {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 767px) {
+      .uzum-grid.auto,
+      .uzum-grid.three {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .test-section {
+      margin-bottom: 40px;
+    }
+
+    .test-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #111;
+    }
+
+    .overflow-test {
+      position: relative;
+      border: 2px dashed #ef4444;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .overflow-test::before {
+      content: 'Overflow Test Zone';
+      position: absolute;
+      top: -12px;
+      left: 10px;
+      background: #ef4444;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .long-text {
+      background: #fef3c7;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 10px 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-header">
+    <h1>📱 Responsive Layout Test</h1>
+    <p>Resize your browser to test responsive behavior</p>
+    <div class="viewport-info">
+      <div class="info-item">
+        <strong>Width:</strong> <span id="width">-</span>px
+      </div>
+      <div class="info-item">
+        <strong>Height:</strong> <span id="height">-</span>px
+      </div>
+      <div class="info-item">
+        <strong>Device:</strong> <span id="device" class="device-type">-</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <div class="test-title">✅ Test 1: Adaptive Grid (3 → 1)</div>
+    <div class="uzum-container">
+      <div class="uzum-grid three">
+        <div class="uzum-card">
+          <h3>Card 1</h3>
+          <p>Revenue: 15,000,000 сум</p>
+        </div>
+        <div class="uzum-card">
+          <h3>Card 2</h3>
+          <p>To Pay: 12,500,000 сум</p>
+        </div>
+        <div class="uzum-card">
+          <h3>Card 3</h3>
+          <p>Net Profit: 2,500,000 сум</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <div class="test-title">✅ Test 2: Flexible Filters</div>
+    <div class="uzum-container">
+      <div class="uzum-card">
+        <div class="uzum-filters">
+          <button class="uzum-filter-chip active" id="filter-7d">7 дней</button>
+          <button class="uzum-filter-chip" id="filter-10d">10 дней</button>
+          <button class="uzum-filter-chip" id="filter-30d">30 дней</button>
+          <button class="uzum-filter-chip">Сегодня</button>
+          <button class="uzum-filter-chip">Вчера</button>
+          <button class="uzum-filter-chip">Эта неделя</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <div class="test-title">⚠️ Test 3: Overflow Prevention</div>
+    <div class="overflow-test">
+      <div class="uzum-card">
+        <div class="long-text">
+          This is a very long text that should not cause horizontal overflow: 
+          ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+        </div>
+        <div style="background: #dcfce7; padding: 12px; border-radius: 8px;">
+          ✅ If you don't see horizontal scrollbar in this section, overflow is prevented!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <div class="test-title">✅ Test 4: Auto Grid</div>
+    <div class="uzum-container">
+      <div class="uzum-grid auto">
+        <div class="uzum-card">
+          <h3>📦 Products</h3>
+          <p>125 items</p>
+        </div>
+        <div class="uzum-card">
+          <h3>📋 Orders</h3>
+          <p>45 pending</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <div class="test-title">✅ Test 5: Adaptive Text</div>
+    <div class="uzum-container">
+      <div class="uzum-card">
+        <p><strong>Mobile (< 640px):</strong> <span id="mobile-text">-</span></p>
+        <p><strong>Desktop (≥ 640px):</strong> <span id="desktop-text">-</span></p>
+        <div class="uzum-filters">
+          <button class="uzum-filter-chip active" id="adaptive-btn">
+            <span id="btn-text">-</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function updateViewport() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      document.getElementById('width').textContent = width;
+      document.getElementById('height').textContent = height;
+      
+      const deviceEl = document.getElementById('device');
+      let deviceType = 'Desktop';
+      let deviceClass = 'desktop';
+      
+      if (width < 640) {
+        deviceType = 'Mobile';
+        deviceClass = 'mobile';
+      } else if (width < 768) {
+        deviceType = 'Tablet';
+        deviceClass = 'tablet';
+      }
+      
+      deviceEl.textContent = deviceType;
+      deviceEl.className = `device-type ${deviceClass}`;
+      
+      // Adaptive text test
+      const isMobile = width <= 640;
+      document.getElementById('mobile-text').textContent = isMobile ? '✅ Active' : '❌ Inactive';
+      document.getElementById('desktop-text').textContent = isMobile ? '❌ Inactive' : '✅ Active';
+      document.getElementById('btn-text').textContent = isMobile ? '7д' : 'Последние 7 дней';
+    }
+
+    // Update on load and resize
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+
+    // Add some interactivity
+    document.querySelectorAll('.uzum-filter-chip').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.uzum-filter-chip').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    console.log('🧪 Responsive test page loaded');
+    console.log('📱 Resize the browser window to test different breakpoints:');
+    console.log('   Mobile: < 640px');
+    console.log('   Tablet: 640px - 768px');
+    console.log('   Desktop: > 768px');
+  </script>
+</body>
+</html>

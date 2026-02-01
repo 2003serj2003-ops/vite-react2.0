@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Integration Event</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .log {
+      background: #f3f4f6;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+      font-family: monospace;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .log-entry {
+      padding: 5px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    button {
+      background: #7c3aed;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 10px 5px 10px 0;
+    }
+    button:hover {
+      background: #6d28d9;
+    }
+    .success {
+      color: #22c55e;
+    }
+    .info {
+      color: #3b82f6;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Test: uzum-integration-updated Event</h1>
+  
+  <p>Этот тест проверяет работу события <code>uzum-integration-updated</code></p>
+  
+  <button onclick="testEvent()">🔔 Dispatch Event</button>
+  <button onclick="clearLog()">🗑️ Clear Log</button>
+  
+  <h2>Event Log:</h2>
+  <div class="log" id="log"></div>
+
+  <h2>Как это работает:</h2>
+  <ol>
+    <li>При сохранении токена в App.tsx отправляется событие</li>
+    <li>Profile.tsx слушает это событие</li>
+    <li>При получении события Profile перезагружает статус интеграции</li>
+  </ol>
+
+  <h2>Код события:</h2>
+  <pre style="background: #1f2937; color: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto;">
+// В App.tsx (после сохранения токена):
+window.dispatchEvent(new CustomEvent('uzum-integration-updated'));
+
+// В Profile.tsx (слушатель):
+useEffect(() => {
+  const handleIntegrationUpdate = () => {
+    console.log('[Profile] Integration updated, reloading status...');
+    loadStatus();
+  };
+  
+  window.addEventListener('uzum-integration-updated', handleIntegrationUpdate);
+  
+  return () => {
+    window.removeEventListener('uzum-integration-updated', handleIntegrationUpdate);
+  };
+}, []);
+  </pre>
+
+  <script>
+    const logEl = document.getElementById('log');
+    let eventCount = 0;
+
+    // Add event listener
+    window.addEventListener('uzum-integration-updated', handleEvent);
+
+    function handleEvent(e) {
+      eventCount++;
+      addLog(`✅ Event received! Count: ${eventCount}`, 'success');
+      addLog(`   Type: ${e.type}`, 'info');
+      addLog(`   Timestamp: ${new Date().toISOString()}`, 'info');
+    }
+
+    function testEvent() {
+      addLog('📤 Dispatching event...', 'info');
+      window.dispatchEvent(new CustomEvent('uzum-integration-updated'));
+      addLog('✓ Event dispatched successfully', 'success');
+    }
+
+    function addLog(text, type = '') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function clearLog() {
+      logEl.innerHTML = '';
+      eventCount = 0;
+      addLog('🗑️ Log cleared', 'info');
+    }
+
+    // Initial log
+    addLog('🎬 Test page loaded', 'info');
+    addLog('👂 Listening for uzum-integration-updated events...', 'info');
+  </script>
+</body>
+</html>
