@@ -251,7 +251,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
               <div style={{ marginBottom: '12px' }}>
                 <div style={{
                   fontSize: '9px',
-                  color: '#6b7280',
+                  color: '#374151',
                   fontWeight: 600,
                   letterSpacing: '0.5px',
                   marginBottom: '2px',
@@ -273,7 +273,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
               <div style={{ marginBottom: '12px' }}>
                 <div style={{
                   fontSize: '9px',
-                  color: '#6b7280',
+                  color: '#374151',
                   fontWeight: 600,
                   letterSpacing: '0.5px',
                   marginBottom: '2px',
@@ -296,7 +296,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
                 <div style={{ marginBottom: '8px' }}>
                   <div style={{
                     fontSize: '9px',
-                    color: '#6b7280',
+                    color: '#374151',
                     fontWeight: 600,
                     letterSpacing: '0.5px',
                     marginBottom: '2px',
@@ -306,7 +306,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
                   <div style={{
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#4b5563',
+                    color: '#1f2937',
                   }}>
                     @{username}
                   </div>
@@ -323,7 +323,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
           }}>
             <div style={{
               fontSize: '9px',
-              color: '#6b7280',
+              color: '#374151',
               fontWeight: 600,
               letterSpacing: '0.5px',
               marginBottom: '4px',
@@ -402,7 +402,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
                 <div style={{ flex: 1 }}>
                   <div style={{
                     fontSize: '9px',
-                    color: '#6b7280',
+                    color: '#374151',
                     fontWeight: 600,
                     letterSpacing: '0.5px',
                     marginBottom: '2px',
@@ -427,7 +427,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
                 fontSize: '12px',
                 marginBottom: '12px',
               }}>
-                <div style={{ color: '#6b7280', fontWeight: 600 }}>{t.status}:</div>
+                <div style={{ color: '#374151', fontWeight: 600 }}>{t.status}:</div>
                 <div style={{
                   fontWeight: 700,
                   color: uzumStatus?.connected ? '#10b981' : '#9ca3af',
@@ -438,7 +438,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
 
                 {uzumStatus?.connected_at && (
                   <>
-                    <div style={{ color: '#6b7280', fontWeight: 600 }}>{t.validFrom}:</div>
+                    <div style={{ color: '#374151', fontWeight: 600 }}>{t.validFrom}:</div>
                     <div style={{ fontWeight: 600, color: '#111' }}>
                       {new Date(uzumStatus.connected_at).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'uz-UZ')}
                     </div>
@@ -447,7 +447,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
 
                 {uzumStatus?.shop_ids && uzumStatus.shop_ids.length > 0 && (
                   <>
-                    <div style={{ color: '#6b7280', fontWeight: 600 }}>{t.shops}:</div>
+                    <div style={{ color: '#374151', fontWeight: 600 }}>{t.shops}:</div>
                     <div style={{ fontWeight: 700, color: '#7c3aed' }}>
                       {uzumStatus.shop_ids.length}
                     </div>
@@ -456,7 +456,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
 
                 {uzumStatus?.token_last4 && (
                   <>
-                    <div style={{ color: '#6b7280', fontWeight: 600 }}>{t.tokenLast4}:</div>
+                    <div style={{ color: '#374151', fontWeight: 600 }}>{t.tokenLast4}:</div>
                     <div style={{ fontWeight: 600, color: '#111', fontFamily: 'monospace' }}>
                       ••••{uzumStatus.token_last4}
                     </div>

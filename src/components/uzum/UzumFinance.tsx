@@ -13,6 +13,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
   const [loading, setLoading] = useState(true);
   
   // Даты: с 1 января 2026 по сегодняшний день
+  // Важно: API может не поддерживать фильтрацию по датам, загружаем всё и фильтруем на клиенте
   const dateFromMs = new Date('2026-01-01T00:00:00').getTime();
   const dateToMs = new Date().getTime();
 
@@ -93,7 +94,8 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
           setOrders(Array.isArray(result.orders) ? result.orders : []);
         }
       } else {
-        // Загружаем все расходы с пагинацией
+        // Загружаем все расходы с пагинацией БЕЗ фильтра дат
+        // Затем фильтруем на клиенте
         const allExpenses: any[] = [];
         let page = 0;
         let hasMore = true;
@@ -102,8 +104,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
           const result = await getFinanceExpenses(token, currentShopId, {
             size: 100,
             page,
-            dateFrom: dateFromMs,
-            dateTo: dateToMs,
+            // НЕ передаем dateFrom и dateTo - API может их не поддерживать
           });
           console.log(`💸 [Finance] Expenses page ${page}:`, result);
           
@@ -120,8 +121,14 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
           }
         }
         
-        console.log(`💸 [Finance] Total expenses loaded: ${allExpenses.length}`);
-        setExpenses(allExpenses);
+        // Фильтруем по датам на клиенте
+        const filteredExpenses = allExpenses.filter(expense => {
+          const expenseDate = expense.dateCreated || expense.createdAt || expense.date || 0;
+          return expenseDate >= dateFromMs && expenseDate <= dateToMs;
+        });
+        
+        console.log(`💸 [Finance] Total expenses loaded: ${allExpenses.length}, filtered: ${filteredExpenses.length}`);
+        setExpenses(filteredExpenses);
       }
     } catch (error) {
       console.error('Finance load error:', error);
