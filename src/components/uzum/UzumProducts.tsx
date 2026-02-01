@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShops, getProducts } from '../../lib/uzum-api';
+import { getShops, getProducts, updateProductPrices } from '../../lib/uzum-api';
 import SmartLoader from '../SmartLoader';
 
 interface UzumProductsProps {
@@ -12,6 +12,7 @@ interface UzumProductsProps {
 export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHome }: UzumProductsProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
+  const [shopId, setShopId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
@@ -109,8 +110,9 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       const shopsResult = await getShops(token);
       console.log('🏪 [Products] Shops:', shopsResult);
       if (shopsResult.success && shopsResult.shops && shopsResult.shops.length > 0) {
-        const shopId = shopsResult.shops[0].id;
-        const productsResult = await getProducts(token, shopId);
+        const currentShopId = shopsResult.shops[0].id;
+        setShopId(currentShopId);
+        const productsResult = await getProducts(token, currentShopId);
         console.log('📦 [Products] Products:', productsResult);
         
         if (productsResult.success && productsResult.products) {
@@ -163,15 +165,24 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
     }
 
     const productId = product.id || product.productId || product.sku;
+    const productSku = product.sku;
     setSavingPrice(productId);
     setPriceError('');
 
     try {
-      // TODO: Здесь должен быть вызов API для обновления цены
-      // await updateProductPrice(token, shopId, productId, newPrice);
+      // Проверяем наличие shopId
+      if (!shopId) {
+        throw new Error('Shop ID not found');
+      }
       
-      // Имитация запроса (200ms)
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Реальный вызов API для обновления цены
+      const result = await updateProductPrices(token, shopId, [
+        { sku: productSku, price: newPrice }
+      ]);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update price');
+      }
       
       // Обновляем локально
       const updatedProducts = products.map(p => {
