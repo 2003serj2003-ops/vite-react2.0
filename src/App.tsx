@@ -11,6 +11,7 @@ import UzumOrders from "./components/uzum/UzumOrders";
 import UzumFinance from "./components/uzum/UzumFinance";
 import UzumInvoices from "./components/uzum/UzumInvoices";
 import UzumReports from "./components/uzum/UzumReports";
+import UzumStocks from "./components/uzum/UzumStocks";
 import UzumOnboarding from "./components/UzumOnboarding";
 
 type Lang = "ru" | "uz";
@@ -356,7 +357,7 @@ export default function App() {
   const [uzumIntegrationId, setUzumIntegrationId] = useState<string | null>(null);
   const [showUzumToken, setShowUzumToken] = useState(false);
   const [showUzumPin, setShowUzumPin] = useState(false);
-  const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports'>('dashboard');
+  const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports' | 'stocks'>('dashboard');
   const [uzumDecryptedToken, setUzumDecryptedToken] = useState(""); // Для использования в API запросах
   const [showUzumOnboarding, setShowUzumOnboarding] = useState(false);
   console.log('Uzum integration ID:', uzumIntegrationId); // используем переменную
@@ -2901,6 +2902,13 @@ export default function App() {
                       lang={lang} 
                       token={uzumDecryptedToken}
                       onNavigateBack={() => setUzumCurrentPage('dashboard')}
+                    />
+                  )}
+                  {uzumCurrentPage === 'stocks' && (
+                    <UzumStocks 
+                      lang={lang} 
+                      token={uzumDecryptedToken}
+                      onNavigate={(page) => setUzumCurrentPage(page as any)}
                     />
                   )}
                 </div>

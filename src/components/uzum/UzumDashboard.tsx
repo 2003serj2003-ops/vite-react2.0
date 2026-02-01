@@ -7,7 +7,7 @@ import CoolLoader from '../CoolLoader';
 interface UzumDashboardProps {
   lang: 'ru' | 'uz';
   token: string;
-  onNavigate: (page: 'products' | 'orders' | 'finance') => void;
+  onNavigate: (page: 'products' | 'orders' | 'finance' | 'stocks') => void;
   onNavigateBack: () => void;
   onDisconnect?: () => void;
   onChangeLang?: () => void;
@@ -86,6 +86,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
       products: 'Товары',
       orders: 'Заказы',
       finance: 'Финансы',
+      stocks: 'Остатки',
+      menu: 'Меню',
       viewAll: 'Смотреть все',
       weeklyChart: 'Недельный обзор заказов',
       today: 'Сегодня',
@@ -125,6 +127,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
       products: 'Mahsulotlar',
       orders: 'Buyurtmalar',
       finance: 'Moliya',
+      stocks: 'Qoldiqlar',
+      menu: 'Menyu',
       viewAll: 'Barchasini korish',
       weeklyChart: 'Haftalik buyurtmalar sharhi',
       today: 'Bugun',
@@ -1069,7 +1073,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
 
       {/* Quick Actions */}
       <div className="uzum-grid" style={{
-        gridTemplateColumns: window.innerWidth > 640 ? 'repeat(4, 1fr)' : 'repeat(2, 1fr)',
+        gridTemplateColumns: window.innerWidth > 768 ? 'repeat(5, 1fr)' : 'repeat(2, 1fr)',
         gap: '8px',
         padding: '0 16px 20px',
       }}>
@@ -1154,6 +1158,68 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             color: '#666',
           }}>
             {t.finance}
+          </div>
+        </button>
+
+        <button
+          onClick={() => onNavigate('stocks')}
+          className="uzum-card"
+          style={{
+            cursor: 'pointer',
+            textAlign: 'center',
+            padding: window.innerWidth > 640 ? '24px' : '16px',
+            border: 'none',
+            background: 'white',
+          }}
+        >
+          <div style={{ fontSize: window.innerWidth > 640 ? '32px' : '28px', marginBottom: '8px' }}>📊</div>
+          <div style={{
+            fontSize: window.innerWidth > 640 ? '24px' : '20px',
+            fontWeight: 700,
+            color: '#3b82f6',
+            marginBottom: '4px',
+          }}>
+            {stats.fbsStock}
+          </div>
+          <div style={{
+            fontSize: window.innerWidth > 640 ? '14px' : '12px',
+            color: '#666',
+          }}>
+            {t.stocks}
+          </div>
+        </button>
+
+        <button
+          onClick={() => {
+            alert(
+              lang === 'ru' 
+                ? '📦 Товары\n📋 Заказы\n💰 Финансы\n📊 Остатки\n📑 Накладные\n📈 Отчёты'
+                : '📦 Mahsulotlar\n📋 Buyurtmalar\n💰 Moliya\n📊 Qoldiqlar\n📑 Hujjatlar\n📈 Hisobotlar'
+            );
+          }}
+          className="uzum-card"
+          style={{
+            cursor: 'pointer',
+            textAlign: 'center',
+            padding: window.innerWidth > 640 ? '24px' : '16px',
+            border: 'none',
+            background: 'white',
+          }}
+        >
+          <div style={{ fontSize: window.innerWidth > 640 ? '32px' : '28px', marginBottom: '8px' }}>☰</div>
+          <div style={{
+            fontSize: window.innerWidth > 640 ? '16px' : '14px',
+            fontWeight: 700,
+            color: '#8b5cf6',
+            marginBottom: '4px',
+          }}>
+            {t.menu}
+          </div>
+          <div style={{
+            fontSize: window.innerWidth > 640 ? '14px' : '12px',
+            color: '#666',
+          }}>
+            {lang === 'ru' ? 'Все разделы' : 'Barcha bo\'limlar'}
           </div>
         </button>
       </div>
