@@ -164,11 +164,11 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
     const totalExpenses = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
     
     return {
-      revenue: sanitized.revenue_gross,
+      revenue: sanitized.revenue_net, // Используем чистую выручку (после комиссии)
       totalExpenses,
-      profit: sanitized.revenue_gross - totalExpenses,
+      profit: sanitized.revenue_net - totalExpenses, // Прибыль = чистая выручка - расходы
       commission: sanitized.commission,
-      revenue_net: sanitized.revenue_net,
+      revenue_gross: sanitized.revenue_gross, // Валовая выручка для отладки
     };
   }
 

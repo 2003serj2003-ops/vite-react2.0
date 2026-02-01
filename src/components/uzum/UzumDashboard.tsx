@@ -19,13 +19,13 @@ interface UzumDashboardProps {
   lang: 'ru' | 'uz';
   token: string;
   onNavigate: (page: 'products' | 'orders' | 'finance' | 'stocks') => void;
-  onNavigateBack?: () => void;
+  onNavigateBack: () => void;
   onDisconnect?: () => void;
   onChangeLang?: () => void;
   onShowTour?: () => void;
 }
 
-export default function UzumDashboard({ lang, token, onNavigate, onDisconnect, onShowTour }: UzumDashboardProps) {
+export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack, onDisconnect, onShowTour }: UzumDashboardProps) {
   const [shopId, setShopId] = useState<number | null>(null);
   const [shops, setShops] = useState<any[]>([]);
   const [stats, setStats] = useState({
@@ -593,6 +593,33 @@ export default function UzumDashboard({ lang, token, onNavigate, onDisconnect, o
             flex: 1,
             minWidth: 0,
           }}>
+            <button
+              onClick={onNavigateBack}
+              title={lang === 'ru' ? 'Вернуться в главное приложение' : 'Asosiy ilovaga qaytish'}
+              style={{
+                width: '36px',
+                height: '36px',
+                backgroundColor: '#e5e7eb',
+                color: '#1E6FDB',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                flexShrink: 0,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#d1d5db';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#e5e7eb';
+              }}
+            >
+              🏠
+            </button>
             <h1 style={{
               fontSize: '20px',
               fontWeight: 700,
