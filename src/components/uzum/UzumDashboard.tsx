@@ -27,6 +27,7 @@ interface UzumDashboardProps {
 
 export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack, onDisconnect, onChangeLang, onShowTour }: UzumDashboardProps) {
   const [shopId, setShopId] = useState<number | null>(null);
+  const [shops, setShops] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalProducts: 0,
     activeOrders: 0,
@@ -200,10 +201,11 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
       console.log('🏪 Shops result:', shopsResult);
       if (shopsResult.success && shopsResult.shops) {
         UzumCache.setCachedData('shops', shopsResult.shops);
+        setShops(shopsResult.shops); // Сохраняем shops в state
         
-        // Load products and orders for first shop
+        // Load products and orders for first shop (or selected)
         if (shopsResult.shops.length > 0) {
-          const currentShopId = shopsResult.shops[0].id;
+          const currentShopId = shopId || shopsResult.shops[0].id;
           setShopId(currentShopId);
           UzumCache.updateShopId(currentShopId);
           
@@ -689,24 +691,60 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
 
       {/* Header */}
       <div className="uzum-header" style={{ marginTop: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0, flexWrap: 'wrap' }}>
           <h1 className="uzum-header-title" style={{ 
             fontSize: '20px',
             fontWeight: 700,
             color: '#111',
             margin: 0,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
           }}>
             {t.title}
           </h1>
+          
+          {/* Shop Selector */}
+          {shops.length > 1 && shopId && (
+            <select
+              value={shopId}
+              onChange={(e) => {
+                const newShopId = Number(e.target.value);
+                setShopId(newShopId);
+                UzumCache.updateShopId(newShopId);
+                setLoading(true);
+                loadBasicData(true); // Force reload with new shop
+              }}
+              style={{
+                padding: '6px 12px',
+                background: 'linear-gradient(135deg, #7E22CE 0%, #6F00FF 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                outline: 'none',
+                boxShadow: '0 2px 8px rgba(126,34,206,0.3)',
+              }}
+            >
+              {shops.map(shop => (
+                <option 
+                  key={shop.id} 
+                  value={shop.id}
+                  style={{
+                    background: '#fff',
+                    color: '#111',
+                  }}
+                >
+                  🏪 {shop.name || `ID: ${shop.id}`}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
           <button
             onClick={() => {
               setLoading(true);
-              loadBasicData();
+              loadBasicData(true);
             }}
             style={{
               padding: '6px 12px',

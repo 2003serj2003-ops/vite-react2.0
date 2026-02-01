@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getIntegrationStatus, disconnectIntegration, checkIntegrationHealth, type IntegrationStatus } from '../lib/integration-api';
+import { FiShoppingCart, FiCheckCircle, FiXCircle, FiClock, FiShield } from 'react-icons/fi';
 
 interface ProfileProps {
   lang: 'ru' | 'uz';
@@ -146,475 +147,649 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
   return (
     <div style={{
       minHeight: '100vh',
-      maxHeight: '100vh',
       overflowY: 'auto',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '20px',
-      paddingBottom: '100px', // Отступ для bottomBar
-      // Скрываем скроллбар
-      scrollbarWidth: 'none', // Firefox
-      msOverflowStyle: 'none', // IE and Edge
-    }} className="profile-container">
-      {/* Passport Cover */}
+      background: 'linear-gradient(135deg, #7E22CE 0%, #6F00FF 50%, #5B21B6 100%)',
+      padding: '16px',
+      paddingBottom: '100px',
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none',
+    }}>
+      <style>{`
+        .profile-container::-webkit-scrollbar {
+          display: none;
+        }
+        @keyframes shimmer {
+          0% { background-position: -1000px 0; }
+          100% { background-position: 1000px 0; }
+        }
+        @keyframes pulse-border {
+          0%, 100% { border-color: #10b981; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+          50% { border-color: #22c55e; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+        }
+        .valid-stamp {
+          animation: pulse-border 2s ease-in-out infinite;
+        }
+      `}</style>
+
       <div style={{
-        maxWidth: '420px',
+        maxWidth: '480px',
         margin: '0 auto',
-        backgroundColor: '#8B0000',
-        borderRadius: '12px',
-        padding: '24px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-        border: '2px solid #A52A2A',
       }}>
         {/* Back Button */}
-        <button
-          onClick={onNavigateBack}
-          style={{
-            background: 'rgba(255,255,255,0.2)',
-            border: 'none',
-            borderRadius: '6px',
-            color: 'white',
-            padding: '8px 16px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            marginBottom: '16px',
-            fontWeight: 600,
-          }}
-        >
-          ← {t.back}
-        </button>
-
-        {/* Passport Header */}
-        <div style={{
-          textAlign: 'center',
-          borderBottom: '2px solid rgba(255,255,255,0.3)',
-          paddingBottom: '16px',
-          marginBottom: '20px',
-        }}>
-          <div style={{
-            fontSize: '11px',
-            color: 'rgba(255,255,255,0.8)',
-            fontWeight: 600,
-            letterSpacing: '2px',
-            marginBottom: '4px',
-          }}>
-            {t.country}
-          </div>
-          <div style={{
-            fontSize: '24px',
-            color: 'white',
-            fontWeight: 700,
-            letterSpacing: '4px',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-          }}>
-            {t.passport}
-          </div>
-          <div style={{
-            fontSize: '12px',
-            color: 'rgba(255,255,255,0.7)',
-            marginTop: '4px',
-            letterSpacing: '1px',
-          }}>
-            TELEGRAM MINI APP
-          </div>
-        </div>
-
-        {/* Passport Content */}
-        <div style={{
-          backgroundColor: 'rgba(255,255,255,0.95)',
-          borderRadius: '8px',
-          padding: '20px',
-          minHeight: '400px',
-        }}>
-          {/* Photo & Name Section */}
-          <div style={{
-            display: 'flex',
-            gap: '16px',
-            marginBottom: '24px',
-            paddingBottom: '20px',
-            borderBottom: '2px solid #e5e7eb',
-          }}>
-            {/* Photo */}
-            <div style={{
-              width: '100px',
-              height: '130px',
-              backgroundColor: '#f3f4f6',
-              borderRadius: '4px',
-              overflow: 'hidden',
-              border: '2px solid #d1d5db',
-              flexShrink: 0,
+        {onNavigateBack && (
+          <button
+            onClick={onNavigateBack}
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '12px',
+              color: 'white',
+              padding: '10px 20px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              marginBottom: '20px',
+              fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              {photoUrl ? (
-                <img 
-                  src={photoUrl} 
-                  alt="User" 
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'cover' 
-                  }} 
-                />
-              ) : (
-                <div style={{
-                  fontSize: '48px',
-                  color: '#9ca3af',
-                }}>
-                  👤
-                </div>
-              )}
-            </div>
+              gap: '8px',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.25)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            ← {t.back}
+          </button>
+        )}
 
-            {/* Personal Data */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              {/* Surname */}
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{
-                  fontSize: '9px',
-                  color: '#374151',
-                  fontWeight: 600,
-                  letterSpacing: '0.5px',
-                  marginBottom: '2px',
-                }}>
-                  {t.surname.toUpperCase()}
-                </div>
-                <div style={{
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  color: '#111',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                }}>
-                  {lastName || '—'}
-                </div>
-              </div>
-
-              {/* Name */}
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{
-                  fontSize: '9px',
-                  color: '#374151',
-                  fontWeight: 600,
-                  letterSpacing: '0.5px',
-                  marginBottom: '2px',
-                }}>
-                  {t.name.toUpperCase()}
-                </div>
-                <div style={{
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  color: '#111',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                }}>
-                  {firstName}
-                </div>
-              </div>
-
-              {/* Username */}
-              {username && (
-                <div style={{ marginBottom: '8px' }}>
-                  <div style={{
-                    fontSize: '9px',
-                    color: '#374151',
-                    fontWeight: 600,
-                    letterSpacing: '0.5px',
-                    marginBottom: '2px',
-                  }}>
-                    {t.username.toUpperCase()}
-                  </div>
-                  <div style={{
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: '#1f2937',
-                  }}>
-                    @{username}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* User ID */}
+        {/* UZUM MEMBERSHIP Passport */}
+        <div style={{
+          background: 'linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)',
+          border: '3px solid #7c3aed',
+        }}>
+          {/* Passport Header */}
           <div style={{
-            marginBottom: '20px',
-            paddingBottom: '20px',
-            borderBottom: '2px solid #e5e7eb',
+            background: 'linear-gradient(135deg, #7E22CE 0%, #6F00FF 100%)',
+            padding: '24px',
+            position: 'relative',
+            overflow: 'hidden',
           }}>
+            {/* Decorative Elements */}
             <div style={{
-              fontSize: '9px',
-              color: '#374151',
-              fontWeight: 600,
-              letterSpacing: '0.5px',
-              marginBottom: '4px',
-            }}>
-              {t.userId.toUpperCase()}
-            </div>
+              position: 'absolute',
+              top: '-50px',
+              right: '-50px',
+              width: '200px',
+              height: '200px',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+              borderRadius: '50%',
+            }} />
+            
             <div style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#111',
-              fontFamily: 'monospace',
-              letterSpacing: '1px',
-            }}>
-              {userId}
-            </div>
-          </div>
-
-          {/* Integrations / Visas Section */}
-          <div>
-            <div style={{
-              fontSize: '11px',
-              fontWeight: 700,
-              color: '#8B0000',
-              letterSpacing: '2px',
-              marginBottom: '12px',
-              paddingBottom: '8px',
-              borderBottom: '2px solid #e5e7eb',
-            }}>
-              {t.integrations}
-            </div>
-
-            {/* UZUM Visa */}
-            <div style={{
-              border: '3px solid ' + (uzumStatus?.connected ? '#10b981' : '#e5e7eb'),
-              borderRadius: '8px',
-              padding: '16px',
-              backgroundColor: '#ffffff',
               position: 'relative',
+              zIndex: 1,
+              textAlign: 'center',
             }}>
-              {/* Visa Stamp Effect - Green for connected, Red for disconnected */}
-              {uzumStatus?.connected ? (
-                <div style={{
-                  position: 'absolute',
-                  top: '8px',
-                  right: '8px',
-                  width: '60px',
-                  height: '60px',
-                  border: '3px solid #10b981',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: 'rotate(-15deg)',
-                  opacity: 0.3,
-                }}>
-                  <div style={{
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    color: '#10b981',
-                    textAlign: 'center',
-                    lineHeight: '12px',
-                  }}>
-                    VALID<br/>✓
-                  </div>
-                </div>
-              ) : (
-                <div style={{
-                  position: 'absolute',
-                  top: '8px',
-                  right: '8px',
-                  width: '60px',
-                  height: '60px',
-                  border: '3px solid #ef4444',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: 'rotate(-15deg)',
-                  opacity: 0.3,
-                }}>
-                  <div style={{
-                    fontSize: '9px',
-                    fontWeight: 700,
-                    color: '#ef4444',
-                    textAlign: 'center',
-                    lineHeight: '11px',
-                  }}>
-                    DENIED<br/>✖
-                  </div>
-                </div>
-              )}
-
-              {/* Visa Header */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: '12px',
                 marginBottom: '12px',
               }}>
-                <div style={{ fontSize: '32px' }}>🛍️</div>
-                <div style={{ flex: 1 }}>
+                <FiShoppingCart size={32} color="white" />
+                <div>
                   <div style={{
-                    fontSize: '9px',
-                    color: '#374151',
-                    fontWeight: 600,
-                    letterSpacing: '0.5px',
-                    marginBottom: '2px',
+                    fontSize: '28px',
+                    fontWeight: 900,
+                    color: 'white',
+                    letterSpacing: '2px',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.3)',
                   }}>
-                    {t.visa}
+                    UZUM
                   </div>
                   <div style={{
-                    fontSize: '16px',
+                    fontSize: '13px',
                     fontWeight: 700,
-                    color: '#111',
+                    color: 'rgba(255,255,255,0.9)',
+                    letterSpacing: '3px',
                   }}>
-                    {t.uzum}
+                    MEMBERSHIP
                   </div>
                 </div>
               </div>
-
-              {/* Status */}
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'auto 1fr',
-                gap: '12px 16px',
-                fontSize: '12px',
-                marginBottom: '12px',
+                fontSize: '11px',
+                color: 'rgba(255,255,255,0.7)',
+                letterSpacing: '1px',
+                marginTop: '8px',
               }}>
-                <div style={{ color: '#374151', fontWeight: 600 }}>{t.status}:</div>
-                <div style={{
-                  fontWeight: 700,
-                  color: uzumStatus?.connected ? '#10b981' : uzumStatus?.status === 'error' ? '#ef4444' : '#6b7280',
-                  letterSpacing: '0.5px',
-                }}>
-                  {uzumStatus?.connected ? t.connected : uzumStatus?.status === 'error' ? t.error : t.disconnected}
-                </div>
-
-                {uzumStatus?.connected_at && (
-                  <>
-                    <div style={{ color: '#374151', fontWeight: 600 }}>{t.validFrom}:</div>
-                    <div style={{ fontWeight: 600, color: '#111' }}>
-                      {new Date(uzumStatus.connected_at).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'uz-UZ')}
-                    </div>
-                  </>
-                )}
-
-                {uzumStatus?.shop_ids && uzumStatus.shop_ids.length > 0 && (
-                  <>
-                    <div style={{ color: '#374151', fontWeight: 600 }}>{t.shops}:</div>
-                    <div style={{ fontWeight: 700, color: '#7c3aed' }}>
-                      {uzumStatus.shop_ids.length}
-                    </div>
-                  </>
-                )}
-
-                {uzumStatus?.token_last4 && (
-                  <>
-                    <div style={{ color: '#374151', fontWeight: 600 }}>{t.tokenLast4}:</div>
-                    <div style={{ fontWeight: 600, color: '#111', fontFamily: 'monospace' }}>
-                      ••••{uzumStatus.token_last4}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '8px',
-                marginTop: '16px',
-              }}>
-                {uzumStatus?.connected ? (
-                  <>
-                    <button
-                      onClick={handleCheckConnection}
-                      disabled={checking}
-                      style={{
-                        flex: 1,
-                        minWidth: '100px',
-                        padding: '10px 12px',
-                        backgroundColor: checking ? '#9ca3af' : '#3b82f6',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        cursor: checking ? 'not-allowed' : 'pointer',
-                      }}
-                    >
-                      {checking ? t.checking : t.checkConnection}
-                    </button>
-                    <button
-                      onClick={handleDisconnect}
-                      disabled={disconnecting}
-                      style={{
-                        flex: 1,
-                        minWidth: '100px',
-                        padding: '10px 12px',
-                        backgroundColor: disconnecting ? '#9ca3af' : '#ef4444',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        cursor: disconnecting ? 'not-allowed' : 'pointer',
-                      }}
-                    >
-                      {t.disconnect}
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={onNavigateBack}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      backgroundColor: '#7c3aed',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {t.reconnect}
-                  </button>
-                )}
-                
-                {/* Кнопка перехода к дашборду UZUM если интеграция подключена */}
-                {uzumStatus?.connected && (
-                  <button
-                    onClick={onNavigateToUzum}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      backgroundColor: '#10b981',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      marginTop: '8px',
-                    }}
-                  >
-                    {lang === 'ru' ? '🛍️ Открыть UZUM Dashboard' : '🛍️ UZUM Dashboard ochish'}
-                  </button>
-                )}
+                SELLER INTEGRATION PASSPORT
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Passport Footer */}
-        <div style={{
-          marginTop: '16px',
-          padding: '12px',
-          textAlign: 'center',
-          fontSize: '10px',
-          color: 'rgba(255,255,255,0.7)',
-          letterSpacing: '0.5px',
-          lineHeight: '1.4',
-        }}>
-          <div style={{ marginBottom: '4px' }}>
-            {t.footer}
+          {/* Passport Content */}
+          <div style={{
+            background: 'linear-gradient(180deg, #ffffff 0%, #f9fafb 100%)',
+            padding: '24px',
+          }}>
+            {/* User Identity Section */}
+            <div style={{
+              display: 'flex',
+              gap: '16px',
+              marginBottom: '24px',
+              padding: '20px',
+              background: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            }}>
+              {/* Photo */}
+              <div style={{
+                width: '100px',
+                height: '130px',
+                flexShrink: 0,
+                background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                border: '3px solid #e5e7eb',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+              }}>
+                {photoUrl ? (
+                  <img 
+                    src={photoUrl} 
+                    alt="User" 
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover' 
+                    }} 
+                  />
+                ) : (
+                  <div style={{
+                    fontSize: '48px',
+                    filter: 'grayscale(1) opacity(0.3)',
+                  }}>
+                    👤
+                  </div>
+                )}
+                {/* Hologram Effect */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: '40%',
+                  background: 'linear-gradient(180deg, transparent 0%, rgba(126,34,206,0.1) 100%)',
+                }} />
+              </div>
+
+              {/* Personal Info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ marginBottom: '14px' }}>
+                  <div style={{
+                    fontSize: '9px',
+                    fontWeight: 700,
+                    color: '#6b7280',
+                    letterSpacing: '1px',
+                    marginBottom: '3px',
+                  }}>
+                    {t.surname.toUpperCase()}
+                  </div>
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: 800,
+                    color: '#111',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                  }}>
+                    {lastName || '—'}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '14px' }}>
+                  <div style={{
+                    fontSize: '9px',
+                    fontWeight: 700,
+                    color: '#6b7280',
+                    letterSpacing: '1px',
+                    marginBottom: '3px',
+                  }}>
+                    {t.name.toUpperCase()}
+                  </div>
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: 800,
+                    color: '#111',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                  }}>
+                    {firstName}
+                  </div>
+                </div>
+
+                {username && (
+                  <div>
+                    <div style={{
+                      fontSize: '9px',
+                      fontWeight: 700,
+                      color: '#6b7280',
+                      letterSpacing: '1px',
+                      marginBottom: '3px',
+                    }}>
+                      TELEGRAM
+                    </div>
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      color: '#7c3aed',
+                    }}>
+                      @{username}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* User ID Card */}
+            <div style={{
+              padding: '16px 20px',
+              background: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              marginBottom: '24px',
+            }}>
+              <div style={{
+                fontSize: '9px',
+                fontWeight: 700,
+                color: '#6b7280',
+                letterSpacing: '1px',
+                marginBottom: '4px',
+              }}>
+                TELEGRAM USER ID
+              </div>
+              <div style={{
+                fontSize: '24px',
+                fontWeight: 900,
+                color: '#111',
+                fontFamily: 'monospace',
+                letterSpacing: '2px',
+              }}>
+                {userId}
+              </div>
+            </div>
+
+            {/* VISA Section */}
+            <div 
+              className={uzumStatus?.connected ? 'valid-stamp' : ''}
+              style={{
+              padding: '20px',
+              background: uzumStatus?.connected 
+                ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)'
+                : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+              borderRadius: '12px',
+              border: uzumStatus?.connected ? '3px solid #10b981' : '3px solid #ef4444',
+              boxShadow: uzumStatus?.connected 
+                ? '0 8px 24px rgba(16,185,129,0.25)' 
+                : '0 8px 24px rgba(239,68,68,0.25)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              {/* Watermark */}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%) rotate(-25deg)',
+                fontSize: '72px',
+                fontWeight: 900,
+                color: uzumStatus?.connected ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+                letterSpacing: '4px',
+                pointerEvents: 'none',
+                userSelect: 'none',
+              }}>
+                {uzumStatus?.connected ? 'VALID' : 'INVALID'}
+              </div>
+
+              {/* Visa Stamp */}
+              <div style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                width: '70px',
+                height: '70px',
+                border: `4px solid ${uzumStatus?.connected ? '#10b981' : '#ef4444'}`,
+                borderRadius: '50%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transform: 'rotate(-15deg)',
+                background: uzumStatus?.connected ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                zIndex: 2,
+              }}>
+                {uzumStatus?.connected ? (
+                  <FiCheckCircle size={24} color="#10b981" />
+                ) : (
+                  <FiXCircle size={24} color="#ef4444" />
+                )}
+                <div style={{
+                  fontSize: '9px',
+                  fontWeight: 900,
+                  color: uzumStatus?.connected ? '#10b981' : '#ef4444',
+                  marginTop: '4px',
+                  letterSpacing: '0.5px',
+                }}>
+                  {uzumStatus?.connected ? 'VALID' : 'DENIED'}
+                </div>
+              </div>
+
+              {/* Visa Header */}
+              <div style={{
+                position: 'relative',
+                zIndex: 1,
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '16px',
+                }}>
+                  <FiShield size={32} color={uzumStatus?.connected ? '#10b981' : '#ef4444'} />
+                  <div>
+                    <div style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#6b7280',
+                      letterSpacing: '1px',
+                      marginBottom: '2px',
+                    }}>
+                      {t.visa.toUpperCase()}
+                    </div>
+                    <div style={{
+                      fontSize: '20px',
+                      fontWeight: 900,
+                      color: '#111',
+                      letterSpacing: '1px',
+                    }}>
+                      UZUM SELLER
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Grid */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: window.innerWidth > 400 ? '1fr 1fr' : '1fr',
+                  gap: '12px',
+                  marginBottom: '16px',
+                }}>
+                  {/* Status */}
+                  <div style={{
+                    background: 'rgba(255,255,255,0.7)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px',
+                    borderRadius: '8px',
+                  }}>
+                    <div style={{
+                      fontSize: '9px',
+                      fontWeight: 700,
+                      color: '#6b7280',
+                      letterSpacing: '0.5px',
+                      marginBottom: '4px',
+                    }}>
+                      STATUS
+                    </div>
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: 900,
+                      color: uzumStatus?.connected ? '#10b981' : '#ef4444',
+                      letterSpacing: '0.5px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}>
+                      {uzumStatus?.connected ? (
+                        <>
+                          <FiCheckCircle size={16} />
+                          {t.connected}
+                        </>
+                      ) : (
+                        <>
+                          <FiXCircle size={16} />
+                          {t.disconnected}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Valid From */}
+                  {uzumStatus?.connected_at && (
+                    <div style={{
+                      background: 'rgba(255,255,255,0.7)',
+                      backdropFilter: 'blur(10px)',
+                      padding: '12px',
+                      borderRadius: '8px',
+                    }}>
+                      <div style={{
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        color: '#6b7280',
+                        letterSpacing: '0.5px',
+                        marginBottom: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}>
+                        <FiClock size={10} />
+                        {t.validFrom.toUpperCase()}
+                      </div>
+                      <div style={{
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: '#111',
+                      }}>
+                        {new Date(uzumStatus.connected_at).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'uz-UZ', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Shops Count */}
+                  {uzumStatus?.shop_ids && uzumStatus.shop_ids.length > 0 && (
+                    <div style={{
+                      background: 'rgba(255,255,255,0.7)',
+                      backdropFilter: 'blur(10px)',
+                      padding: '12px',
+                      borderRadius: '8px',
+                    }}>
+                      <div style={{
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        color: '#6b7280',
+                        letterSpacing: '0.5px',
+                        marginBottom: '4px',
+                      }}>
+                        {t.shops.toUpperCase()}
+                      </div>
+                      <div style={{
+                        fontSize: '18px',
+                        fontWeight: 900,
+                        color: '#7c3aed',
+                      }}>
+                        {uzumStatus.shop_ids.length}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Token */}
+                  {uzumStatus?.token_last4 && (
+                    <div style={{
+                      background: 'rgba(255,255,255,0.7)',
+                      backdropFilter: 'blur(10px)',
+                      padding: '12px',
+                      borderRadius: '8px',
+                    }}>
+                      <div style={{
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        color: '#6b7280',
+                        letterSpacing: '0.5px',
+                        marginBottom: '4px',
+                      }}>
+                        TOKEN
+                      </div>
+                      <div style={{
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#111',
+                        fontFamily: 'monospace',
+                      }}>
+                        ••••{uzumStatus.token_last4}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                }}>
+                  {uzumStatus?.connected ? (
+                    <>
+                      {onNavigateToUzum && (
+                        <button
+                          onClick={onNavigateToUzum}
+                          style={{
+                            flex: 1,
+                            minWidth: '160px',
+                            padding: '14px 16px',
+                            background: 'linear-gradient(135deg, #7E22CE 0%, #6F00FF 100%)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            boxShadow: '0 4px 12px rgba(126,34,206,0.4)',
+                            transition: 'all 0.3s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 6px 16px rgba(126,34,206,0.5)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(126,34,206,0.4)';
+                          }}
+                        >
+                          <FiShoppingCart size={18} />
+                          {lang === 'ru' ? 'Открыть Dashboard' : 'Dashboard ochish'}
+                        </button>
+                      )}
+                      <button
+                        onClick={handleCheckConnection}
+                        disabled={checking}
+                        style={{
+                          flex: 1,
+                          minWidth: '100px',
+                          padding: '14px 16px',
+                          background: checking ? '#9ca3af' : '#3b82f6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          cursor: checking ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.3s',
+                        }}
+                      >
+                        {checking ? t.checking : t.checkConnection}
+                      </button>
+                      <button
+                        onClick={handleDisconnect}
+                        disabled={disconnecting}
+                        style={{
+                          flex: 1,
+                          minWidth: '100px',
+                          padding: '14px 16px',
+                          background: disconnecting ? '#9ca3af' : '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          cursor: disconnecting ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.3s',
+                        }}
+                      >
+                        {t.disconnect}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={onNavigateToUzum}
+                      style={{
+                        width: '100%',
+                        padding: '14px 16px',
+                        background: 'linear-gradient(135deg, #7E22CE 0%, #6F00FF 100%)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 12px rgba(126,34,206,0.4)',
+                      }}
+                    >
+                      {t.reconnect}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-          <div style={{ opacity: 0.5 }}>
-            TELEGRAM MINI APP ID: {userId}
+
+          {/* Passport Footer */}
+          <div style={{
+            padding: '20px 24px',
+            background: 'linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)',
+            textAlign: 'center',
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+          }}>
+            <div style={{
+              fontSize: '10px',
+              color: 'rgba(255,255,255,0.5)',
+              letterSpacing: '0.5px',
+              lineHeight: '1.6',
+            }}>
+              {t.footer}
+            </div>
           </div>
         </div>
       </div>
