@@ -384,6 +384,7 @@ export default function UzumStocks({ token, onNavigate, lang = 'ru' }: UzumStock
                           borderRadius: '8px',
                           outline: 'none',
                           backgroundColor: hasEdit ? '#f0fdf4' : 'white',
+                          color: '#111',
                         }}
                       />
                     </div>

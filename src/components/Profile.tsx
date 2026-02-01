@@ -3,7 +3,7 @@ import { getIntegrationStatus, disconnectIntegration, checkIntegrationHealth, ty
 
 interface ProfileProps {
   lang: 'ru' | 'uz';
-  onNavigateBack: () => void;
+  onNavigateBack?: () => void;
 }
 
 export default function Profile({ lang, onNavigateBack }: ProfileProps) {
