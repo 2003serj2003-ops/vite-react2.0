@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShops, getFbsOrders, getFbsOrder, confirmFbsOrder, cancelFbsOrder, getFbsOrderLabel } from '../../lib/uzum-api';
+import { getShops, getFbsOrders, getFbsOrder, cancelFbsOrder, getFbsOrderLabel } from '../../lib/uzum-api';
 import CoolLoader from '../CoolLoader';
 
 interface UzumOrdersProps {
@@ -17,7 +17,6 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   const [actionLoading, setActionLoading] = useState(false);
   const [printingLabel, setPrintingLabel] = useState(false);
   const [labelSize, setLabelSize] = useState<{[key: string]: 'LARGE' | 'BIG'}>({});
-  const [cancelingOrder, setCancelingOrder] = useState(false);
 
   const T = {
     ru: {
@@ -217,23 +216,6 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
       console.error('Orders load error:', error);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleConfirmOrder(orderId: string | number) {
-    setActionLoading(true);
-    try {
-      const result = await confirmFbsOrder(token, orderId);
-      if (result.success) {
-        await loadOrders();
-        alert(t.confirmSuccess);
-      } else {
-        alert(t.error + ': ' + result.error);
-      }
-    } catch (error: any) {
-      alert(t.error + ': ' + error.message);
-    } finally {
-      setActionLoading(false);
     }
   }
 
@@ -995,7 +977,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                                 handleCancelOrder(orderId);
                               }
                             }}
-                            disabled={cancelingOrder || actionLoading}
+                            disabled={actionLoading}
                             style={{
                               flex: 1,
                               minWidth: '140px',
@@ -1006,8 +988,8 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                               borderRadius: '12px',
                               fontSize: '15px',
                               fontWeight: '600',
-                              cursor: (cancelingOrder || actionLoading) ? 'not-allowed' : 'pointer',
-                              opacity: (cancelingOrder || actionLoading) ? 0.6 : 1,
+                              cursor: actionLoading ? 'not-allowed' : 'pointer',
+                              opacity: actionLoading ? 0.6 : 1,
                               transition: 'all 0.2s',
                               display: 'flex',
                               alignItems: 'center',
@@ -1015,7 +997,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                               gap: '8px',
                             }}
                             onMouseEnter={(e) => {
-                              if (!cancelingOrder && !actionLoading) {
+                              if (!actionLoading) {
                                 e.currentTarget.style.backgroundColor = '#dc2626';
                               }
                             }}
@@ -1024,79 +1006,10 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                             }}
                           >
                             <span>❌</span>
-                            <span>{cancelingOrder ? t.canceling : t.cancelOrder}</span>
+                            <span>{actionLoading ? t.canceling : t.cancelOrder}</span>
                           </button>
                         )}
                       </div>
-                    </div>
-
-                      {/* Confirm Button */}
-                      {order.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleConfirmOrder(orderId);
-                            }}
-                            disabled={actionLoading}
-                            style={{
-                              flex: 1,
-                              minWidth: '140px',
-                              padding: '14px',
-                              backgroundColor: '#22c55e',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '12px',
-                              fontSize: '15px',
-                              fontWeight: '600',
-                              cursor: actionLoading ? 'not-allowed' : 'pointer',
-                              opacity: actionLoading ? 0.6 : 1,
-                              transition: 'all 0.2s',
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!actionLoading) {
-                                e.currentTarget.style.backgroundColor = '#16a34a';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = '#22c55e';
-                            }}
-                          >
-                            ✓ {t.confirm}
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCancelOrder(orderId);
-                            }}
-                            disabled={actionLoading}
-                            style={{
-                              flex: 1,
-                              minWidth: '140px',
-                              padding: '14px',
-                              backgroundColor: '#ef4444',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '12px',
-                              fontSize: '15px',
-                              fontWeight: '600',
-                              cursor: actionLoading ? 'not-allowed' : 'pointer',
-                              opacity: actionLoading ? 0.6 : 1,
-                              transition: 'all 0.2s',
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!actionLoading) {
-                                e.currentTarget.style.backgroundColor = '#dc2626';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = '#ef4444';
-                            }}
-                          >
-                            ✕ {t.cancel}
-                          </button>
-                        </>
-                      )}
                     </div>
                   </div>
                 )}
