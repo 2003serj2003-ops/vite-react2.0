@@ -430,7 +430,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
                 <div style={{ color: '#374151', fontWeight: 600 }}>{t.status}:</div>
                 <div style={{
                   fontWeight: 700,
-                  color: uzumStatus?.connected ? '#10b981' : '#9ca3af',
+                  color: uzumStatus?.connected ? '#10b981' : uzumStatus?.status === 'error' ? '#ef4444' : '#6b7280',
                   letterSpacing: '0.5px',
                 }}>
                   {uzumStatus?.connected ? t.connected : uzumStatus?.status === 'error' ? t.error : t.disconnected}
