@@ -340,27 +340,100 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
               window.open(result.labelUrl, '_blank');
               return;
             } else {
-              // Это JSON данные - конвертируем в PDF-подобный текстовый формат
-              const labelText = `
-╔═══════════════════════════════════════╗
-║     UZUM MARKET - ЭТИКЕТКА ЗАКАЗА     ║
-╚═══════════════════════════════════════╝
-
-📦 Заказ №: ${orderId}
-📅 Дата: ${new Date().toLocaleString('ru-RU')}
-🔖 Размер этикетки: ${size}
-
-─────────────────────────────────────────
-
-${JSON.stringify(result.label, null, 2)}
-
-─────────────────────────────────────────
-🔗 Uzum Market Seller
+              // Это JSON данные - генерируем простой PDF через HTML
+              const labelData = result.label || {};
+              
+              // Создаем HTML для печати
+              const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page { margin: 10mm; size: 58mm 40mm; }
+    body { 
+      margin: 0; 
+      padding: 10px;
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      line-height: 1.3;
+    }
+    .label {
+      border: 2px solid #000;
+      padding: 8px;
+      height: 100%;
+    }
+    .header {
+      text-align: center;
+      font-weight: bold;
+      font-size: 12px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 5px;
+    }
+    .row {
+      margin: 5px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .label-key {
+      font-weight: bold;
+    }
+    .order-id {
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      margin: 10px 0;
+      padding: 5px;
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="label">
+    <div class="header">UZUM MARKET</div>
+    <div class="order-id">№ ${orderId}</div>
+    <div class="row">
+      <span class="label-key">Дата:</span>
+      <span>${new Date().toLocaleDateString('ru-RU')}</span>
+    </div>
+    <div class="row">
+      <span class="label-key">Размер:</span>
+      <span>${size}</span>
+    </div>
+    ${labelData.shopName ? `<div class="row"><span class="label-key">Магазин:</span><span>${labelData.shopName}</span></div>` : ''}
+    ${labelData.barcode ? `<div class="row"><span class="label-key">Штрихкод:</span><span>${labelData.barcode}</span></div>` : ''}
+  </div>
+</body>
+</html>
               `;
               
-              blob = new Blob([labelText], { type: 'text/plain; charset=utf-8' });
-              fileName = `uzum-label-${orderId}.txt`;
-              mimeType = 'text/plain';
+              // Конвертируем HTML в PDF используя jsPDF
+              try {
+                // Пробуем использовать встроенный API печати браузера
+                const printWindow = window.open('', '_blank');
+                if (printWindow) {
+                  printWindow.document.write(htmlContent);
+                  printWindow.document.close();
+                  printWindow.focus();
+                  
+                  // Даем время на рендеринг и печатаем
+                  setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                  }, 250);
+                  
+                  alert('📋 Этикетка открыта в новом окне для печати');
+                  return;
+                }
+              } catch (e) {
+                console.error('Print error:', e);
+              }
+              
+              // Fallback: сохраняем как HTML файл
+              blob = new Blob([htmlContent], { type: 'text/html; charset=utf-8' });
+              fileName = `uzum-label-${orderId}.html`;
+              mimeType = 'text/html';
             }
 
             // Отправляем файл через Telegram Bot
@@ -437,8 +510,69 @@ ${JSON.stringify(result.label, null, 2)}
               window.open(result.labelUrl, '_blank');
               return;
             } else {
-              downloadBlob = new Blob([JSON.stringify(result.label, null, 2)], { type: 'application/json' });
-              downloadFileName = `uzum-label-${orderId}.json`;
+              // Генерируем HTML этикетку для fallback
+              const labelData = result.label || {};
+              const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Этикетка заказа #${orderId}</title>
+  <style>
+    @page { margin: 10mm; size: 58mm 40mm; }
+    body { 
+      margin: 0; 
+      padding: 10px;
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      line-height: 1.3;
+    }
+    .label {
+      border: 2px solid #000;
+      padding: 8px;
+    }
+    .header {
+      text-align: center;
+      font-weight: bold;
+      font-size: 12px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 5px;
+    }
+    .row {
+      margin: 5px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .label-key {
+      font-weight: bold;
+    }
+    .order-id {
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      margin: 10px 0;
+      padding: 5px;
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body onload="window.print()">
+  <div class="label">
+    <div class="header">UZUM MARKET</div>
+    <div class="order-id">№ ${orderId}</div>
+    <div class="row">
+      <span class="label-key">Дата:</span>
+      <span>${new Date().toLocaleDateString('ru-RU')}</span>
+    </div>
+    ${labelData.shopName ? `<div class="row"><span class="label-key">Магазин:</span><span>${labelData.shopName}</span></div>` : ''}
+    ${labelData.barcode ? `<div class="row"><span class="label-key">Штрихкод:</span><span>${labelData.barcode}</span></div>` : ''}
+  </div>
+</body>
+</html>
+              `;
+              downloadBlob = new Blob([htmlContent], { type: 'text/html' });
+              downloadFileName = `uzum-label-${orderId}.html`;
             }
             
             const url = URL.createObjectURL(downloadBlob);
