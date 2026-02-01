@@ -360,7 +360,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
               border: '3px solid ' + (uzumStatus?.connected ? '#10b981' : '#e5e7eb'),
               borderRadius: '8px',
               padding: '16px',
-              backgroundColor: uzumStatus?.connected ? '#f0fdf4' : '#f9fafb',
+              backgroundColor: '#ffffff',
               position: 'relative',
             }}>
               {/* Visa Stamp Effect */}
