@@ -13,6 +13,8 @@ import UzumInvoices from "./components/uzum/UzumInvoices";
 import UzumReports from "./components/uzum/UzumReports";
 import UzumStocks from "./components/uzum/UzumStocks";
 import UzumOnboarding from "./components/UzumOnboarding";
+import UzumTour from "./components/UzumTour";
+import UzumNavigation from "./components/UzumNavigation";
 import Profile from "./components/Profile";
 
 type Lang = "ru" | "uz";
@@ -367,6 +369,7 @@ export default function App() {
   const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports' | 'stocks'>('dashboard');
   const [uzumDecryptedToken, setUzumDecryptedToken] = useState(""); // Для использования в API запросах
   const [showUzumOnboarding, setShowUzumOnboarding] = useState(false);
+  const [showUzumTour, setShowUzumTour] = useState(false);
   console.log('Uzum integration ID:', uzumIntegrationId); // используем переменную
 
   // Загрузка истории комиссий при входе пользователя
@@ -725,6 +728,12 @@ export default function App() {
       // Сохраняем PIN в session storage для автоматической расшифровки при перезагрузке
       sessionStorage.setItem('uzum_pin_temp', uzumPin);
       console.log('[Uzum] ✓ PIN saved to session storage');
+      
+      // Проверяем, первое ли это подключение и показываем тур
+      const tourCompleted = localStorage.getItem('uzum_tour_completed');
+      if (!tourCompleted) {
+        setShowUzumTour(true);
+      }
       
       // Clear sensitive data from input state
       setUzumToken('');
@@ -2489,121 +2498,12 @@ export default function App() {
             {/* Connected: Show Navigation and Pages */}
             {uzumConnected && (
               <>
-                {/* Navigation Tabs */}
-                <div style={{
-                  display: 'flex',
-                  gap: '8px',
-                  padding: '16px',
-                  backgroundColor: 'white',
-                  borderBottom: '2px solid #f3f4f6',
-                  overflowX: 'auto',
-                }}>
-                  <button
-                    onClick={() => setUzumCurrentPage('dashboard')}
-                    style={{
-                      padding: '10px 20px',
-                      backgroundColor: uzumCurrentPage === 'dashboard' ? '#7c3aed' : '#f3f4f6',
-                      color: uzumCurrentPage === 'dashboard' ? 'white' : '#374151',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    🏠 {lang === 'ru' ? 'Главная' : 'Asosiy'}
-                  </button>
-                  <button
-                    onClick={() => setUzumCurrentPage('products')}
-                    style={{
-                      padding: '10px 20px',
-                      backgroundColor: uzumCurrentPage === 'products' ? '#7c3aed' : '#f3f4f6',
-                      color: uzumCurrentPage === 'products' ? 'white' : '#374151',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    📦 {lang === 'ru' ? 'Товары' : 'Mahsulotlar'}
-                  </button>
-                  <button
-                    onClick={() => setUzumCurrentPage('orders')}
-                    style={{
-                      padding: '10px 20px',
-                      backgroundColor: uzumCurrentPage === 'orders' ? '#22c55e' : '#f3f4f6',
-                      color: uzumCurrentPage === 'orders' ? 'white' : '#374151',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    📋 {lang === 'ru' ? 'Заказы' : 'Buyurtmalar'}
-                  </button>
-                  <button
-                    onClick={() => setUzumCurrentPage('finance')}
-                    style={{
-                      padding: '10px 20px',
-                      backgroundColor: uzumCurrentPage === 'finance' ? '#f59e0b' : '#f3f4f6',
-                      color: uzumCurrentPage === 'finance' ? 'white' : '#374151',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    💰 {lang === 'ru' ? 'Финансы' : 'Moliya'}
-                  </button>
-                  <button
-                    onClick={() => setUzumCurrentPage('invoices')}
-                    style={{
-                      padding: '10px 20px',
-                      backgroundColor: uzumCurrentPage === 'invoices' ? '#8b5cf6' : '#f3f4f6',
-                      color: uzumCurrentPage === 'invoices' ? 'white' : '#374151',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    📄 {lang === 'ru' ? 'Накладные' : 'Hisob-fakturalar'}
-                  </button>
-                  <button
-                    onClick={() => setUzumCurrentPage('reports')}
-                    style={{
-                      padding: '10px 20px',
-                      backgroundColor: uzumCurrentPage === 'reports' ? '#ef4444' : '#f3f4f6',
-                      color: uzumCurrentPage === 'reports' ? 'white' : '#374151',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    📈 {lang === 'ru' ? 'Отчеты' : 'Hisobotlar'}
-                  </button>
-                </div>
-
                 {/* Page Content */}
-                <div style={{ flex: 1, overflow: 'auto' }}>
+                <div style={{ 
+                  flex: 1, 
+                  overflow: 'auto',
+                  paddingBottom: '80px' // Отступ для нижней навигации
+                }}>
                   {uzumCurrentPage === 'dashboard' && (
                     <UzumDashboard 
                       lang={lang} 
@@ -2612,6 +2512,7 @@ export default function App() {
                       onNavigateBack={() => setRoute({ name: 'home' })}
                       onDisconnect={handleDisconnect}
                       onChangeLang={() => setLang(lang === 'ru' ? 'uz' : 'ru')}
+                      onShowTour={() => setShowUzumTour(true)}
                     />
                   )}
                   {uzumCurrentPage === 'products' && (
@@ -2656,6 +2557,15 @@ export default function App() {
                     />
                   )}
                 </div>
+                
+                {/* Bottom Navigation - hide on stocks page */}
+                {uzumCurrentPage !== 'stocks' && (
+                  <UzumNavigation 
+                    currentPage={uzumCurrentPage as any}
+                    onNavigate={(page) => setUzumCurrentPage(page as any)}
+                    lang={lang}
+                  />
+                )}
               </>
             )}
             
@@ -4739,6 +4649,17 @@ export default function App() {
           <UzumOnboarding
             lang={lang}
             onComplete={() => setShowUzumOnboarding(false)}
+          />
+        )}
+
+        {/* Uzum Tour Modal */}
+        {showUzumTour && (
+          <UzumTour
+            lang={lang}
+            onComplete={() => {
+              setShowUzumTour(false);
+              localStorage.setItem('uzum_tour_completed', 'true');
+            }}
           />
         )}
 

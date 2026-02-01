@@ -2,7 +2,18 @@ import { useState, useEffect } from 'react';
 import { getShops, getProducts, getFbsOrdersCount, getFinanceOrders, getFinanceExpenses, getFbsSkuStocks } from '../../lib/uzum-api';
 import * as UzumCache from '../../lib/uzum-cache';
 import UzumWeeklyChart from './UzumWeeklyChart';
-import CoolLoader from '../CoolLoader';
+import SmartLoader from '../SmartLoader';
+import Tooltip from '../Tooltip';
+import { 
+  FiPackage, 
+  FiShoppingCart, 
+  FiDollarSign, 
+  FiBarChart2,
+  FiRefreshCw,
+  FiTrendingUp,
+  FiTrendingDown,
+  FiBox
+} from 'react-icons/fi';
 
 interface UzumDashboardProps {
   lang: 'ru' | 'uz';
@@ -11,9 +22,10 @@ interface UzumDashboardProps {
   onNavigateBack: () => void;
   onDisconnect?: () => void;
   onChangeLang?: () => void;
+  onShowTour?: () => void;
 }
 
-export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack, onDisconnect, onChangeLang }: UzumDashboardProps) {
+export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack, onDisconnect, onChangeLang, onShowTour }: UzumDashboardProps) {
   const [shopId, setShopId] = useState<number | null>(null);
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -539,11 +551,11 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
   }
 
   if (loading) {
-    return <CoolLoader text={t.loading} />;
+    return <SmartLoader type="general" />;
   }
 
   if (refreshing) {
-    return <CoolLoader text={t.refreshing} />;
+    return <SmartLoader type="general" />;
   }
 
   const formatNumber = (num: number) => {
@@ -711,9 +723,35 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               whiteSpace: 'nowrap',
             }}
           >
-            🔄
-            <span style={{ display: window.innerWidth > 640 ? 'inline' : 'none' }}>Обновить</span>
+            <FiRefreshCw size={14} />
+            <span style={{ display: window.innerWidth > 640 ? 'inline' : 'none' }}>
+              {lang === 'ru' ? 'Обновить' : 'Yangilash'}
+            </span>
           </button>
+          {onShowTour && (
+            <button
+              onClick={onShowTour}
+              style={{
+                padding: '6px 12px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span style={{ fontSize: '14px' }}>?</span>
+              <span style={{ display: window.innerWidth > 640 ? 'inline' : 'none' }}>
+                {lang === 'ru' ? 'Гид' : 'Qo\'llanma'}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -812,14 +850,25 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   fontSize: '13px',
                   color: '#666',
                   marginBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                 }}>
                   {t.revenue}
+                  <Tooltip 
+                    text={lang === 'ru' ? 'Общая сумма продаж за выбранный период' : 'Tanlangan davrdagi jami sotish summasi'} 
+                    position="top" 
+                  />
                 </div>
                 <div style={{
                   fontSize: '28px',
                   fontWeight: 700,
                   color: '#111',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
                 }}>
+                  <FiTrendingUp color="#10b981" size={24} />
                   {formatNumber(stats.revenue)}
                 </div>
               </div>
@@ -828,14 +877,25 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   fontSize: '13px',
                   color: '#666',
                   marginBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                 }}>
                   {t.toPay}
+                  <Tooltip 
+                    text={lang === 'ru' ? 'Сумма к выплате после вычета комиссий' : 'Komissiyalarni chiqarib tashlashdan keyin tolanadigan summa'} 
+                    position="top" 
+                  />
                 </div>
                 <div style={{
                   fontSize: '28px',
                   fontWeight: 700,
                   color: '#22c55e',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
                 }}>
+                  <FiDollarSign color="#22c55e" size={24} />
                   {formatNumber(stats.toPay)}
                 </div>
               </div>
@@ -844,14 +904,25 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   fontSize: '13px',
                   color: '#666',
                   marginBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                 }}>
                   {t.netProfit}
+                  <Tooltip 
+                    text={lang === 'ru' ? 'Чистая прибыль: выручка минус все расходы' : 'Sof foyda: daromad minus barcha xarajatlar'} 
+                    position="top" 
+                  />
                 </div>
                 <div style={{
                   fontSize: '28px',
                   fontWeight: 700,
                   color: stats.profit < 0 ? '#ef4444' : '#22c55e',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
                 }}>
+                  {stats.profit < 0 ? <FiTrendingDown color="#ef4444" size={24} /> : <FiTrendingUp color="#22c55e" size={24} />}
                   {formatNumber(stats.profit)}
                 </div>
               </div>
@@ -1103,7 +1174,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             background: 'white',
           }}
         >
-          <div style={{ fontSize: window.innerWidth > 640 ? '32px' : '28px', marginBottom: '8px' }}>📦</div>
+          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+            <FiPackage size={window.innerWidth > 640 ? 32 : 28} color="#7c3aed" />
+          </div>
           <div style={{
             fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
@@ -1131,7 +1204,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             background: 'white',
           }}
         >
-          <div style={{ fontSize: window.innerWidth > 640 ? '32px' : '28px', marginBottom: '8px' }}>📋</div>
+          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+            <FiShoppingCart size={window.innerWidth > 640 ? 32 : 28} color="#22c55e" />
+          </div>
           <div style={{
             fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
@@ -1159,7 +1234,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             background: 'white',
           }}
         >
-          <div style={{ fontSize: window.innerWidth > 640 ? '32px' : '28px', marginBottom: '8px' }}>💰</div>
+          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+            <FiDollarSign size={window.innerWidth > 640 ? 32 : 28} color="#f59e0b" />
+          </div>
           <div style={{
             fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
@@ -1187,7 +1264,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             background: 'white',
           }}
         >
-          <div style={{ fontSize: window.innerWidth > 640 ? '32px' : '28px', marginBottom: '8px' }}>📊</div>
+          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+            <FiBox size={window.innerWidth > 640 ? 32 : 28} color="#3b82f6" />
+          </div>
           <div style={{
             fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
@@ -1208,8 +1287,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           onClick={() => {
             alert(
               lang === 'ru' 
-                ? '📦 Товары\n📋 Заказы\n💰 Финансы\n📊 Остатки\n📑 Накладные\n📈 Отчёты'
-                : '📦 Mahsulotlar\n📋 Buyurtmalar\n💰 Moliya\n📊 Qoldiqlar\n📑 Hujjatlar\n📈 Hisobotlar'
+                ? 'Товары\nЗаказы\nФинансы\nОстатки\nНакладные\nОтчёты'
+                : 'Mahsulotlar\nBuyurtmalar\nMoliya\nQoldiqlar\nHujjatlar\nHisobotlar'
             );
           }}
           className="uzum-card"
@@ -1221,7 +1300,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             background: 'white',
           }}
         >
-          <div style={{ fontSize: window.innerWidth > 640 ? '32px' : '28px', marginBottom: '8px' }}>☰</div>
+          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+            <FiBarChart2 size={window.innerWidth > 640 ? 32 : 28} color="#8b5cf6" />
+          </div>
           <div style={{
             fontSize: window.innerWidth > 640 ? '16px' : '14px',
             fontWeight: 700,

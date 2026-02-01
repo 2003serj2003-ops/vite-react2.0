@@ -7,13 +7,19 @@
     "start": "node bot.js",
     "dev": "nodemon bot.js"
   },
-  "keywords": ["telegram", "bot", "uzum", "miniapp"],
+  "keywords": [
+    "telegram",
+    "bot",
+    "uzum",
+    "miniapp"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "node-telegram-bot-api": "^0.66.0",
     "@supabase/supabase-js": "^2.39.0",
-    "node-cron": "^3.0.3"
+    "dotenv": "^17.2.3",
+    "node-cron": "^3.0.3",
+    "node-telegram-bot-api": "^0.66.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
