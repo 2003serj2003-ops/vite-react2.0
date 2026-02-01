@@ -47,11 +47,18 @@ html,body,#root{
   margin:0; 
   padding:0; 
   overflow:hidden;
+  max-width: 100vw;
 }
 
 /* Скрываем скроллбар в профиле (WebKit) */
 .profile-container::-webkit-scrollbar {
   display: none;
+}
+
+/* Предотвращаем горизонтальный overflow во всех компонентах */
+.uzum-container, .uzum-grid, .uzum-card, .uzum-filters {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 #root {
@@ -2081,6 +2088,8 @@ button:disabled {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 640px) {
@@ -2192,8 +2201,21 @@ button:disabled {
   display: none;
 }
 
+/* Адаптивные фильтры */
+.uzum-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 @media (max-width: 640px) {
   .uzum-tabs {
+    gap: 4px;
+  }
+  
+  .uzum-filters {
     gap: 4px;
   }
 }

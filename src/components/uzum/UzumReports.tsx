@@ -95,7 +95,7 @@ export default function UzumReports({ lang, token, onNavigateBack }: UzumReports
         {/* Reports Menu */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gridTemplateColumns: window.innerWidth > 640 ? 'repeat(auto-fill, minmax(200px, 1fr))' : '1fr',
           gap: '12px',
         }}>
           {reports.map((report) => (

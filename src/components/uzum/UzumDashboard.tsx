@@ -725,7 +725,10 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
         {/* Left Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Financial Data */}
-          <div className="uzum-card">
+          <div className="uzum-card" style={{
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -750,49 +753,52 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   onClick={() => setDatePeriod(7)}
                   className={`uzum-filter-chip ${datePeriod === 7 ? 'active' : ''}`}
                   style={{
-                    padding: '6px 12px',
-                    fontSize: '12px',
+                    padding: window.innerWidth > 640 ? '6px 12px' : '5px 8px',
+                    fontSize: window.innerWidth > 640 ? '12px' : '11px',
                     backgroundColor: datePeriod === 7 ? '#7c3aed' : '#f3f4f6',
                     color: datePeriod === 7 ? 'white' : '#374151',
                     border: 'none',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: datePeriod === 7 ? 600 : 400,
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  {t.last7days}
+                  {window.innerWidth > 640 ? t.last7days : '7д'}
                 </button>
                 <button
                   onClick={() => setDatePeriod(10)}
                   className={`uzum-filter-chip ${datePeriod === 10 ? 'active' : ''}`}
                   style={{
-                    padding: '6px 12px',
-                    fontSize: '12px',
+                    padding: window.innerWidth > 640 ? '6px 12px' : '5px 8px',
+                    fontSize: window.innerWidth > 640 ? '12px' : '11px',
                     backgroundColor: datePeriod === 10 ? '#7c3aed' : '#f3f4f6',
                     color: datePeriod === 10 ? 'white' : '#374151',
                     border: 'none',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: datePeriod === 10 ? 600 : 400,
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  {t.last10days}
+                  {window.innerWidth > 640 ? t.last10days : '10д'}
                 </button>
                 <button
                   onClick={() => setDatePeriod(30)}
                   className={`uzum-filter-chip ${datePeriod === 30 ? 'active' : ''}`}
                   style={{
-                    padding: '6px 12px',
-                    fontSize: '12px',
+                    padding: window.innerWidth > 640 ? '6px 12px' : '5px 8px',
+                    fontSize: window.innerWidth > 640 ? '12px' : '11px',
                     backgroundColor: datePeriod === 30 ? '#7c3aed' : '#f3f4f6',
-                    color: datePeriod === 30 ? 'white' : '#374141',
+                    color: datePeriod === 30 ? 'white' : '#374151',
                     border: 'none',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: datePeriod === 30 ? 600 : 400,
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  {t.last30days}
+                  {window.innerWidth > 640 ? t.last30days : '30д'}
                 </button>
               </div>
             </div>
@@ -895,7 +901,10 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           </div>
 
           {/* Recent Orders */}
-          <div className="uzum-card">
+          <div className="uzum-card" style={{
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -934,7 +943,10 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
         {/* Right Column - Expenses & Income */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Expenses */}
-          <div className="uzum-card">
+          <div className="uzum-card" style={{
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -954,6 +966,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               <div className="uzum-filters" style={{ 
                 padding: 0,
                 gap: '6px',
+                display: 'flex',
+                flexWrap: 'wrap',
+                maxWidth: '100%',
               }}>
                 <button
                   onClick={() => setExpenseDatePeriod(1)}

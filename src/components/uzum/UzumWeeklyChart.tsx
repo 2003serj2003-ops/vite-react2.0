@@ -460,7 +460,7 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: window.innerWidth > 640 ? 'repeat(4, 1fr)' : 'repeat(2, 1fr)',
               gap: '16px',
             }}>
               <div style={{

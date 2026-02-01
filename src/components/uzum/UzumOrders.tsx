@@ -587,6 +587,8 @@ ${JSON.stringify(result.label, null, 2)}
         position: 'sticky',
         top: '0',
         zIndex: 100,
+        overflowX: 'auto',
+        maxWidth: '100%',
       }}>
         <div style={{
           display: 'flex',

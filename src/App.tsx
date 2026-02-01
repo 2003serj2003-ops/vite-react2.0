@@ -732,6 +732,11 @@ export default function App() {
 
       const shopInfo = uzumShops.length > 0 ? `Магазин: ${uzumShops[0].name} (ID: ${uzumShops[0].id})` : '';
       showToast(`✓ Токен сохранён! ${shopInfo}`);
+      
+      // Отправляем событие для обновления статуса в Profile
+      window.dispatchEvent(new CustomEvent('uzum-integration-updated'));
+      console.log('[Uzum] ✓ Integration updated event dispatched');
+      
       setUzumLoading(false);
     } catch (error: any) {
       setUzumError(error.message || 'Ошибка сохранения');

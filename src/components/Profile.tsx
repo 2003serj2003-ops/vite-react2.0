@@ -87,6 +87,18 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
 
   useEffect(() => {
     loadStatus();
+    
+    // Слушаем события подключения интеграции
+    const handleIntegrationUpdate = () => {
+      console.log('[Profile] Integration updated, reloading status...');
+      loadStatus();
+    };
+    
+    window.addEventListener('uzum-integration-updated', handleIntegrationUpdate);
+    
+    return () => {
+      window.removeEventListener('uzum-integration-updated', handleIntegrationUpdate);
+    };
   }, []);
 
   async function loadStatus() {
