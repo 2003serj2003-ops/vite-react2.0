@@ -213,7 +213,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
       console.log('📊 Loading finance data for period:', datePeriod, 'days');
 
       // Load finance orders (revenue) - load ALL orders
-      let allFinanceOrders: any[] = [];
+      const allFinanceOrders: any[] = [];
           let page = 0;
           let hasMore = true;
 
@@ -260,7 +260,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           }, 0);
 
           // Load expenses
-          let allExpenses: any[] = [];
+          const allExpenses: any[] = [];
           page = 0;
           hasMore = true;
 

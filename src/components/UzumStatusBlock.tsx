@@ -51,7 +51,6 @@ export default function UzumStatusBlock({
 
   if (isConnected) {
     if (hasData) {
-      status = 'connected';
       statusColor = '#10b981';
       statusLabel = t.connected;
       statusIcon = '✅';

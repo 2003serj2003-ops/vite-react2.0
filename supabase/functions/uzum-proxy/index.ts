@@ -1,7 +1,7 @@
 // Supabase Edge Function для проксирования запросов к Uzum API
 // Обходит CORS блокировку браузера
 
-// @ts-ignore - Deno types
+// @ts-expect-error - Deno types
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
