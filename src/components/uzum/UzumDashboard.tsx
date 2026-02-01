@@ -37,6 +37,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
   const [refreshing, setRefreshing] = useState(false);
   const [showWeeklyChart, setShowWeeklyChart] = useState(false);
   const [datePeriod, setDatePeriod] = useState<7 | 10 | 30>(7);
+  const [expenseDatePeriod, setExpenseDatePeriod] = useState<1 | 7 | 14 | 30>(7);
 
   // Вычисляем диапазон дат на основе выбранного периода
   function getDateRange() {
@@ -87,8 +88,10 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
       finance: 'Финансы',
       viewAll: 'Смотреть все',
       weeklyChart: 'Недельный обзор заказов',
+      today: 'Сегодня',
       last7days: 'Последние 7 дней',
       last10days: 'Последние 10 дней',
+      last14days: 'Последние 14 дней',
       last30days: 'Последние 30 дней',
     },
     uz: {
@@ -124,7 +127,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
       finance: 'Moliya',
       viewAll: 'Barchasini korish',
       weeklyChart: 'Haftalik buyurtmalar sharhi',
+      today: 'Bugun',
       last7days: 'Oxirgi 7 kun',
+      last14days: 'Oxirgi 14 kun',
       last10days: 'Oxirgi 10 kun',
       last30days: 'Oxirgi 30 kun',
     },
@@ -688,42 +693,22 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               loadBasicData();
             }}
             style={{
-              padding: '8px 16px',
+              padding: '6px 12px',
               backgroundColor: '#10b981',
               color: 'white',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '6px',
               cursor: 'pointer',
-              fontSize: '13px',
+              fontSize: '12px',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '4px',
               whiteSpace: 'nowrap',
             }}
           >
             🔄
             <span style={{ display: window.innerWidth > 640 ? 'inline' : 'none' }}>Обновить</span>
-          </button>
-          <button
-            onClick={() => setShowWeeklyChart(true)}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#7c3aed',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            📊
-            <span style={{ display: window.innerWidth > 640 ? 'inline' : 'none' }}>{t.weeklyChart}</span>
           </button>
         </div>
       </div>
@@ -946,16 +931,91 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Expenses */}
           <div className="uzum-card">
-            <h2 style={{
-              fontSize: window.innerWidth > 640 ? '18px' : '16px',
-              fontWeight: 700,
-              color: '#111',
-              marginBottom: '6px',
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '12px',
+              flexWrap: 'wrap',
+              gap: '12px',
             }}>
-              {t.expenses}
-            </h2>
-            <div style={{ fontSize: '12px', color: '#666', marginBottom: '16px' }}>
-              {t.dateRange} {new Date(dateRange.startMs).toLocaleDateString('ru-RU')} по {new Date(dateRange.endMs).toLocaleDateString('ru-RU')}
+              <h2 style={{
+                fontSize: window.innerWidth > 640 ? '18px' : '16px',
+                fontWeight: 700,
+                color: '#111',
+                margin: 0,
+              }}>
+                {t.expenses}
+              </h2>
+              <div className="uzum-filters" style={{ 
+                padding: 0,
+                gap: '6px',
+              }}>
+                <button
+                  onClick={() => setExpenseDatePeriod(1)}
+                  className={`uzum-filter-chip ${expenseDatePeriod === 1 ? 'active' : ''}`}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: expenseDatePeriod === 1 ? '#7c3aed' : '#f3f4f6',
+                    color: expenseDatePeriod === 1 ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: expenseDatePeriod === 1 ? 600 : 400,
+                  }}
+                >
+                  {t.today}
+                </button>
+                <button
+                  onClick={() => setExpenseDatePeriod(7)}
+                  className={`uzum-filter-chip ${expenseDatePeriod === 7 ? 'active' : ''}`}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: expenseDatePeriod === 7 ? '#7c3aed' : '#f3f4f6',
+                    color: expenseDatePeriod === 7 ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: expenseDatePeriod === 7 ? 600 : 400,
+                  }}
+                >
+                  7
+                </button>
+                <button
+                  onClick={() => setExpenseDatePeriod(14)}
+                  className={`uzum-filter-chip ${expenseDatePeriod === 14 ? 'active' : ''}`}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: expenseDatePeriod === 14 ? '#7c3aed' : '#f3f4f6',
+                    color: expenseDatePeriod === 14 ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: expenseDatePeriod === 14 ? 600 : 400,
+                  }}
+                >
+                  14
+                </button>
+                <button
+                  onClick={() => setExpenseDatePeriod(30)}
+                  className={`uzum-filter-chip ${expenseDatePeriod === 30 ? 'active' : ''}`}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: expenseDatePeriod === 30 ? '#7c3aed' : '#f3f4f6',
+                    color: expenseDatePeriod === 30 ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: expenseDatePeriod === 30 ? 600 : 400,
+                  }}
+                >
+                  30
+                </button>
+              </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
@@ -1009,8 +1069,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
 
       {/* Quick Actions */}
       <div className="uzum-grid" style={{
-        gridTemplateColumns: window.innerWidth > 640 ? 'repeat(3, 1fr)' : '1fr',
-        gap: '12px',
+        gridTemplateColumns: window.innerWidth > 640 ? 'repeat(4, 1fr)' : 'repeat(2, 1fr)',
+        gap: '8px',
         padding: '0 16px 20px',
       }}>
         <button
