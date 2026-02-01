@@ -356,7 +356,11 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   }
 
   return (
-    <div className="list">
+    <div className="list" style={{
+      width: '100%',
+      maxWidth: '100%',
+      overflow: 'visible',
+    }}>
       {/* Status Filter */}
       <div style={{
         backgroundColor: 'white',
@@ -364,14 +368,19 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
         padding: '16px',
         marginBottom: '16px',
         overflowX: 'auto',
+        overflowY: 'visible',
         WebkitOverflowScrolling: 'touch',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
         border: '1px solid #e5e7eb',
+        position: 'relative',
+        zIndex: 10,
+        width: '100%',
       }}>
         <div style={{
           display: 'flex',
           gap: '8px',
           minWidth: 'max-content',
+          paddingBottom: '4px',
         }}>
           {statusOptions.map((option) => {
             const count = getStatusCount(option.value);
@@ -391,7 +400,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                   fontWeight: '600',
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
                   transition: 'all 0.2s',
