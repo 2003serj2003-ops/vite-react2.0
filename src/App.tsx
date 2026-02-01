@@ -10,6 +10,7 @@ import UzumOrders from "./components/uzum/UzumOrders";
 import UzumFinance from "./components/uzum/UzumFinance";
 import UzumInvoices from "./components/uzum/UzumInvoices";
 import UzumReports from "./components/uzum/UzumReports";
+import UzumOnboarding from "./components/UzumOnboarding";
 
 type Lang = "ru" | "uz";
 
@@ -356,6 +357,7 @@ export default function App() {
   const [showUzumPin, setShowUzumPin] = useState(false);
   const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports'>('dashboard');
   const [uzumDecryptedToken, setUzumDecryptedToken] = useState(""); // Для использования в API запросах
+  const [showUzumOnboarding, setShowUzumOnboarding] = useState(false);
   console.log('Uzum integration ID:', uzumIntegrationId); // используем переменную
 
   // Загрузка истории комиссий при входе пользователя
@@ -2986,14 +2988,39 @@ export default function App() {
                     <div style={{
                       fontSize: "18px",
                       fontWeight: 900,
-                      marginBottom: "16px",
+                      marginBottom: "8px",
                       color: "#6F00FF",
                       display: "flex",
                       alignItems: "center",
-                      gap: "8px"
+                      gap: "8px",
+                      justifyContent: "space-between",
                     }}>
-                      <span>🔑</span>
-                      Настройка интеграции
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span>🔑</span>
+                        Настройка интеграции
+                      </div>
+                      <button
+                        onClick={() => setShowUzumOnboarding(true)}
+                        style={{
+                          padding: "6px 12px",
+                          backgroundColor: "#7c3aed",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        ❓ Как подключить?
+                      </button>
+                    </div>
+                    <div style={{
+                      fontSize: "13px",
+                      color: "#666",
+                      marginBottom: "16px",
+                    }}>
+                      Нужна помощь? Нажмите "Как подключить?" для пошаговой инструкции
                     </div>
                     
                     {/* Token Input */}
@@ -4935,6 +4962,14 @@ export default function App() {
 
             <BottomBar userName={userName} userPhoto="" onSignOut={adminSignOut} />
           </div>
+        )}
+
+        {/* Uzum Onboarding Modal */}
+        {showUzumOnboarding && (
+          <UzumOnboarding
+            lang={lang}
+            onComplete={() => setShowUzumOnboarding(false)}
+          />
         )}
 
         {/* ВРЕМЕННО ОТКЛЮЧЕНО - раскомментировать когда доработаешь

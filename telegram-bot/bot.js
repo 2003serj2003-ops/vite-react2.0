@@ -6,6 +6,7 @@
  */
 
 const TelegramBot = require('node-telegram-bot-api');
+const { setupDailyReports } = require('./daily-reports');
 
 // Токен бота из переменных окружения
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -22,6 +23,10 @@ const MINI_APP_URL = process.env.MINI_APP_URL || 'https://your-app.vercel.app';
 const bot = new TelegramBot(token, { polling: true });
 
 console.log('🤖 Telegram бот запущен...');
+
+// Настройка ежедневных отчетов
+setupDailyReports();
+console.log('📊 Система ежедневных отчетов активирована');
 
 // Команда /start
 bot.onText(/\/start/, async (msg) => {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getFbsOrders } from '../../lib/uzum-api';
+import CoolLoader from '../CoolLoader';
 
 interface UzumWeeklyChartProps {
   lang: 'ru' | 'uz';
@@ -404,9 +405,7 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px', color: '#666' }}>
-            Загрузка...
-          </div>
+          <CoolLoader text="Загрузка данных..." />
         ) : (
           <>
             {/* Chart section */}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getShops, getShopInvoices, getShopInvoiceProducts, getShopReturns, getShopReturnDetails } from '../../lib/uzum-api';
+import CoolLoader from '../CoolLoader';
 
 interface UzumInvoicesProps {
   lang: 'ru' | 'uz';
@@ -172,8 +173,9 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
   }
 
   function formatDate(dateString: string | number): string {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
+    if (!dateString) return 'Нет данных';
+    const date = typeof dateString === 'number' ? new Date(dateString) : new Date(dateString);
+    if (isNaN(date.getTime())) return 'Неверная дата';
     return date.toLocaleDateString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
@@ -186,33 +188,7 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
   }
 
   if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '400px',
-        gap: '16px',
-      }}>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          border: '4px solid #f3f4f6',
-          borderTopColor: '#22c55e',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }} />
-        <div style={{ fontSize: '16px', color: '#6b7280' }}>
-          {t.loading}
-        </div>
-        <style>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
+    return <CoolLoader text={t.loading} />;
   }
 
   const currentData = activeTab === 'invoices' ? invoices : returns;
@@ -222,6 +198,44 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
       width: '100%',
       maxWidth: '100%',
     }}>
+      {/* Header with Refresh */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '20px',
+      }}>
+        <h1 style={{
+          fontSize: '24px',
+          fontWeight: 700,
+          color: '#111',
+          margin: 0,
+        }}>
+          {t.title}
+        </h1>
+        <button
+          onClick={() => {
+            setLoading(true);
+            loadData();
+          }}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          🔄 Обновить
+        </button>
+      </div>
+
       {/* Tabs */}
       <div style={{
         backgroundColor: 'white',
@@ -349,8 +363,8 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
                         <div style={{
                           display: 'inline-block',
                           padding: '6px 12px',
-                          backgroundColor: '#f0fdf4',
-                          color: '#22c55e',
+                          backgroundColor: '#10b981',
+                          color: 'white',
                           borderRadius: '6px',
                           fontSize: '13px',
                           fontWeight: '600',

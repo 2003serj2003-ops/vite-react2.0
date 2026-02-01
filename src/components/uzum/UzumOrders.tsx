@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getShops, getFbsOrders, getFbsOrder, confirmFbsOrder, cancelFbsOrder, getFbsOrderLabel } from '../../lib/uzum-api';
+import CoolLoader from '../CoolLoader';
 
 interface UzumOrdersProps {
   lang: 'ru' | 'uz';
@@ -368,33 +369,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   }
 
   if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '400px',
-        gap: '16px',
-      }}>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          border: '4px solid #f3f4f6',
-          borderTopColor: '#22c55e',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }} />
-        <div style={{ fontSize: '16px', color: '#6b7280' }}>
-          {t.loading}
-        </div>
-        <style>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
+    return <CoolLoader text={t.loading} />;
   }
 
   return (
@@ -406,6 +381,48 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
       display: 'flex',
       flexDirection: 'column',
     }}>
+      {/* Header with Refresh Button */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '20px',
+        padding: '20px',
+        backgroundColor: 'white',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+      }}>
+        <h1 style={{
+          fontSize: '24px',
+          fontWeight: 700,
+          color: '#111',
+          margin: 0,
+        }}>
+          {t.title}
+        </h1>
+        <button
+          onClick={() => {
+            setLoading(true);
+            loadOrders();
+          }}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          🔄 Обновить
+        </button>
+      </div>
+
       {/* Status Filter - Fixed and Always Visible */}
       <div style={{
         backgroundColor: 'white',

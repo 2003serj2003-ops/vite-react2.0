@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getShops, getProducts, getFbsOrdersCount, getFinanceOrders, getFinanceExpenses, getFbsSkuStocks } from '../../lib/uzum-api';
 import UzumWeeklyChart from './UzumWeeklyChart';
+import CoolLoader from '../CoolLoader';
 
 interface UzumDashboardProps {
   lang: 'ru' | 'uz';
@@ -28,9 +29,6 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
     commission: 0,
     logistics: 0,
     fines: 0,
-    // Доходы (из заказов)
-    totalCommission: 0,
-    totalLogistics: 0,
   });
   const [loading, setLoading] = useState(true);
   const [showWeeklyChart, setShowWeeklyChart] = useState(false);
@@ -386,19 +384,6 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             return sum + ((expense.paymentPrice || 0) * (expense.amount || 1));
           }, 0);
 
-          // Calculate income breakdown from orders (commission + logistics charged in orders)
-          const incomeBreakdown = {
-            totalCommission: 0,
-            totalLogistics: 0,
-          };
-
-          filteredOrders.forEach(order => {
-            if (order.status !== 'CANCELED' && !order.cancelled) {
-              incomeBreakdown.totalCommission += (order.commission || 0) * (order.amount || 1);
-              incomeBreakdown.totalLogistics += (order.logisticDeliveryFee || 0) * (order.amount || 1);
-            }
-          });
-
           // Update stats with finance data
           setStats(prev => ({
             ...prev,
@@ -407,11 +392,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             profit: totalProfit,
           }));
 
-          // Update finance breakdown
-          setFinanceBreakdown({
-            ...expensesByCategory,
-            ...incomeBreakdown,
-          });
+          // Update finance breakdown - only expenses
+          setFinanceBreakdown(expensesByCategory);
 
           console.log('📊 Finance summary:', { 
             period: `Last ${datePeriod} days`,
@@ -423,7 +405,6 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             expensesInPeriod: filteredExpenses.length,
             breakdown: {
               expenses: expensesByCategory,
-              income: incomeBreakdown,
             },
             sampleOrderDate: filteredOrders[0]?.date || 'no orders',
             sampleExpenseDate: filteredExpenses[0]?.dateCreated || 'no expenses'
@@ -434,18 +415,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
   }
 
   if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '400px',
-        fontSize: '16px',
-        color: '#6b7280',
-      }}>
-        🔄 {t.loading}
-      </div>
-    );
+    return <CoolLoader text={t.loading} />;
   }
 
   const formatNumber = (num: number) => {
@@ -480,24 +450,47 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             {t.title}
           </h1>
         </div>
-        <button
-          onClick={() => setShowWeeklyChart(true)}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#7c3aed',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          📊 {t.weeklyChart}
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={() => {
+              setLoading(true);
+              loadBasicData();
+            }}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            🔄 Обновить
+          </button>
+          <button
+            onClick={() => setShowWeeklyChart(true)}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#7c3aed',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            📊 {t.weeklyChart}
+          </button>
+        </div>
       </div>
 
       {/* Main Grid */}
@@ -807,73 +800,6 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                       width: '100%',
                       backgroundColor: item.color,
                     }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Income */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#111',
-              marginBottom: '8px',
-            }}>
-              {t.income}
-            </h2>
-            <div style={{ fontSize: '13px', color: '#666', marginBottom: '20px' }}>
-              {t.dateRange} {new Date(dateRange.startMs).toLocaleDateString('ru-RU')} по {new Date(dateRange.endMs).toLocaleDateString('ru-RU')}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {[
-                { icon: '💰', label: t.commission, value: financeBreakdown.totalCommission, color: '#8b5cf6' },
-                { icon: '🚚', label: t.logistics, value: financeBreakdown.totalLogistics, color: '#3b82f6' },
-              ].map((item, i) => (
-                <div key={i}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    marginBottom: '8px',
-                  }}>
-                    <span style={{ fontSize: '20px' }}>{item.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#111' }}>
-                        {formatNumber(item.value)}
-                      </div>
-                    </div>
-                    <div style={{
-                      fontSize: '14px',
-                      color: '#666',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}>
-                      100% <span style={{ color: '#10b981' }}>↑</span>
-                    </div>
-                  </div>
-                  <div style={{
-                    height: '4px',
-                    backgroundColor: '#f3f4f6',
-                    borderRadius: '2px',
-                    overflow: 'hidden',
-                  }}>
-                    <div style={{
-                      height: '100%',
-                      width: '100%',
-                      backgroundColor: item.color,
-                      borderRadius: '2px',
-                    }}></div>
                   </div>
                 </div>
               ))}
