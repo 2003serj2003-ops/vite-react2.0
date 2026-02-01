@@ -73,8 +73,21 @@ export function formatDate(dateInput: string | number | Date, includeTime: boole
 
 /**
  * Calculate financial metrics from orders data
+ * Updated to handle real Uzum API response structure
  */
 export function calculateFinancials(orders: any[]): FinancialData {
+  if (!orders || orders.length === 0) {
+    return {
+      revenue_gross: 0,
+      commission: 0,
+      logistics: 0,
+      refunds: 0,
+      payouts: 0,
+      balance: 0,
+      revenue_net: 0,
+    };
+  }
+
   let revenue_gross = 0;
   let commission = 0;
   let logistics = 0;
@@ -82,32 +95,56 @@ export function calculateFinancials(orders: any[]): FinancialData {
   let payouts = 0;
   
   orders.forEach(order => {
-    // Revenue (gross) - total sell price
-    const sellPrice = order.sellPrice || order.amount || 0;
-    const quantity = order.quantity || order.amount || 1;
-    revenue_gross += sellPrice * quantity;
+    // Uzum API orderItems fields:
+    // - totalSum: общая сумма заказа (цена × количество)
+    // - commission: комиссия маркетплейса
+    // - logistics / deliverySum: стоимость доставки
+    // - status: статус заказа
+    // - toPay / sellerProfit: к выплате продавцу
     
-    // Commission
-    commission += order.commission || order.fee || 0;
+    // Revenue (gross) - используем totalSum или вычисляем из цены и количества
+    const totalSum = order.totalSum || 0;
+    const sellPrice = order.sellPrice || order.price || order.amount || 0;
+    const quantity = order.quantity || order.cnt || 1;
     
-    // Logistics
-    logistics += order.logistics || order.deliveryFee || 0;
+    // Используем totalSum если есть, иначе вычисляем
+    const orderRevenue = totalSum > 0 ? totalSum : (sellPrice * quantity);
+    revenue_gross += orderRevenue;
+    
+    // Commission - комиссия маркетплейса
+    commission += order.commission || order.fee || order.commissionSum || 0;
+    
+    // Logistics - стоимость доставки
+    logistics += order.logistics || order.deliveryFee || order.deliverySum || 0;
     
     // Refunds (if status is 'refunded' or 'cancelled')
     const status = (order.status || '').toLowerCase();
-    if (status === 'refunded' || status === 'cancelled' || status === 'returned') {
-      refunds += sellPrice * quantity;
+    if (status === 'refunded' || status === 'cancelled' || status === 'returned' || status === 'cancel') {
+      refunds += orderRevenue;
     }
     
-    // Payouts (seller profit)
-    payouts += order.sellerProfit || order.toPay || 0;
+    // Payouts (seller profit) - к выплате продавцу
+    const sellerProfit = order.sellerProfit || order.toPay || order.toPaySum || 0;
+    payouts += sellerProfit;
   });
   
-  // Calculate net revenue
+  // Calculate net revenue: валовая выручка - комиссия - логистика - возвраты
   const revenue_net = revenue_gross - commission - logistics - refunds;
   
   // Balance is typically what's left to be paid out
   const balance = revenue_net - payouts;
+  
+  console.log('💰 [calculateFinancials] Calculated:', {
+    orders_count: orders.length,
+    revenue_gross,
+    commission,
+    logistics,
+    refunds,
+    payouts,
+    revenue_net,
+    balance,
+    sample_order: orders[0]
+  });
   
   return {
     revenue_gross,
