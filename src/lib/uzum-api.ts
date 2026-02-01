@@ -72,8 +72,11 @@ async function apiRequest<T>(
 
           // Добавляем body только если он есть и метод не GET
           if (options.body && options.method && options.method !== 'GET') {
-            // Отправляем body как строку JSON, чтобы прокси мог его передать как есть
-            proxyBody.body = options.body;
+            // Если body уже строка - используем как есть
+            // Если объект - сериализуем в строку
+            proxyBody.body = typeof options.body === 'string' 
+              ? options.body 
+              : JSON.stringify(options.body);
           }
 
           if (attempt === 0) {
@@ -611,26 +614,90 @@ export async function getFbsSkuStocks(
  */
 export async function updateFbsSkuStocks(
   token: string,
-  stocks: Array<{ sku: string | number; stock: number }>
+  stocks: Array<{ sku: string | number; stock: number }>,
+  shopId?: number | string
 ): Promise<{
   success: boolean;
   error?: string;
+  updatedRecords?: number;
+  totalRecords?: number;
 }> {
-  // API требует массив объектов с полем skuId (не sku) и amount
-  // Прямой массив, без обёртки {stocks: [...]}
-  const formattedStocks = stocks.map(item => ({
-    skuId: Number(item.sku),
-    amount: item.stock
-  }));
+  // Если shopId не передан, пытаемся получить из первого продукта
+  // Для полного формата API требует:
+  // {skuAmountList: [{skuId, skuTitle, productTitle, barcode, amount, fbsLinked, dbsLinked}]}
+  
+  // Сначала получаем полные данные о продуктах
+  if (!shopId) {
+    console.warn('📦 [updateFbsSkuStocks] shopId not provided, using default 96273');
+    shopId = 96273;
+  }
 
-  console.log('📦 [updateFbsSkuStocks] Sending:', JSON.stringify(formattedStocks, null, 2));
+  const productsResult = await getProducts(token, shopId);
+  
+  if (!productsResult.success || !productsResult.products) {
+    return { 
+      success: false, 
+      error: productsResult.error || 'Failed to fetch products data' 
+    };
+  }
+
+  // Создаём карту SKU -> полные данные
+  const skuMap = new Map<number, any>();
+  
+  for (const product of productsResult.products) {
+    if (product.skuList && Array.isArray(product.skuList)) {
+      for (const sku of product.skuList) {
+        if (sku.skuId) {
+          skuMap.set(Number(sku.skuId), {
+            skuId: Number(sku.skuId),
+            skuTitle: sku.skuTitle || sku.title || '',
+            productTitle: sku.productTitle || product.title || '',
+            barcode: String(sku.barcode || ''),
+            fbsLinked: true,  // всегда true для FBS товаров
+            dbsLinked: false  // всегда false для FBS товаров
+          });
+        }
+      }
+    }
+  }
+
+  console.log('📦 [updateFbsSkuStocks] Found SKUs:', skuMap.size);
+
+  // Формируем массив с полными данными
+  const skuAmountList = [];
+  
+  for (const item of stocks) {
+    const skuId = Number(item.sku);
+    const skuData = skuMap.get(skuId);
+    
+    if (!skuData) {
+      console.warn(`📦 [updateFbsSkuStocks] SKU ${skuId} not found in products`);
+      continue;
+    }
+    
+    skuAmountList.push({
+      ...skuData,
+      amount: item.stock
+    });
+  }
+
+  if (skuAmountList.length === 0) {
+    return { 
+      success: false, 
+      error: 'No valid SKUs found to update' 
+    };
+  }
+
+  const requestBody = { skuAmountList };
+
+  console.log('📦 [updateFbsSkuStocks] Sending:', JSON.stringify(requestBody, null, 2));
 
   const result = await apiRequest<any>(
     '/v2/fbs/sku/stocks',
     token,
     {
       method: 'POST',
-      body: JSON.stringify(formattedStocks)  // Прямой массив, без {stocks: ...}
+      body: JSON.stringify(requestBody)
     }
   );
 
@@ -640,7 +707,11 @@ export async function updateFbsSkuStocks(
     return { success: false, error: result.error };
   }
 
-  return { success: true };
+  return { 
+    success: true,
+    updatedRecords: result.data?.payload?.updatedRecords,
+    totalRecords: result.data?.payload?.totalRecords
+  };
 }
 
 // ============================================================================

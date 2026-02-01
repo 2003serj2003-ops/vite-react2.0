@@ -72,6 +72,7 @@ serve(async (req: Request) => {
       // Иначе сериализуем в JSON
       requestOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
       console.log('[Uzum Proxy] Added body to request:', typeof body);
+      console.log('[Uzum Proxy] Actual body being sent:', requestOptions.body);
     }
 
     console.log(`[Uzum Proxy] ${method} ${uzumApiUrl}`);
@@ -83,6 +84,9 @@ serve(async (req: Request) => {
 
     const response = await fetch(uzumApiUrl, requestOptions);
     const data = await response.text();
+    
+    console.log(`[Uzum Proxy] Response status: ${response.status}`);
+    console.log(`[Uzum Proxy] Response body (first 500 chars):`, data.substring(0, 500));
     
     let jsonData;
     try {

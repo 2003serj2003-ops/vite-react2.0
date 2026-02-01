@@ -16,11 +16,12 @@ interface StockItem {
 
 interface UzumStocksProps {
   token: string;
+  shopId?: number | string;
   onNavigate: (view: string) => void;
   lang?: 'ru' | 'uz';
 }
 
-export default function UzumStocks({ token, onNavigate, lang = 'ru' }: UzumStocksProps) {
+export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: UzumStocksProps) {
   const [stocks, setStocks] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -116,10 +117,13 @@ export default function UzumStocks({ token, onNavigate, lang = 'ru' }: UzumStock
         stock: stock
       }));
 
-      const result = await updateFbsSkuStocks(token, updates);
+      const result = await updateFbsSkuStocks(token, updates, shopId);
       
       if (result.success) {
-        alert(t.updated);
+        const message = result.updatedRecords !== undefined 
+          ? `${t.updated} (обновлено: ${result.updatedRecords} из ${result.totalRecords})`
+          : t.updated;
+        alert(message);
         setEditedStocks({});
         await loadStocks();
       } else {

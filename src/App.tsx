@@ -2633,6 +2633,7 @@ export default function App() {
                     <UzumStocks 
                       lang={lang} 
                       token={uzumDecryptedToken}
+                      shopId={uzumSellerInfo?.shopId}
                       onNavigate={(page) => setUzumCurrentPage(page as any)}
                     />
                   )}
