@@ -9,6 +9,7 @@ import UzumProducts from "./components/uzum/UzumProducts";
 import UzumOrders from "./components/uzum/UzumOrders";
 import UzumFinance from "./components/uzum/UzumFinance";
 import UzumInvoices from "./components/uzum/UzumInvoices";
+import UzumReports from "./components/uzum/UzumReports";
 
 type Lang = "ru" | "uz";
 
@@ -353,7 +354,7 @@ export default function App() {
   const [uzumIntegrationId, setUzumIntegrationId] = useState<string | null>(null);
   const [showUzumToken, setShowUzumToken] = useState(false);
   const [showUzumPin, setShowUzumPin] = useState(false);
-  const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance' | 'invoices'>('dashboard');
+  const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports'>('dashboard');
   const [uzumDecryptedToken, setUzumDecryptedToken] = useState(""); // Для использования в API запросах
   console.log('Uzum integration ID:', uzumIntegrationId); // используем переменную
 
@@ -2837,6 +2838,23 @@ export default function App() {
                   >
                     📄 {lang === 'ru' ? 'Накладные' : 'Hisob-fakturalar'}
                   </button>
+                  <button
+                    onClick={() => setUzumCurrentPage('reports')}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: uzumCurrentPage === 'reports' ? '#ef4444' : '#f3f4f6',
+                      color: uzumCurrentPage === 'reports' ? 'white' : '#374151',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    📈 {lang === 'ru' ? 'Отчеты' : 'Hisobotlar'}
+                  </button>
                 </div>
 
                 {/* Page Content */}
@@ -2873,6 +2891,13 @@ export default function App() {
                     <UzumInvoices 
                       lang={lang} 
                       token={uzumDecryptedToken}
+                    />
+                  )}
+                  {uzumCurrentPage === 'reports' && (
+                    <UzumReports 
+                      lang={lang} 
+                      token={uzumDecryptedToken}
+                      onNavigateBack={() => setUzumCurrentPage('dashboard')}
                     />
                   )}
                 </div>
