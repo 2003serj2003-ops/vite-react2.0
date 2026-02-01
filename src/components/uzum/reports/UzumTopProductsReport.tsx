@@ -254,7 +254,7 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
           marginTop: '20px',
         }}>
           <div>
-            <label style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px', display: 'block' }}>
+            <label style={{ fontSize: '14px', color: '#1f2937', marginBottom: '8px', display: 'block' }}>
               {t.dateRange}
             </label>
             <input
@@ -271,7 +271,7 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
             />
           </div>
           <div>
-            <label style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px', display: 'block' }}>
+            <label style={{ fontSize: '14px', color: '#1f2937', marginBottom: '8px', display: 'block' }}>
               &nbsp;
             </label>
             <input
@@ -288,7 +288,7 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
             />
           </div>
           <div>
-            <label style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px', display: 'block' }}>
+            <label style={{ fontSize: '14px', color: '#1f2937', marginBottom: '8px', display: 'block' }}>
               {t.shop}
             </label>
             <select
@@ -308,7 +308,7 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
             </select>
           </div>
           <div>
-            <label style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px', display: 'block' }}>
+            <label style={{ fontSize: '14px', color: '#1f2937', marginBottom: '8px', display: 'block' }}>
               {t.showTop}
             </label>
             <select
@@ -391,10 +391,10 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
 
               {/* Info */}
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', color: '#1f2937' }}>
                   {product.name}
                 </div>
-                <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '12px' }}>
+                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
                   SKU: {product.sku}
                 </div>
                 <div style={{
@@ -403,26 +403,26 @@ export default function UzumTopProductsReport({ lang, token }: UzumTopProductsRe
                   gap: '12px',
                 }}>
                   <div>
-                    <div style={{ fontSize: '12px', color: '#6b7280' }}>{t.sold}</div>
+                    <div style={{ fontSize: '12px', color: '#1f2937' }}>{t.sold}</div>
                     <div style={{ fontSize: '20px', fontWeight: '700', color: '#22c55e' }}>
                       {product.sold}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '12px', color: '#6b7280' }}>{t.revenue}</div>
-                    <div style={{ fontSize: '16px', fontWeight: '600' }}>
+                    <div style={{ fontSize: '12px', color: '#1f2937' }}>{t.revenue}</div>
+                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>
                       {formatPrice(product.revenue)}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '12px', color: '#6b7280' }}>{t.profit}</div>
+                    <div style={{ fontSize: '12px', color: '#1f2937' }}>{t.profit}</div>
                     <div style={{ fontSize: '16px', fontWeight: '600', color: '#22c55e' }}>
                       {formatPrice(product.profit)}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '12px', color: '#6b7280' }}>{t.avgPrice}</div>
-                    <div style={{ fontSize: '16px', fontWeight: '600' }}>
+                    <div style={{ fontSize: '12px', color: '#1f2937' }}>{t.avgPrice}</div>
+                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>
                       {formatPrice(product.avgPrice)}
                     </div>
                   </div>

@@ -228,7 +228,7 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
           flexWrap: 'wrap',
           gap: '16px',
         }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0, color: '#1f2937' }}>
             📦 {t.title}
           </h2>
           <button
@@ -259,7 +259,7 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
           marginTop: '20px',
         }}>
           <div>
-            <label style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px', display: 'block' }}>
+            <label style={{ fontSize: '14px', color: '#1f2937', marginBottom: '8px', display: 'block' }}>
               {t.search}
             </label>
             <input
@@ -277,7 +277,7 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
             />
           </div>
           <div>
-            <label style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px', display: 'block' }}>
+            <label style={{ fontSize: '14px', color: '#1f2937', marginBottom: '8px', display: 'block' }}>
               {t.shop}
             </label>
             <select
@@ -310,31 +310,31 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1000px' }}>
           <thead>
             <tr style={{ backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
-              <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>
+              <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
                 {t.product}
               </th>
-              <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>
+              <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
                 {t.barcode}
               </th>
-              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>
+              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
                 {t.cost}
               </th>
-              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>
+              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
                 {t.inStock}
               </th>
-              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>
+              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
                 {t.costFBO}
               </th>
-              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>
+              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
                 {t.fboQty}
               </th>
-              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>
+              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
                 {t.costFBS}
               </th>
-              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>
+              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
                 {t.fbsQty}
               </th>
-              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>
+              <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
                 {t.costFBSFBO}
               </th>
             </tr>
@@ -355,28 +355,28 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
                         {row.image && (
                           <img src={row.image} alt="" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
                         )}
-                        <div style={{ fontWeight: '600', fontSize: '14px' }}>{row.name}</div>
+                        <div style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937' }}>{row.name}</div>
                       </div>
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px', color: '#6b7280' }}>{row.barcode}</td>
-                    <td style={{ padding: '12px', textAlign: 'right' }}>{row.cost.toLocaleString()}</td>
-                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>{row.inStock}</td>
-                    <td style={{ padding: '12px', textAlign: 'right' }}>{row.costFBO.toLocaleString()}</td>
+                    <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px', color: '#1f2937' }}>{row.barcode}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{row.cost.toLocaleString()}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>{row.inStock}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{row.costFBO.toLocaleString()}</td>
                     <td style={{ padding: '12px', textAlign: 'right', color: '#3b82f6' }}>{row.fboQty}</td>
-                    <td style={{ padding: '12px', textAlign: 'right' }}>{row.costFBS.toLocaleString()}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{row.costFBS.toLocaleString()}</td>
                     <td style={{ padding: '12px', textAlign: 'right', color: '#22c55e' }}>{row.fbsQty}</td>
-                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>{row.costFBSFBO.toLocaleString()}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>{row.costFBSFBO.toLocaleString()}</td>
                   </tr>
                 ))}
                 {/* Totals */}
                 <tr style={{ backgroundColor: '#f9fafb', fontWeight: '700', borderTop: '2px solid #e5e7eb' }}>
-                  <td colSpan={3} style={{ padding: '12px' }}>{t.total}</td>
-                  <td style={{ padding: '12px', textAlign: 'right' }}>{totals.inStock}</td>
-                  <td style={{ padding: '12px', textAlign: 'right' }}>{totals.costFBO.toLocaleString()}</td>
+                  <td colSpan={3} style={{ padding: '12px', color: '#1f2937' }}>{t.total}</td>
+                  <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{totals.inStock}</td>
+                  <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{totals.costFBO.toLocaleString()}</td>
                   <td style={{ padding: '12px', textAlign: 'right', color: '#3b82f6' }}>{totals.fboQty}</td>
-                  <td style={{ padding: '12px', textAlign: 'right' }}>{totals.costFBS.toLocaleString()}</td>
+                  <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{totals.costFBS.toLocaleString()}</td>
                   <td style={{ padding: '12px', textAlign: 'right', color: '#22c55e' }}>{totals.fbsQty}</td>
-                  <td style={{ padding: '12px', textAlign: 'right' }}>{totals.costFBSFBO.toLocaleString()}</td>
+                  <td style={{ padding: '12px', textAlign: 'right', color: '#1f2937' }}>{totals.costFBSFBO.toLocaleString()}</td>
                 </tr>
               </>
             )}

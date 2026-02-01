@@ -212,7 +212,7 @@ export default function UzumSimpleReport({ lang, token, type }: SimpleReportProp
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
         }} />
-        <div style={{ fontSize: '16px', color: '#6b7280' }}>
+        <div style={{ fontSize: '16px', color: '#1f2937' }}>
           {t.loading}
         </div>
       </div>
@@ -243,7 +243,7 @@ export default function UzumSimpleReport({ lang, token, type }: SimpleReportProp
         </div>
 
         <div>
-          <label style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px', display: 'block' }}>
+          <label style={{ fontSize: '14px', color: '#1f2937', marginBottom: '8px', display: 'block' }}>
             {t.shop}
           </label>
           <select
@@ -276,7 +276,7 @@ export default function UzumSimpleReport({ lang, token, type }: SimpleReportProp
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
           }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>{config.icon}</div>
-            <div style={{ fontSize: '18px', fontWeight: '600', color: '#6b7280' }}>
+            <div style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937' }}>
               {t.noData}
             </div>
           </div>
@@ -307,18 +307,18 @@ export default function UzumSimpleReport({ lang, token, type }: SimpleReportProp
                 />
               )}
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', color: '#1f2937' }}>
                   {product.name}
                 </div>
-                <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px' }}>
                   SKU: {product.sku}
                 </div>
-                <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                <div style={{ fontSize: '14px', color: '#1f2937' }}>
                   {product.details}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
+                <div style={{ fontSize: '12px', color: '#1f2937', marginBottom: '4px' }}>
                   {config.valueLabel[lang]}
                 </div>
                 <div style={{ fontSize: '24px', fontWeight: '700', color: '#ef4444' }}>
