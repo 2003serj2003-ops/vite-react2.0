@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getFbsSkuStocks, updateFbsSkuStocks } from '../../lib/uzum-api';
+import { getFbsSkuStocks, updateFbsSkuStocks, getProducts } from '../../lib/uzum-api';
 
 interface StockItem {
   skuId: number;
@@ -12,6 +12,8 @@ interface StockItem {
   fbsLinked: boolean;
   dbsLinked: boolean;
   sellerSkuCode?: string;
+  image?: string;
+  previewImage?: string;
 }
 
 interface UzumStocksProps {
@@ -81,9 +83,37 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
   async function loadStocks() {
     setLoading(true);
     try {
+      // Получаем остатки
       const result = await getFbsSkuStocks(token);
       if (result.success && result.stocks) {
-        setStocks(result.stocks);
+        let enrichedStocks = result.stocks;
+        
+        // Если есть shopId, получаем данные продуктов для изображений
+        if (shopId) {
+          const productsResult = await getProducts(token, shopId);
+          if (productsResult.success && productsResult.products) {
+            // Создаем карту SKU -> изображение
+            const skuImageMap = new Map<number, string>();
+            
+            for (const product of productsResult.products) {
+              if (product.skuList && Array.isArray(product.skuList)) {
+                for (const sku of product.skuList) {
+                  if (sku.skuId && (sku.previewImage || product.image)) {
+                    skuImageMap.set(Number(sku.skuId), sku.previewImage || product.image);
+                  }
+                }
+              }
+            }
+            
+            // Обогащаем данные остатков изображениями
+            enrichedStocks = result.stocks.map(stock => ({
+              ...stock,
+              image: skuImageMap.get(Number(stock.skuId)) || stock.image,
+            }));
+          }
+        }
+        
+        setStocks(enrichedStocks);
       }
     } catch (error) {
       console.error('Error loading stocks:', error);
@@ -282,16 +312,34 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
                   flexDirection: window.innerWidth > 640 ? 'row' : 'column',
                   gap: '16px',
                 }}>
+                  {/* Product Image */}
+                  {(item.image || item.previewImage) && (
+                    <div style={{
+                      width: window.innerWidth > 640 ? '80px' : '100%',
+                      height: '80px',
+                      flexShrink: 0,
+                    }}>
+                      <img
+                        src={item.image || item.previewImage}
+                        alt={item.productTitle}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                        }}
+                      />
+                    </div>
+                  )}
+                  
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: '14px',
+                      fontSize: '15px',
                       fontWeight: 600,
                       color: '#111',
-                      marginBottom: '4px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
+                      marginBottom: '6px',
+                      lineHeight: '1.4',
                     }}>
                       {item.productTitle}
                     </div>
@@ -299,9 +347,7 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
                       fontSize: '13px',
                       color: '#666',
                       marginBottom: '8px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
+                      lineHeight: '1.4',
                     }}>
                       {item.skuTitle}
                     </div>
@@ -316,8 +362,9 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
                         backgroundColor: '#f3f4f6',
                         borderRadius: '4px',
                         color: '#666',
+                        fontFamily: 'monospace',
                       }}>
-                        SKU: {item.skuId}
+                        ID: {item.skuId}
                       </span>
                       {item.barcode && (
                         <span style={{
@@ -325,6 +372,7 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
                           backgroundColor: '#f3f4f6',
                           borderRadius: '4px',
                           color: '#666',
+                          fontFamily: 'monospace',
                         }}>
                           {item.barcode}
                         </span>
