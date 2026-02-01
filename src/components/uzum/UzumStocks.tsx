@@ -532,6 +532,20 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                       }}>
                         SKU: {item.skuId}
                       </span>
+                      {item.barcode && (
+                        <span style={{
+                          padding: '4px 10px',
+                          backgroundColor: '#e0e7ff',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          color: '#4338ca',
+                          fontFamily: 'monospace',
+                          border: '1px solid #c7d2fe',
+                        }}>
+                          📊 {item.barcode}
+                        </span>
+                      )}
                       {item.fbsLinked && (
                         <span style={{
                           padding: '4px 10px',
