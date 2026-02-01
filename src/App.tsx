@@ -2737,45 +2737,6 @@ export default function App() {
 
         {route.name === "uzum" && (
           <div className="page">
-            <TopBar
-              t={t}
-              lang={lang}
-              setLang={setLang}
-              showSearch={false}
-              search={search}
-              setSearch={setSearch}
-              onBack={uzumCurrentPage !== 'dashboard' ? () => setUzumCurrentPage('dashboard') : goBack}
-              onHome={goHome}
-              rightSlot={
-                uzumConnected ? (
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <button
-                      className="btnGhost"
-                      onClick={goHome}
-                      style={{
-                        fontSize: '12px',
-                        padding: '6px 12px',
-                        color: '#7c3aed',
-                      }}
-                    >
-                      🏠 {lang === 'ru' ? 'В приложение' : 'Ilovaga'}
-                    </button>
-                    <button
-                      className="btnGhost"
-                      onClick={handleDisconnect}
-                      style={{
-                        fontSize: '12px',
-                        padding: '6px 12px',
-                        color: '#ef4444',
-                      }}
-                    >
-                      🔌 {lang === 'ru' ? 'Отключить' : 'Uzish'}
-                    </button>
-                  </div>
-                ) : null
-              }
-            />
-            
             {/* Connected: Show Navigation and Pages */}
             {uzumConnected && (
               <>
