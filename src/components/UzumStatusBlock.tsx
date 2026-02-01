@@ -68,43 +68,85 @@ export default function UzumStatusBlock({
 
   return (
     <div style={{
-      padding: '16px',
-      background: `linear-gradient(135deg, ${statusColor}15, ${statusColor}08)`,
-      border: `2px solid ${statusColor}40`,
-      borderRadius: '16px',
-      marginBottom: '16px',
+      position: 'relative',
+      padding: '24px',
+      background: isConnected && hasData 
+        ? 'linear-gradient(135deg, #10b98110 0%, #34d39920 100%)'
+        : isConnected 
+        ? 'linear-gradient(135deg, #f59e0b10 0%, #fbbf2420 100%)'
+        : 'linear-gradient(135deg, #ef444410 0%, #f8717120 100%)',
+      border: `2px solid ${statusColor}30`,
+      borderRadius: '20px',
+      marginBottom: '20px',
+      overflow: 'hidden',
+      transition: 'all 0.3s ease',
+      boxShadow: isConnected && hasData 
+        ? '0 8px 24px rgba(16, 185, 129, 0.12)'
+        : '0 4px 16px rgba(0, 0, 0, 0.08)',
     }}>
+      {/* Decorative background pattern */}
+      <div style={{
+        position: 'absolute',
+        top: '-50px',
+        right: '-50px',
+        width: '150px',
+        height: '150px',
+        borderRadius: '50%',
+        background: `${statusColor}15`,
+        filter: 'blur(40px)',
+        pointerEvents: 'none',
+      }} />
+
       {/* Заголовок с иконкой статуса */}
       <div style={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'space-between',
-        marginBottom: '12px',
+        marginBottom: '16px',
+        position: 'relative',
+        zIndex: 1,
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
+          gap: '16px',
         }}>
-          <span style={{ fontSize: '32px' }}>🛒</span>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '16px',
+            background: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '28px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+          }}>
+            🛒
+          </div>
           <div>
             <div style={{
-              fontSize: '16px',
+              fontSize: '18px',
               fontWeight: 900,
               color: '#111',
-              marginBottom: '2px',
+              marginBottom: '6px',
+              letterSpacing: '-0.3px',
             }}>
               {t.title}
             </div>
             <div style={{
-              fontSize: '12px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              backgroundColor: 'white',
+              padding: '6px 12px',
+              borderRadius: '12px',
+              fontSize: '13px',
               fontWeight: 700,
               color: statusColor,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
             }}>
-              <span>{statusIcon}</span>
+              <span style={{ fontSize: '16px' }}>{statusIcon}</span>
               {statusLabel}
             </div>
           </div>
@@ -113,10 +155,12 @@ export default function UzumStatusBlock({
 
       {/* Описание */}
       <div style={{
-        fontSize: '13px',
-        color: 'rgba(0,0,0,0.65)',
-        marginBottom: '12px',
-        lineHeight: '1.5',
+        fontSize: '14px',
+        color: '#4b5563',
+        marginBottom: '20px',
+        lineHeight: '1.6',
+        position: 'relative',
+        zIndex: 1,
       }}>
         {description}
       </div>
@@ -124,35 +168,42 @@ export default function UzumStatusBlock({
       {/* Кнопки действия */}
       <div style={{
         display: 'flex',
-        gap: '8px',
+        gap: '12px',
         flexWrap: 'wrap',
+        position: 'relative',
+        zIndex: 1,
       }}>
         {showConnectBtn && (
           <button
             onClick={onConnect}
             style={{
-              padding: '10px 16px',
-              borderRadius: '10px',
+              padding: '14px 24px',
+              borderRadius: '14px',
               border: 'none',
-              background: statusColor,
+              background: `linear-gradient(135deg, ${statusColor} 0%, ${statusColor}dd 100%)`,
               color: '#fff',
               fontWeight: 700,
-              fontSize: '13px',
+              fontSize: '15px',
               cursor: 'pointer',
-              transition: 'all .2s',
-              boxShadow: `0 4px 12px ${statusColor}40`,
+              transition: 'all .3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: `0 4px 16px ${statusColor}50`,
               flex: '1',
-              minWidth: '120px',
+              minWidth: '140px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = `0 6px 16px ${statusColor}60`;
+              e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+              e.currentTarget.style.boxShadow = `0 8px 24px ${statusColor}70`;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = `0 4px 12px ${statusColor}40`;
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = `0 4px 16px ${statusColor}50`;
             }}
           >
+            <span>🔗</span>
             {t.connect}
           </button>
         )}
@@ -160,29 +211,34 @@ export default function UzumStatusBlock({
           <button
             onClick={onOpen}
             style={{
-              padding: '10px 16px',
-              borderRadius: '10px',
+              padding: '14px 24px',
+              borderRadius: '14px',
               border: 'none',
-              background: statusColor,
+              background: `linear-gradient(135deg, ${statusColor} 0%, ${statusColor}dd 100%)`,
               color: '#fff',
               fontWeight: 700,
-              fontSize: '13px',
+              fontSize: '15px',
               cursor: 'pointer',
-              transition: 'all .2s',
-              boxShadow: `0 4px 12px ${statusColor}40`,
+              transition: 'all .3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: `0 4px 16px ${statusColor}50`,
               flex: '1',
-              minWidth: '120px',
+              minWidth: '140px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = `0 6px 16px ${statusColor}60`;
+              e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+              e.currentTarget.style.boxShadow = `0 8px 24px ${statusColor}70`;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = `0 4px 12px ${statusColor}40`;
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = `0 4px 16px ${statusColor}50`;
             }}
           >
-            {t.open} →
+            {t.open}
+            <span>→</span>
           </button>
         )}
       </div>

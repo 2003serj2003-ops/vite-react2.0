@@ -162,37 +162,53 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           // Load warehouse stocks
           try {
             const stocksResult = await getFbsSkuStocks(token, { limit: 1000 });
-            console.log('📊 Stocks API response:', stocksResult);
+            console.log('📊 Stocks API full response:', JSON.stringify(stocksResult, null, 2));
             
-            if (stocksResult.success && stocksResult.stocks && Array.isArray(stocksResult.stocks)) {
+            if (stocksResult.success && stocksResult.stocks) {
               const stocks = stocksResult.stocks;
               let fboTotal = 0;
               let fbsTotal = 0;
               let dbsTotal = 0;
               
-              console.log('📊 First stock item sample:', stocks[0]);
+              console.log('📊 Total stock items:', Array.isArray(stocks) ? stocks.length : 'not array');
+              console.log('📊 First 3 stock items sample:', stocks.slice(0, 3));
               
-              stocks.forEach((item: any) => {
-                // Проверяем разные возможные структуры ответа API
-                // Вариант 1: прямые поля fbo, fbs, dbs
-                if (typeof item.fbo === 'number') fboTotal += item.fbo;
-                if (typeof item.fbs === 'number') fbsTotal += item.fbs;
-                if (typeof item.dbs === 'number') dbsTotal += item.dbs;
-                
-                // Вариант 2: поле stock с подполями
-                if (item.stock) {
-                  if (typeof item.stock.fbo === 'number') fboTotal += item.stock.fbo;
-                  if (typeof item.stock.fbs === 'number') fbsTotal += item.stock.fbs;
-                  if (typeof item.stock.dbs === 'number') dbsTotal += item.stock.dbs;
-                }
-                
-                // Вариант 3: поле quantity или amount
-                if (!item.fbo && !item.stock) {
-                  const qty = item.quantity || item.amount || item.stock || 0;
-                  // Если нет разделения по типам, добавляем в FBS по умолчанию
-                  fbsTotal += qty;
-                }
-              });
+              if (Array.isArray(stocks)) {
+                stocks.forEach((item: any, index: number) => {
+                  // Детальное логирование первых 3 элементов
+                  if (index < 3) {
+                    console.log(`📊 Item ${index}:`, JSON.stringify(item, null, 2));
+                  }
+                  
+                  // Вариант 1: прямые поля fbo, fbs, dbs (числа)
+                  if (typeof item.fbo === 'number') fboTotal += item.fbo;
+                  if (typeof item.fbs === 'number') fbsTotal += item.fbs;
+                  if (typeof item.dbs === 'number') dbsTotal += item.dbs;
+                  
+                  // Вариант 2: поле stocks с подполями (объект с числами)
+                  if (item.stocks && typeof item.stocks === 'object') {
+                    if (typeof item.stocks.fbo === 'number') fboTotal += item.stocks.fbo;
+                    if (typeof item.stocks.fbs === 'number') fbsTotal += item.stocks.fbs;
+                    if (typeof item.stocks.dbs === 'number') fbsTotal += item.stocks.dbs;
+                  }
+                  
+                  // Вариант 3: поле stock с подполями (объект с числами)
+                  if (item.stock && typeof item.stock === 'object') {
+                    if (typeof item.stock.fbo === 'number') fboTotal += item.stock.fbo;
+                    if (typeof item.stock.fbs === 'number') fbsTotal += item.stock.fbs;
+                    if (typeof item.stock.dbs === 'number') dbsTotal += item.stock.dbs;
+                  }
+                  
+                  // Вариант 4: поле quantity или amount (единое поле для всех типов)
+                  if (typeof item.quantity === 'number') {
+                    fbsTotal += item.quantity;
+                  } else if (typeof item.amount === 'number') {
+                    fbsTotal += item.amount;
+                  } else if (typeof item.stock === 'number') {
+                    fbsTotal += item.stock;
+                  }
+                });
+              }
               
               setStats(prev => ({
                 ...prev,
@@ -201,9 +217,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                 dbsStock: dbsTotal,
               }));
               
-              console.log('📦 Calculated warehouse stocks:', { fboTotal, fbsTotal, dbsTotal, totalItems: stocks.length });
+              console.log('📦 ✅ Calculated warehouse stocks:', { fboTotal, fbsTotal, dbsTotal, totalItems: Array.isArray(stocks) ? stocks.length : 0 });
             } else {
-              console.log('⚠️ No stocks data or invalid format');
+              console.log('⚠️ No stocks data or invalid format:', stocksResult);
             }
           } catch (error) {
             console.error('❌ Error loading stocks:', error);
@@ -354,30 +370,51 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             fines: 0,
           };
 
+          console.log('💸 Processing expenses, total count:', filteredExpenses.length);
+          if (filteredExpenses.length > 0) {
+            console.log('💸 Sample expenses (first 3):', filteredExpenses.slice(0, 3).map(e => ({
+              amount: e.amount,
+              paymentPrice: e.paymentPrice,
+              type: e.type,
+              source: e.source,
+              description: e.description,
+              category: e.category
+            })));
+          }
+
           filteredExpenses.forEach(expense => {
-            const amount = Math.abs(expense.paymentPrice || expense.amount || 0);
-            const type = (expense.type || '').toLowerCase();
+            // Поддержка разных полей для суммы
+            const amount = Math.abs(
+              expense.paymentPrice || 
+              expense.amount || 
+              expense.price || 
+              expense.sum || 
+              0
+            );
+            
+            const type = (expense.type || expense.category || '').toLowerCase();
             const source = (expense.source || '').toLowerCase();
-            const description = (expense.description || '').toLowerCase();
+            const description = (expense.description || expense.name || '').toLowerCase();
             
-            // Пробуем классифицировать по разным полям
-            const allText = `${type} ${source} ${description}`;
+            // Объединяем все текстовые поля для поиска
+            const allText = `${type} ${source} ${description}`.toLowerCase();
             
-            if (allText.includes('market') || allText.includes('маркет')) {
+            // Классификация по категориям
+            if (allText.includes('market') || allText.includes('маркет') || allText.includes('marketing') || allText.includes('реклам')) {
               expensesByCategory.marketing += amount;
-            } else if (allText.includes('commi') || allText.includes('комисс')) {
+            } else if (allText.includes('commi') || allText.includes('комисс') || allText.includes('fee') || allText.includes('сбор')) {
               expensesByCategory.commission += amount;
-            } else if (allText.includes('logist') || allText.includes('логист') || allText.includes('delivery') || allText.includes('доставк')) {
+            } else if (allText.includes('logist') || allText.includes('логист') || allText.includes('delivery') || allText.includes('доставк') || allText.includes('shipping')) {
               expensesByCategory.logistics += amount;
-            } else if (allText.includes('fine') || allText.includes('штраф') || allText.includes('penalty')) {
+            } else if (allText.includes('fine') || allText.includes('штраф') || allText.includes('penalty') || allText.includes('пеня')) {
               expensesByCategory.fines += amount;
             } else {
-              // Если не удалось классифицировать, добавляем в комиссию
+              // Если не удалось классифицировать - в комиссию по умолчанию
               expensesByCategory.commission += amount;
             }
           });
 
-          console.log('💸 Expenses by category:', expensesByCategory);
+          console.log('💸 ✅ Expenses by category:', expensesByCategory);
 
           // Calculate total expenses
           const totalExpenses = filteredExpenses.reduce((sum, expense) => {
@@ -426,112 +463,108 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
   };
 
   return (
-    <div className="list">
+    <div className="list" style={{ padding: '0' }}>
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '24px',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="uzum-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
           <button
             onClick={onNavigateBack}
             className="split"
+            style={{ flexShrink: 0 }}
           >
             ← {t.back}
           </button>
-          <h1 style={{
-            fontSize: '24px',
+          <h1 className="uzum-header-title" style={{ 
+            fontSize: '20px',
             fontWeight: 700,
             color: '#111',
             margin: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}>
             {t.title}
           </h1>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
           <button
             onClick={() => {
               setLoading(true);
               loadBasicData();
             }}
             style={{
-              padding: '10px 20px',
+              padding: '8px 16px',
               backgroundColor: '#10b981',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: '13px',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '6px',
+              whiteSpace: 'nowrap',
             }}
           >
-            🔄 Обновить
+            🔄
+            <span style={{ display: window.innerWidth > 640 ? 'inline' : 'none' }}>Обновить</span>
           </button>
           <button
             onClick={() => setShowWeeklyChart(true)}
             style={{
-              padding: '10px 20px',
+              padding: '8px 16px',
               backgroundColor: '#7c3aed',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: '13px',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '6px',
+              whiteSpace: 'nowrap',
             }}
           >
-            📊 {t.weeklyChart}
+            📊
+            <span style={{ display: window.innerWidth > 640 ? 'inline' : 'none' }}>{t.weeklyChart}</span>
           </button>
         </div>
       </div>
 
       {/* Main Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-        gap: '20px',
-        marginBottom: '20px',
-      }}>
+      <div className="uzum-container">
+        <div className="uzum-grid" style={{
+          gridTemplateColumns: window.innerWidth > 768 ? 'repeat(auto-fit, minmax(400px, 1fr))' : '1fr',
+        }}>
         {/* Left Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Financial Data */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          }}>
+          <div className="uzum-card">
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '20px',
+              marginBottom: '16px',
               flexWrap: 'wrap',
               gap: '12px',
             }}>
               <h2 style={{
-                fontSize: '18px',
+                fontSize: window.innerWidth > 640 ? '18px' : '16px',
                 fontWeight: 700,
                 color: '#111',
                 margin: 0,
               }}>
                 {t.financialData}
               </h2>
-              <div style={{
-                display: 'flex',
-                gap: '8px',
-                alignItems: 'center',
+              <div className="uzum-filters" style={{ 
+                padding: 0,
+                gap: '6px',
               }}>
                 <button
                   onClick={() => setDatePeriod(7)}
+                  className={`uzum-filter-chip ${datePeriod === 7 ? 'active' : ''}`}
                   style={{
                     padding: '6px 12px',
                     fontSize: '12px',
@@ -541,13 +574,13 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: datePeriod === 7 ? 600 : 400,
-                    whiteSpace: 'nowrap',
                   }}
                 >
                   {t.last7days}
                 </button>
                 <button
                   onClick={() => setDatePeriod(10)}
+                  className={`uzum-filter-chip ${datePeriod === 10 ? 'active' : ''}`}
                   style={{
                     padding: '6px 12px',
                     fontSize: '12px',
@@ -557,13 +590,13 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: datePeriod === 10 ? 600 : 400,
-                    whiteSpace: 'nowrap',
                   }}
                 >
                   {t.last10days}
                 </button>
                 <button
                   onClick={() => setDatePeriod(30)}
+                  className={`uzum-filter-chip ${datePeriod === 30 ? 'active' : ''}`}
                   style={{
                     padding: '6px 12px',
                     fontSize: '12px',
@@ -573,28 +606,9 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: datePeriod === 30 ? 600 : 400,
-                    whiteSpace: 'nowrap',
                   }}
                 >
                   {t.last30days}
-                </button>
-                <button
-                  onClick={() => setShowWeeklyChart(true)}
-                  disabled={!shopId}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '12px',
-                    backgroundColor: '#10b981',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: shopId ? 'pointer' : 'not-allowed',
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap',
-                    opacity: shopId ? 1 : 0.5,
-                  }}
-                >
-                  📊 {t.weeklyChart}
                 </button>
               </div>
             </div>
@@ -655,46 +669,41 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           </div>
 
           {/* Warehouse */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          }}>
+          <div className="uzum-card">
             <h2 style={{
-              fontSize: '18px',
+              fontSize: window.innerWidth > 640 ? '18px' : '16px',
               fontWeight: 700,
               color: '#111',
-              marginBottom: '20px',
+              marginBottom: '16px',
             }}>
               {t.warehouse}
             </h2>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-              gap: '20px',
+              gridTemplateColumns: window.innerWidth > 640 ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
+              gap: window.innerWidth > 640 ? '20px' : '12px',
             }}>
               <div>
-                <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>
                   {t.fboQty}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#6366f1' }}>
+                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#6366f1' }}>
                   {stats.fboStock}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>
                   {t.fbsQty}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#22c55e' }}>
+                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#22c55e' }}>
                   {stats.fbsStock}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>
                   {t.dbsQty}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#f59e0b' }}>
+                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#f59e0b' }}>
                   {stats.dbsStock}
                 </div>
               </div>
@@ -702,34 +711,36 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
           </div>
 
           {/* Recent Orders */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          }}>
+          <div className="uzum-card">
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '16px',
+              marginBottom: '12px',
+              flexWrap: 'wrap',
+              gap: '8px',
             }}>
               <h2 style={{
-                fontSize: '18px',
+                fontSize: window.innerWidth > 640 ? '18px' : '16px',
                 fontWeight: 700,
                 color: '#111',
                 margin: 0,
               }}>
                 {t.recentOrders}
               </h2>
-              <div style={{ fontSize: '13px', color: '#666' }}>
+              <div style={{ fontSize: '12px', color: '#666' }}>
                 {stats.pendingOrders} {t.pending}, 0 {t.delivered}, 0 {t.canceled}
               </div>
             </div>
             <button
               onClick={() => onNavigate('orders')}
-              className="btnPrimary"
-              style={{ width: '100%' }}
+              className="uzum-btn"
+              style={{ 
+                width: '100%',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                padding: window.innerWidth > 640 ? '12px 24px' : '10px 20px',
+              }}
             >
               {t.viewAll} →
             </button>
@@ -737,26 +748,21 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
         </div>
 
         {/* Right Column - Expenses & Income */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Expenses */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          }}>
+          <div className="uzum-card">
             <h2 style={{
-              fontSize: '18px',
+              fontSize: window.innerWidth > 640 ? '18px' : '16px',
               fontWeight: 700,
               color: '#111',
-              marginBottom: '8px',
+              marginBottom: '6px',
             }}>
               {t.expenses}
             </h2>
-            <div style={{ fontSize: '13px', color: '#666', marginBottom: '20px' }}>
+            <div style={{ fontSize: '12px', color: '#666', marginBottom: '16px' }}>
               {t.dateRange} {new Date(dateRange.startMs).toLocaleDateString('ru-RU')} по {new Date(dateRange.endMs).toLocaleDateString('ru-RU')}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
                 { icon: '📱', label: t.marketing, value: financeBreakdown.marketing, color: '#8b5cf6' },
                 { icon: '💵', label: t.commission, value: financeBreakdown.commission, color: '#3b82f6' },
@@ -767,30 +773,27 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '12px',
-                    marginBottom: '8px',
+                    gap: '10px',
+                    marginBottom: '6px',
                   }}>
-                    <span style={{ fontSize: '20px' }}>{item.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+                    <span style={{ fontSize: window.innerWidth > 640 ? '20px' : '18px' }}>{item.icon}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>
                         {item.label}
                       </div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#111' }}>
+                      <div style={{ 
+                        fontSize: window.innerWidth > 640 ? '18px' : '16px', 
+                        fontWeight: 700, 
+                        color: '#111',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}>
                         {formatNumber(item.value)}
                       </div>
                     </div>
-                    <div style={{
-                      fontSize: '14px',
-                      color: '#666',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}>
-                      100% <span style={{ color: '#ef4444' }}>↑</span>
-                    </div>
                   </div>
                   <div style={{
-                    height: '4px',
+                    height: '3px',
                     backgroundColor: '#f3f4f6',
                     borderRadius: '2px',
                     overflow: 'hidden',
@@ -806,35 +809,37 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             </div>
           </div>
         </div>
+        </div>
       </div>
 
       {/* Quick Actions */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '16px',
+      <div className="uzum-grid" style={{
+        gridTemplateColumns: window.innerWidth > 640 ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
+        gap: '12px',
+        padding: '0 16px 20px',
       }}>
         <button
           onClick={() => onNavigate('products')}
-          className="cardCream"
+          className="uzum-card"
           style={{
             cursor: 'pointer',
             textAlign: 'center',
-            padding: '24px',
+            padding: window.innerWidth > 640 ? '24px' : '16px',
             border: 'none',
+            background: 'white',
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>📦</div>
+          <div style={{ fontSize: window.innerWidth > 640 ? '32px' : '28px', marginBottom: '8px' }}>📦</div>
           <div style={{
-            fontSize: '24px',
+            fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
             color: '#7c3aed',
-            marginBottom: '8px',
+            marginBottom: '4px',
           }}>
             {stats.totalProducts}
           </div>
           <div style={{
-            fontSize: '14px',
+            fontSize: window.innerWidth > 640 ? '14px' : '12px',
             color: '#666',
           }}>
             {t.products}
@@ -843,25 +848,26 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
 
         <button
           onClick={() => onNavigate('orders')}
-          className="cardCream"
+          className="uzum-card"
           style={{
             cursor: 'pointer',
             textAlign: 'center',
-            padding: '24px',
+            padding: window.innerWidth > 640 ? '24px' : '16px',
             border: 'none',
+            background: 'white',
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>📋</div>
+          <div style={{ fontSize: window.innerWidth > 640 ? '32px' : '28px', marginBottom: '8px' }}>📋</div>
           <div style={{
-            fontSize: '24px',
+            fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
             color: '#22c55e',
-            marginBottom: '8px',
+            marginBottom: '4px',
           }}>
             {stats.activeOrders}
           </div>
           <div style={{
-            fontSize: '14px',
+            fontSize: window.innerWidth > 640 ? '14px' : '12px',
             color: '#666',
           }}>
             {t.orders}
@@ -870,25 +876,26 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
 
         <button
           onClick={() => onNavigate('finance')}
-          className="cardCream"
+          className="uzum-card"
           style={{
             cursor: 'pointer',
             textAlign: 'center',
-            padding: '24px',
+            padding: window.innerWidth > 640 ? '24px' : '16px',
             border: 'none',
+            background: 'white',
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>💰</div>
+          <div style={{ fontSize: window.innerWidth > 640 ? '32px' : '28px', marginBottom: '8px' }}>💰</div>
           <div style={{
-            fontSize: '24px',
+            fontSize: window.innerWidth > 640 ? '24px' : '20px',
             fontWeight: 700,
             color: '#f59e0b',
-            marginBottom: '8px',
+            marginBottom: '4px',
           }}>
             {formatNumber(stats.toPay)}
           </div>
           <div style={{
-            fontSize: '14px',
+            fontSize: window.innerWidth > 640 ? '14px' : '12px',
             color: '#666',
           }}>
             {t.finance}

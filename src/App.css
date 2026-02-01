@@ -496,14 +496,15 @@ body{
 .cardCream{
   width:100%;
   max-width:100%;
-  border-radius:var(--r-xl);
-  border:3px solid var(--accent);
-  background: var(--gradient-secondary);
-  color:var(--dark);
+  border-radius:20px;
+  border:2px solid rgba(102, 126, 234, 0.15);
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  color:#111;
   padding:22px 20px;
   box-shadow: 
-    var(--shadowSmall),
-    inset 0 2px 0 rgba(255,255,255,.7);
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 1px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255,255,255,.9);
   position: relative;
   overflow: visible;
   display:flex;
@@ -511,6 +512,16 @@ body{
   gap:16px;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cardCream:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(102, 126, 234, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  border-color: rgba(102, 126, 234, 0.25);
 }
 
 .adminCarousel {
@@ -540,13 +551,13 @@ body{
 .cardCream::before{
   content: '';
   position: absolute;
-  top: -60%;
-  right: -60%;
-  width: 120%;
-  height: 120%;
-  background: radial-gradient(circle, rgba(255,255,255,.4) 0%, transparent 65%);
+  top: -40%;
+  right: -40%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.08) 0%, transparent 70%);
   pointer-events: none;
-  opacity: 0.3;
+  opacity: 0.5;
 }
 
 .input{
@@ -2021,4 +2032,805 @@ button:disabled {
   background: #6F00FF;
   border-radius: 2px;
   transition: all .3s ease;
+}
+
+/* ============================================= */
+/* UZUM COMPONENTS - АДАПТИВНЫЕ СТИЛИ */
+/* ============================================= */
+
+/* Базовые адаптивные контейнеры */
+.uzum-container {
+  padding: 16px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .uzum-container {
+    padding: 24px;
+  }
+}
+
+/* Адаптивная сетка для карточек */
+.uzum-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .uzum-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* Адаптивные карточки */
+.uzum-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .uzum-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+}
+
+.uzum-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Адаптивные таблицы */
+.uzum-table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 640px) {
+  .uzum-table-container {
+    margin: 0 -16px;
+    border-radius: 0;
+    width: calc(100% + 32px);
+  }
+}
+
+.uzum-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+}
+
+@media (max-width: 640px) {
+  .uzum-table {
+    min-width: 500px;
+    font-size: 14px;
+  }
+}
+
+/* Адаптивные кнопки */
+.uzum-btn {
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .uzum-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    width: 100%;
+  }
+}
+
+.uzum-btn:active {
+  transform: scale(0.98);
+}
+
+/* Адаптивный поиск */
+.uzum-search {
+  width: 100%;
+  padding: 14px 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+@media (max-width: 640px) {
+  .uzum-search {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+.uzum-search:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Адаптивные вкладки */
+.uzum-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #e5e7eb;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.uzum-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .uzum-tabs {
+    gap: 4px;
+  }
+}
+
+.uzum-tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  color: #6b7280;
+}
+
+@media (max-width: 640px) {
+  .uzum-tab {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+.uzum-tab.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+/* Адаптивные статистические карточки */
+.uzum-stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  .uzum-stat-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+}
+
+.uzum-stat-label {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 640px) {
+  .uzum-stat-label {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+}
+
+.uzum-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+}
+
+@media (max-width: 640px) {
+  .uzum-stat-value {
+    font-size: 24px;
+  }
+}
+
+/* Адаптивные модальные окна */
+.uzum-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+@media (max-width: 640px) {
+  .uzum-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+}
+
+.uzum-modal {
+  background: white;
+  border-radius: 24px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 640px) {
+  .uzum-modal {
+    border-radius: 24px 24px 0 0;
+    max-height: 85vh;
+    width: 100%;
+  }
+}
+
+/* Адаптивный список заказов */
+.uzum-order-item {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+@media (max-width: 640px) {
+  .uzum-order-item {
+    padding: 14px;
+    border-radius: 10px;
+  }
+}
+
+.uzum-order-item:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* Адаптивная галерея продуктов */
+.uzum-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .uzum-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  .uzum-product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Адаптивные изображения */
+.uzum-image {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* Адаптивный хедер страницы */
+.uzum-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+@media (max-width: 640px) {
+  .uzum-header {
+    padding: 16px;
+  }
+}
+
+.uzum-header-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .uzum-header-title {
+    font-size: 18px;
+  }
+}
+
+/* Адаптивные фильтры */
+.uzum-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.uzum-filters::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .uzum-filters {
+    padding: 10px 16px;
+  }
+}
+
+.uzum-filter-chip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #f3f4f6;
+  border: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .uzum-filter-chip {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+.uzum-filter-chip.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* Адаптивный лоадер */
+.uzum-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .uzum-loader {
+    min-height: 200px;
+  }
+}
+
+/* Адаптивное пустое состояние */
+.uzum-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #9ca3af;
+}
+
+@media (max-width: 640px) {
+  .uzum-empty-state {
+    padding: 40px 20px;
+  }
+}
+
+.uzum-empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .uzum-empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+}
+
+.uzum-empty-text {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+@media (max-width: 640px) {
+  .uzum-empty-text {
+    font-size: 14px;
+  }
+}
+
+/* Плавная прокрутка для мобильных */
+@media (max-width: 640px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .page {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Оптимизация касаний для мобильных */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  .uzum-btn,
+  .uzum-tab,
+  .uzum-filter-chip,
+  .uzum-order-item,
+  .uzum-card {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.05);
+    touch-action: manipulation;
+  }
+}
+/* Карточки статистики */
+.uzum-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .uzum-stat-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.uzum-stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .uzum-stat-card {
+    padding: 16px;
+  }
+}
+
+.uzum-stat-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 640px) {
+  .uzum-stat-label {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+}
+
+.uzum-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111;
+}
+
+@media (max-width: 640px) {
+  .uzum-stat-value {
+    font-size: 20px;
+  }
+}
+
+/* Система вкладок */
+.uzum-tabs {
+  background: white;
+  border-radius: 16px;
+  padding: 0;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #e5e7eb;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  .uzum-tabs {
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+}
+
+.uzum-tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #6b7280;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .uzum-tab {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+.uzum-tab.active {
+  color: #f59e0b;
+  border-bottom-color: #f59e0b;
+}
+
+.uzum-tab:hover:not(.active) {
+  color: #374151;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Контейнер лоадера */
+.uzum-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .uzum-loader-container {
+    min-height: 200px;
+    gap: 12px;
+  }
+}
+
+.uzum-loader {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #f3f4f6;
+  border-top-color: #f59e0b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@media (max-width: 640px) {
+  .uzum-loader {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Дополнительные кнопки */
+.uzum-btn-secondary {
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  transition: all 0.2s;
+}
+
+@media (max-width: 640px) {
+  .uzum-btn-secondary {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+.uzum-btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.uzum-btn-success {
+  padding: 10px 20px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .uzum-btn-success {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+.uzum-btn-success:hover {
+  background: #059669;
+}
+
+/* Поиск */
+.uzum-search {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 640px) {
+  .uzum-search {
+    padding: 12px;
+  }
+}
+
+/* Сетка товаров */
+.uzum-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .uzum-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .uzum-product-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+
+/* Элементы заказов */
+.uzum-order-item {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: all 0.2s;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .uzum-order-item {
+    border-radius: 12px;
+  }
+}
+
+.uzum-order-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+
+/* Модальное окно */
+.uzum-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+@media (max-width: 640px) {
+  .uzum-modal-overlay {
+    padding: 10px;
+    align-items: flex-start;
+    padding-top: 60px;
+  }
+}
+
+.uzum-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  overflow: auto;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 640px) {
+  .uzum-modal {
+    padding: 16px;
+    border-radius: 12px;
+  }
+}
+
+
+/* Модальное окно */
+.uzum-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+@media (max-width: 640px) {
+  .uzum-modal-overlay {
+    padding: 10px;
+    align-items: flex-start;
+    padding-top: 60px;
+  }
+}
+
+.uzum-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  overflow: auto;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 640px) {
+  .uzum-modal {
+    padding: 16px;
+    border-radius: 12px;
+    max-height: calc(100vh - 80px) !important;
+  }
 }

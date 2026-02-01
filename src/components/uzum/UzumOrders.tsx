@@ -279,31 +279,197 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
     try {
       const result = await getFbsOrderLabel(token, orderId);
       
-      if (result.success && result.label) {
-        // Отправка этикетки в Telegram
+      if (result.success && (result.label || result.labelPdf || result.labelUrl)) {
+        // Отправка этикетки в Telegram через бота
         if (window.Telegram?.WebApp) {
-          // Уведомление об успехе
-          alert(t.labelSent);
-          
-          // Открываем чат с ботом для отправки данных
-          // Пользователь сможет отправить данные вручную
-          const labelData = JSON.stringify({
-            action: 'print_label',
-            orderId: orderId,
-            label: result.label,
-          }, null, 2);
-          
-          // Копируем в буфер обмена
-          navigator.clipboard.writeText(labelData).catch(() => {
-            console.log('Clipboard not available');
-          });
+          try {
+            const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+            const chatId = tgUser?.id;
+            
+            if (!chatId) {
+              console.error('Chat ID not available');
+              alert('Не удалось получить ID пользователя Telegram');
+              return;
+            }
+
+            let blob: Blob;
+            let fileName: string;
+            let mimeType: string;
+
+            // Определяем формат этикетки
+            if (result.labelPdf) {
+              // Это base64 PDF
+              const pdfBase64 = result.labelPdf.replace(/^data:application\/pdf;base64,/, '');
+              const binaryString = atob(pdfBase64);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              blob = new Blob([bytes], { type: 'application/pdf' });
+              fileName = `uzum-label-${orderId}.pdf`;
+              mimeType = 'application/pdf';
+            } else if (result.labelUrl) {
+              // Это URL - отправим как текст с ссылкой
+              const message = `📋 Этикетка для заказа #${orderId}\n\n🔗 Ссылка на этикетку:\n${result.labelUrl}`;
+              
+              const BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '';
+              
+              if (BOT_TOKEN) {
+                const response = await fetch(
+                  `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+                  {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      chat_id: chatId,
+                      text: message,
+                      parse_mode: 'HTML',
+                    }),
+                  }
+                );
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                  alert('✅ Ссылка на этикетку отправлена в Telegram!');
+                  window.Telegram.WebApp.close();
+                  return;
+                } else {
+                  throw new Error(data.description || 'Failed to send message');
+                }
+              }
+              
+              // Fallback: открываем URL
+              window.open(result.labelUrl, '_blank');
+              return;
+            } else {
+              // Это JSON данные
+              const labelJson = JSON.stringify({
+                orderId: orderId,
+                timestamp: Date.now(),
+                label: result.label
+              }, null, 2);
+              
+              blob = new Blob([labelJson], { type: 'application/json' });
+              fileName = `uzum-label-${orderId}.json`;
+              mimeType = 'application/json';
+            }
+
+            // Отправляем файл через Telegram Bot
+            const formData = new FormData();
+            formData.append('chat_id', chatId.toString());
+            formData.append('document', blob, fileName);
+            formData.append('caption', `📋 Этикетка для заказа #${orderId}\n\n🔗 Uzum Market`);
+
+            const BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '';
+            
+            if (BOT_TOKEN) {
+              const response = await fetch(
+                `https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`,
+                {
+                  method: 'POST',
+                  body: formData,
+                }
+              );
+
+              const data = await response.json();
+              
+              if (data.ok) {
+                alert('✅ Этикетка отправлена в Telegram!');
+                window.Telegram.WebApp.close();
+              } else {
+                console.error('Telegram API error:', data);
+                throw new Error(data.description || 'Failed to send document');
+              }
+            } else {
+              // Альтернативный метод: отправка через Supabase Edge Function
+              // Для PDF отправляем как base64
+              const fileContent = mimeType === 'application/pdf' 
+                ? await blobToBase64(blob)
+                : await blob.text();
+              
+              const response = await fetch('/api/send-telegram-file', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  chatId,
+                  fileName,
+                  fileContent,
+                  mimeType,
+                  caption: `📋 Этикетка для заказа #${orderId}\n\n🔗 Uzum Market`,
+                }),
+              });
+
+              if (!response.ok) {
+                throw new Error('Failed to send file via backend');
+              }
+
+              alert('✅ Этикетка отправлена в Telegram!');
+              window.Telegram.WebApp.close();
+            }
+          } catch (error) {
+            console.error('Error sending label to Telegram:', error);
+            
+            // Fallback: скачиваем локально
+            let downloadBlob: Blob;
+            let downloadFileName: string;
+            
+            if (result.labelPdf) {
+              const pdfBase64 = result.labelPdf.replace(/^data:application\/pdf;base64,/, '');
+              const binaryString = atob(pdfBase64);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              downloadBlob = new Blob([bytes], { type: 'application/pdf' });
+              downloadFileName = `uzum-label-${orderId}.pdf`;
+            } else if (result.labelUrl) {
+              window.open(result.labelUrl, '_blank');
+              return;
+            } else {
+              downloadBlob = new Blob([JSON.stringify(result.label, null, 2)], { type: 'application/json' });
+              downloadFileName = `uzum-label-${orderId}.json`;
+            }
+            
+            const url = URL.createObjectURL(downloadBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = downloadFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('⚠️ Не удалось отправить в Telegram. Файл сохранен локально.');
+          }
         } else {
           // Если Telegram недоступен, скачиваем локально
-          const blob = new Blob([JSON.stringify(result.label, null, 2)], { type: 'application/json' });
+          let blob: Blob;
+          let fileName: string;
+          
+          if (result.labelPdf) {
+            const pdfBase64 = result.labelPdf.replace(/^data:application\/pdf;base64,/, '');
+            const binaryString = atob(pdfBase64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            blob = new Blob([bytes], { type: 'application/pdf' });
+            fileName = `uzum-label-${orderId}.pdf`;
+          } else if (result.labelUrl) {
+            window.open(result.labelUrl, '_blank');
+            return;
+          } else {
+            blob = new Blob([JSON.stringify(result.label, null, 2)], { type: 'application/json' });
+            fileName = `uzum-label-${orderId}.json`;
+          }
+          
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `label-${orderId}.json`;
+          a.download = fileName;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -318,6 +484,19 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
     } finally {
       setPrintingLabel(false);
     }
+  }
+
+  // Вспомогательная функция для конвертации Blob в base64
+  function blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   }
 
   function formatDate(dateString: string | number): string {
@@ -373,27 +552,11 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   }
 
   return (
-    <div className="list" style={{
-      width: '100%',
-      maxWidth: '100%',
-      height: '100%',
-      overflow: 'auto',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
+    <div className="uzum-container">
       {/* Header with Refresh Button */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px',
-        padding: '20px',
-        backgroundColor: 'white',
-        borderRadius: '16px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-      }}>
+      <div className="uzum-header">
         <h1 style={{
-          fontSize: '24px',
+          fontSize: window.innerWidth > 640 ? '24px' : '18px',
           fontWeight: 700,
           color: '#111',
           margin: 0,
@@ -405,43 +568,21 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
             setLoading(true);
             loadOrders();
           }}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#10b981',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
+          className="uzum-btn-success"
         >
-          🔄 Обновить
+          🔄 {window.innerWidth > 640 ? 'Обновить' : ''}
         </button>
       </div>
 
       {/* Status Filter - Fixed and Always Visible */}
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '16px',
-        padding: '20px',
-        marginBottom: '20px',
-        overflowX: 'auto',
-        overflowY: 'visible',
-        WebkitOverflowScrolling: 'touch',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        border: '2px solid #e5e7eb',
+      <div className="uzum-filters" style={{
         position: 'sticky',
         top: '0',
         zIndex: 100,
-        width: '100%',
       }}>
         <div style={{
           display: 'flex',
-          gap: '10px',
+          gap: window.innerWidth > 640 ? '10px' : '8px',
           minWidth: 'max-content',
           paddingBottom: '8px',
         }}>
@@ -453,20 +594,20 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                 key={option.value}
                 onClick={() => setStatusFilter(option.value)}
                 style={{
-                  padding: '14px 20px',
+                  padding: window.innerWidth > 640 ? '14px 20px' : '10px 14px',
                   backgroundColor: isActive ? '#22c55e' : '#f9fafb',
                   color: isActive ? 'white' : '#374151',
                   border: isActive ? 'none' : '2px solid #d1d5db',
                   borderRadius: '12px',
                   cursor: 'pointer',
-                  fontSize: '15px',
+                  fontSize: window.innerWidth > 640 ? '15px' : '13px',
                   fontWeight: '600',
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
                   minWidth: 'fit-content',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '10px',
+                  gap: window.innerWidth > 640 ? '10px' : '6px',
                   transition: 'all 0.2s',
                   boxShadow: isActive ? '0 4px 8px rgba(34, 197, 94, 0.4)' : '0 2px 4px rgba(0,0,0,0.05)',
                 }}
@@ -524,19 +665,15 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
             return (
               <div
                 key={orderId}
+                className="uzum-order-item"
                 style={{
-                  backgroundColor: 'white',
-                  borderRadius: '16px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                  transition: 'all 0.2s',
                   border: isExpanded ? '2px solid #22c55e' : '2px solid transparent',
-                  overflow: 'hidden',
                 }}
               >
                 {/* Order Header - Always Visible */}
                 <div
                   style={{
-                    padding: '20px',
+                    padding: window.innerWidth > 640 ? '20px' : '16px',
                     cursor: 'pointer',
                     userSelect: 'none',
                   }}
@@ -549,11 +686,11 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                     gap: '16px',
                     flexWrap: 'wrap',
                   }}>
-                    <div style={{ flex: 1, minWidth: '200px' }}>
+                    <div style={{ flex: 1, minWidth: window.innerWidth > 640 ? '200px' : '150px' }}>
                       <div style={{
-                        fontSize: '18px',
+                        fontSize: window.innerWidth > 640 ? '18px' : '16px',
                         fontWeight: '700',
-                        marginBottom: '8px',
+                        marginBottom: window.innerWidth > 640 ? '8px' : '6px',
                         color: '#111827',
                         display: 'flex',
                         alignItems: 'center',
@@ -561,7 +698,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                       }}>
                         <span>{t.orderNumber}{orderId}</span>
                         <span style={{
-                          fontSize: '16px',
+                          fontSize: window.innerWidth > 640 ? '16px' : '14px',
                           transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                           transition: 'transform 0.2s',
                         }}>

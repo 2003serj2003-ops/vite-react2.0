@@ -176,55 +176,22 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
   }
 
   return (
-    <div className="list">
+    <div className="uzum-container">
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '12px',
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-        }}>
-          <button
-            onClick={onNavigateBack}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#f3f4f6',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#374151',
-            }}
-          >
-            ← {t.back}
+      <div className="uzum-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button onClick={onNavigateBack} className="uzum-btn-secondary">
+            ← {window.innerWidth > 640 ? t.back : ''}
           </button>
-          <button
-            onClick={onNavigateHome}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#f3f4f6',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#374151',
-            }}
-          >
+          <button onClick={onNavigateHome} className="uzum-btn-secondary">
             🏠
           </button>
           <div style={{
-            fontSize: '18px',
+            fontSize: window.innerWidth > 640 ? '18px' : '16px',
             fontWeight: 700,
             color: '#111',
           }}>
-            📦 {t.title}
+            📦 {window.innerWidth > 640 ? t.title : ''}
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -233,21 +200,9 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
               setLoading(true);
               loadProducts();
             }}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#10b981',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
+            className="uzum-btn-success"
           >
-            🔄 Обновить
+            🔄 {window.innerWidth > 640 ? 'Обновить' : ''}
           </button>
           <div style={{
             padding: '6px 12px',
@@ -263,7 +218,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       </div>
 
       {/* Search */}
-      <div className="cardCream" style={{ marginBottom: '12px' }}>
+      <div className="uzum-search">
         <input
           type="text"
           className="input"
@@ -275,19 +230,15 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
 
       {/* Products Grid */}
       {filteredProducts.length === 0 ? (
-        <div className="cardCream" style={{
+        <div className="uzum-card" style={{
           textAlign: 'center',
-          padding: '40px 20px',
+          padding: window.innerWidth > 640 ? '40px 20px' : '30px 15px',
           color: '#999',
         }}>
           📭 {t.noProducts}
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-          gap: '12px',
-        }}>
+        <div className="uzum-product-grid">
           {filteredProducts.map((product: any) => {
             const images = getProductImages(product);
             const firstImage = images[0];

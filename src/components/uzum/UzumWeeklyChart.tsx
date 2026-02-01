@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getFbsOrders } from '../../lib/uzum-api';
+import { getFinanceOrders } from '../../lib/uzum-api';
 import CoolLoader from '../CoolLoader';
 
 interface UzumWeeklyChartProps {
@@ -14,12 +14,6 @@ interface DayStats {
   sold: number;
   canceled: number;
 }
-
-const ALL_STATUSES = [
-  'CREATED', 'PACKING', 'PENDING_DELIVERY', 'DELIVERING', 
-  'DELIVERED', 'ACCEPTED_AT_DP', 'DELIVERED_TO_CUSTOMER_DELIVERY_POINT',
-  'COMPLETED', 'CANCELED', 'PENDING_CANCELLATION', 'RETURNED'
-] as const;
 
 export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWeeklyChartProps) {
   const [weekType, setWeekType] = useState<'current' | 'previous'>('previous');
@@ -80,47 +74,71 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
       const now = new Date();
       const { start, end } = getWeekRange(now, weekType);
 
-      // Get all orders for the week
+      console.log('📊 Loading weekly data for range:', { start, end, startMs: start.getTime(), endMs: end.getTime() });
+
+      // Get all orders for the week using Finance API
       const allOrders: any[] = [];
-      
-      for (const status of ALL_STATUSES) {
-        try {
-          const result = await getFbsOrders(token, shopId, {
-            status,
-            page: 0,
-            size: 100
-          });
-          if (result?.success && result?.orders) {
-            allOrders.push(...result.orders);
+      let page = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const result = await getFinanceOrders(token, shopId, {
+          page,
+          size: 100,
+          dateFrom: start.getTime(),
+          dateTo: end.getTime(),
+        });
+
+        console.log(`📊 Finance orders page ${page}:`, result);
+
+        if (result?.success && result?.orders && result.orders.length > 0) {
+          allOrders.push(...result.orders);
+          if (result.orders.length < 100) {
+            hasMore = false;
+          } else {
+            page++;
           }
-          // Rate limiting delay
-          await new Promise(resolve => setTimeout(resolve, 100));
-        } catch (err) {
-          console.error(`Error loading ${status}:`, err);
+        } else {
+          hasMore = false;
         }
+        
+        // Rate limiting delay
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      // Filter orders by date range
-      const weekOrders = allOrders.filter(order => {
-        const orderDate = new Date(order.created_at || order.createdAt);
-        return orderDate >= start && orderDate <= end;
-      });
+      console.log('📊 Total orders loaded:', allOrders.length);
+      if (allOrders.length > 0) {
+        console.log('📊 Sample order:', allOrders[0]);
+      }
 
-      // Calculate stats
+      // Calculate stats based on order status
       const soldStatuses = ['COMPLETED', 'DELIVERED', 'DELIVERED_TO_CUSTOMER_DELIVERY_POINT'];
-      const issuedStatuses = ['ACCEPTED_AT_DP', 'DELIVERING'];
+      const issuedStatuses = ['ACCEPTED_AT_DP', 'DELIVERING', 'PENDING_DELIVERY'];
       const canceledStatuses = ['CANCELED', 'RETURNED'];
 
-      const sold = weekOrders.filter(o => soldStatuses.includes(o.status)).length;
-      const issued = weekOrders.filter(o => issuedStatuses.includes(o.status)).length;
-      const canceled = weekOrders.filter(o => canceledStatuses.includes(o.status)).length;
+      const sold = allOrders.filter(o => {
+        const status = o.status || o.orderStatus;
+        return soldStatuses.includes(status) && !o.cancelled && !o.canceled;
+      }).length;
+      
+      const issued = allOrders.filter(o => {
+        const status = o.status || o.orderStatus;
+        return issuedStatuses.includes(status);
+      }).length;
+      
+      const canceled = allOrders.filter(o => {
+        const status = o.status || o.orderStatus;
+        return canceledStatuses.includes(status) || o.cancelled || o.canceled;
+      }).length;
 
       setStats({
         sold,
         issued,
         canceled,
-        total: weekOrders.length,
+        total: allOrders.length,
       });
+
+      console.log('📊 Calculated stats:', { sold, issued, canceled, total: allOrders.length });
 
       // Group by day
       const dayMap = new Map<string, DayStats>();
@@ -135,23 +153,31 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
         });
       });
 
-      weekOrders.forEach(order => {
-        const orderDate = new Date(order.created_at || order.createdAt);
+      allOrders.forEach(order => {
+        // Определяем дату заказа (разные API возвращают разные поля)
+        const orderTimestamp = order.date || order.createdAt || order.created_at;
+        const orderDate = new Date(orderTimestamp);
         const dayKey = orderDate.toISOString().split('T')[0];
         const dayStats = dayMap.get(dayKey);
         
         if (dayStats) {
-          if (soldStatuses.includes(order.status)) {
+          const status = order.status || order.orderStatus;
+          const isCanceled = canceledStatuses.includes(status) || order.cancelled || order.canceled;
+          const isSold = soldStatuses.includes(status) && !isCanceled;
+          
+          if (isSold) {
             dayStats.sold++;
-          } else if (canceledStatuses.includes(order.status)) {
+          } else if (isCanceled) {
             dayStats.canceled++;
           }
         }
       });
 
-      setWeekData(Array.from(dayMap.values()));
+      const chartData = Array.from(dayMap.values());
+      console.log('📊 Chart data by day:', chartData);
+      setWeekData(chartData);
     } catch (error) {
-      console.error('Error loading weekly data:', error);
+      console.error('❌ Error loading weekly data:', error);
     } finally {
       setLoading(false);
     }
@@ -311,27 +337,10 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
   }
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '20px',
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '16px',
+    <div className="uzum-modal-overlay">
+      <div className="uzum-modal" style={{
         maxWidth: '1200px',
-        width: '100%',
         maxHeight: '90vh',
-        overflow: 'auto',
-        padding: '24px',
       }}>
         {/* Header */}
         <div style={{
@@ -339,9 +348,11 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
           justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '20px',
+          flexWrap: 'wrap',
+          gap: '12px',
         }}>
           <h2 style={{
-            fontSize: '20px',
+            fontSize: window.innerWidth > 640 ? '20px' : '18px',
             fontWeight: 700,
             margin: 0,
           }}>
@@ -349,14 +360,7 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
           </h2>
           <button
             onClick={onClose}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#f3f4f6',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-            }}
+            className="uzum-btn-secondary"
           >
             {t.close}
           </button>
@@ -370,19 +374,20 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
           backgroundColor: '#f3f4f6',
           padding: '4px',
           borderRadius: '8px',
-          width: 'fit-content',
+          width: window.innerWidth > 640 ? 'fit-content' : '100%',
         }}>
           <button
             onClick={() => setWeekType('previous')}
             style={{
-              padding: '10px 20px',
+              padding: window.innerWidth > 640 ? '10px 20px' : '8px 12px',
               backgroundColor: weekType === 'previous' ? 'white' : 'transparent',
               border: 'none',
               borderRadius: '6px',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: window.innerWidth > 640 ? '14px' : '13px',
               fontWeight: weekType === 'previous' ? 600 : 400,
               boxShadow: weekType === 'previous' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              flex: window.innerWidth > 640 ? 'none' : 1,
             }}
           >
             ✓ {t.previousWeek}
@@ -390,14 +395,15 @@ export default function UzumWeeklyChart({ lang, token, shopId, onClose }: UzumWe
           <button
             onClick={() => setWeekType('current')}
             style={{
-              padding: '10px 20px',
+              padding: window.innerWidth > 640 ? '10px 20px' : '8px 12px',
               backgroundColor: weekType === 'current' ? 'white' : 'transparent',
               border: 'none',
               borderRadius: '6px',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: window.innerWidth > 640 ? '14px' : '13px',
               fontWeight: weekType === 'current' ? 600 : 400,
               boxShadow: weekType === 'current' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              flex: window.innerWidth > 640 ? 'none' : 1,
             }}
           >
             {t.currentWeek}

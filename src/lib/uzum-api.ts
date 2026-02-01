@@ -454,6 +454,7 @@ export async function cancelFbsOrder(
 
 /**
  * GET /v1/fbs/order/{orderId}/labels/print - Получить этикетку для FBS заказа
+ * Возвращает PDF файл в формате base64 или URL
  */
 export async function getFbsOrderLabel(
   token: string,
@@ -461,6 +462,8 @@ export async function getFbsOrderLabel(
 ): Promise<{
   success: boolean;
   label?: any;
+  labelUrl?: string;
+  labelPdf?: string; // base64 encoded PDF
   error?: string;
 }> {
   const result = await apiRequest<any>(
@@ -473,6 +476,37 @@ export async function getFbsOrderLabel(
     return { success: false, error: result.error };
   }
 
+  // API может вернуть разные форматы:
+  // 1. PDF как base64 строка
+  // 2. URL на PDF файл
+  // 3. Объект с данными для генерации этикетки
+  const data = result.data;
+  
+  // Проверяем, является ли ответ base64 PDF
+  if (typeof data === 'string') {
+    if (data.startsWith('http')) {
+      // Это URL
+      return { success: true, labelUrl: data, label: data };
+    } else if (data.startsWith('JVBER') || data.includes('PDF')) {
+      // Это base64 PDF (начинается с JVBERi0 в base64)
+      return { success: true, labelPdf: data, label: data };
+    }
+  }
+  
+  // Если это объект с полем url или pdf
+  if (data && typeof data === 'object') {
+    if (data.url) {
+      return { success: true, labelUrl: data.url, label: data };
+    }
+    if (data.pdf) {
+      return { success: true, labelPdf: data.pdf, label: data };
+    }
+    if (data.base64) {
+      return { success: true, labelPdf: data.base64, label: data };
+    }
+  }
+
+  // Возвращаем как есть
   return { success: true, label: result.data };
 }
 

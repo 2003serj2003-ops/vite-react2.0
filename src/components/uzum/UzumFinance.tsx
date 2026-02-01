@@ -154,103 +154,48 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
   const totals = calculateTotals();
 
   return (
-    <div className="list">
+    <div className="uzum-container">
       {/* Summary Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        marginBottom: '12px',
-      }}>
-        <div className="cardCream" style={{ textAlign: 'center' }}>
-          <div style={{
-            fontSize: '12px',
-            color: '#666',
-            marginBottom: '6px',
-          }}>
+      <div className="uzum-stat-grid">
+        <div className="uzum-stat-card">
+          <div className="uzum-stat-label">
             💰 {t.revenue}
           </div>
-          <div style={{
-            fontSize: '20px',
-            fontWeight: 700,
-            color: '#22c55e',
-          }}>
+          <div className="uzum-stat-value" style={{ color: '#22c55e' }}>
             {formatPrice(totals.revenue)}
           </div>
         </div>
 
-        <div className="cardCream" style={{ textAlign: 'center' }}>
-          <div style={{
-            fontSize: '12px',
-            color: '#666',
-            marginBottom: '6px',
-          }}>
+        <div className="uzum-stat-card">
+          <div className="uzum-stat-label">
             📉 {t.totalExpenses}
           </div>
-          <div style={{
-            fontSize: '20px',
-            fontWeight: 700,
-            color: '#ef4444',
-          }}>
+          <div className="uzum-stat-value" style={{ color: '#ef4444' }}>
             {formatPrice(totals.totalExpenses)}
           </div>
         </div>
 
-        <div className="cardCream" style={{ textAlign: 'center' }}>
-          <div style={{
-            fontSize: '12px',
-            color: '#666',
-            marginBottom: '6px',
-          }}>
+        <div className="uzum-stat-card">
+          <div className="uzum-stat-label">
             📈 {t.profit}
           </div>
-          <div style={{
-            fontSize: '20px',
-            fontWeight: 700,
-            color: totals.profit >= 0 ? '#3b82f6' : '#ef4444',
-          }}>
+          <div className="uzum-stat-value" style={{ color: totals.profit >= 0 ? '#3b82f6' : '#ef4444' }}>
             {formatPrice(totals.profit)}
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="cardCream" style={{
-        display: 'flex',
-        gap: '8px',
-        marginBottom: '24px',
-        borderBottom: '2px solid #e5e7eb',
-      }}>
+      <div className="uzum-tabs">
         <button
+          className={`uzum-tab ${activeTab === 'orders' ? 'active' : ''}`}
           onClick={() => setActiveTab('orders')}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: 'transparent',
-            border: 'none',
-            borderBottom: `3px solid ${activeTab === 'orders' ? '#f59e0b' : 'transparent'}`,
-            color: activeTab === 'orders' ? '#f59e0b' : '#6b7280',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            marginBottom: '-2px',
-            transition: 'all 0.2s',
-          }}
         >
           📊 {t.orders}
         </button>
         <button
+          className={`uzum-tab ${activeTab === 'expenses' ? 'active' : ''}`}
           onClick={() => setActiveTab('expenses')}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: 'transparent',
-            border: 'none',
-            borderBottom: `3px solid ${activeTab === 'expenses' ? '#f59e0b' : 'transparent'}`,
-            color: activeTab === 'expenses' ? '#f59e0b' : '#6b7280',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            marginBottom: '-2px',
-            transition: 'all 0.2s',
-          }}
         >
           📉 {t.expenses}
         </button>
@@ -271,40 +216,16 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
 
       {/* Content */}
       {loading ? (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '300px',
-          gap: '16px',
-        }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            border: '4px solid #f3f4f6',
-            borderTopColor: '#f59e0b',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }} />
+        <div className="uzum-loader-container">
+          <div className="uzum-loader" />
           <div style={{ fontSize: '16px', color: '#6b7280' }}>
             {t.loading}
           </div>
-          <style>{`
-            @keyframes spin {
-              to { transform: rotate(360deg); }
-            }
-          `}</style>
         </div>
       ) : (
         <>
           {activeTab === 'orders' && (
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            }}>
+            <div className="uzum-table-container">
               {orders.length === 0 ? (
                 <div style={{
                   padding: '60px 20px',
@@ -315,43 +236,43 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                   📭 {t.noData}
                 </div>
               ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{
-                    width: '100%',
-                    borderCollapse: 'collapse',
-                  }}>
-                    <thead>
-                      <tr style={{
-                        backgroundColor: '#f9fafb',
-                        borderBottom: '2px solid #e5e7eb',
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                }}>
+                  <thead>
+                    <tr style={{
+                      backgroundColor: '#f9fafb',
+                      borderBottom: '2px solid #e5e7eb',
+                    }}>
+                      <th style={{
+                        padding: window.innerWidth > 640 ? '16px' : '12px',
+                        textAlign: 'left',
+                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                        fontWeight: '600',
+                        color: '#6b7280',
                       }}>
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'left',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                        }}>
-                          {t.orderNumber}
-                        </th>
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'left',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                        }}>
-                          {t.date}
-                        </th>
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'right',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                        }}>
-                          {t.amount}
-                        </th>
+                        {t.orderNumber}
+                      </th>
+                      <th style={{
+                        padding: window.innerWidth > 640 ? '16px' : '12px',
+                        textAlign: 'left',
+                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                        fontWeight: '600',
+                        color: '#6b7280',
+                      }}>
+                        {t.date}
+                      </th>
+                      <th style={{
+                        padding: window.innerWidth > 640 ? '16px' : '12px',
+                        textAlign: 'right',
+                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                        fontWeight: '600',
+                        color: '#6b7280',
+                      }}>
+                        {t.amount}
+                      </th>
+                      {window.innerWidth > 640 && (
                         <th style={{
                           padding: '16px',
                           textAlign: 'right',
@@ -361,39 +282,41 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                         }}>
                           {t.commission}
                         </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {orders.map((order: any, idx: number) => (
-                        <tr
-                          key={idx}
-                          style={{
-                            borderBottom: '1px solid #f3f4f6',
-                          }}
-                        >
-                          <td style={{
-                            padding: '16px',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                          }}>
-                            #{order.order_number || order.id || idx + 1}
-                          </td>
-                          <td style={{
-                            padding: '16px',
-                            fontSize: '14px',
-                            color: '#6b7280',
-                          }}>
-                            {formatDate(order.date || order.created_at)}
-                          </td>
-                          <td style={{
-                            padding: '16px',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            textAlign: 'right',
-                            color: '#22c55e',
-                          }}>
-                            {formatPrice(order.amount || 0)}
-                          </td>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((order: any, idx: number) => (
+                      <tr
+                        key={idx}
+                        style={{
+                          borderBottom: '1px solid #f3f4f6',
+                        }}
+                      >
+                        <td style={{
+                          padding: window.innerWidth > 640 ? '16px' : '12px',
+                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                          fontWeight: '600',
+                        }}>
+                          #{order.order_number || order.id || idx + 1}
+                        </td>
+                        <td style={{
+                          padding: window.innerWidth > 640 ? '16px' : '12px',
+                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                          color: '#6b7280',
+                        }}>
+                          {formatDate(order.date || order.created_at)}
+                        </td>
+                        <td style={{
+                          padding: window.innerWidth > 640 ? '16px' : '12px',
+                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                          fontWeight: '600',
+                          textAlign: 'right',
+                          color: '#22c55e',
+                        }}>
+                          {formatPrice(order.amount || 0)}
+                        </td>
+                        {window.innerWidth > 640 && (
                           <td style={{
                             padding: '16px',
                             fontSize: '14px',
@@ -403,22 +326,17 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                           }}>
                             {formatPrice(order.commission || 0)}
                           </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           )}
 
           {activeTab === 'expenses' && (
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            }}>
+            <div className="uzum-table-container">
               {expenses.length === 0 ? (
                 <div style={{
                   padding: '60px 20px',
@@ -429,25 +347,25 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                   📭 {t.noData}
                 </div>
               ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{
-                    width: '100%',
-                    borderCollapse: 'collapse',
-                  }}>
-                    <thead>
-                      <tr style={{
-                        backgroundColor: '#f9fafb',
-                        borderBottom: '2px solid #e5e7eb',
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                }}>
+                  <thead>
+                    <tr style={{
+                      backgroundColor: '#f9fafb',
+                      borderBottom: '2px solid #e5e7eb',
+                    }}>
+                      <th style={{
+                        padding: window.innerWidth > 640 ? '16px' : '12px',
+                        textAlign: 'left',
+                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                        fontWeight: '600',
+                        color: '#6b7280',
                       }}>
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'left',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                        }}>
-                          {t.date}
-                        </th>
+                        {t.date}
+                      </th>
+                      {window.innerWidth > 640 && (
                         <th style={{
                           padding: '16px',
                           textAlign: 'left',
@@ -457,41 +375,43 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                         }}>
                           {t.type}
                         </th>
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'left',
-                          fontSize: '14px',
-                          fontWeight: '600',
+                      )}
+                      <th style={{
+                        padding: window.innerWidth > 640 ? '16px' : '12px',
+                        textAlign: 'left',
+                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                        fontWeight: '600',
+                        color: '#6b7280',
+                      }}>
+                        {t.description}
+                      </th>
+                      <th style={{
+                        padding: window.innerWidth > 640 ? '16px' : '12px',
+                        textAlign: 'right',
+                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                        fontWeight: '600',
+                        color: '#6b7280',
+                      }}>
+                        {t.amount}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {expenses.map((expense: any, idx: number) => (
+                      <tr
+                        key={idx}
+                        style={{
+                          borderBottom: '1px solid #f3f4f6',
+                        }}
+                      >
+                        <td style={{
+                          padding: window.innerWidth > 640 ? '16px' : '12px',
+                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
                           color: '#6b7280',
                         }}>
-                          {t.description}
-                        </th>
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'right',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                        }}>
-                          {t.amount}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {expenses.map((expense: any, idx: number) => (
-                        <tr
-                          key={idx}
-                          style={{
-                            borderBottom: '1px solid #f3f4f6',
-                          }}
-                        >
-                          <td style={{
-                            padding: '16px',
-                            fontSize: '14px',
-                            color: '#6b7280',
-                          }}>
-                            {formatDate(expense.date || expense.created_at)}
-                          </td>
+                          {formatDate(expense.date || expense.created_at)}
+                        </td>
+                        {window.innerWidth > 640 && (
                           <td style={{
                             padding: '16px',
                             fontSize: '14px',
@@ -499,27 +419,27 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                           }}>
                             {expense.type || 'N/A'}
                           </td>
-                          <td style={{
-                            padding: '16px',
-                            fontSize: '14px',
-                            color: '#6b7280',
-                          }}>
-                            {expense.description || 'N/A'}
-                          </td>
-                          <td style={{
-                            padding: '16px',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            textAlign: 'right',
-                            color: '#ef4444',
-                          }}>
-                            {formatPrice(expense.amount || 0)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                        )}
+                        <td style={{
+                          padding: window.innerWidth > 640 ? '16px' : '12px',
+                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                          color: '#6b7280',
+                        }}>
+                          {expense.description || 'N/A'}
+                        </td>
+                        <td style={{
+                          padding: window.innerWidth > 640 ? '16px' : '12px',
+                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
+                          fontWeight: '600',
+                          textAlign: 'right',
+                          color: '#ef4444',
+                        }}>
+                          {formatPrice(expense.amount || 0)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           )}
