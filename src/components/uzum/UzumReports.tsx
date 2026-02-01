@@ -72,17 +72,20 @@ export default function UzumReports({ lang, token }: UzumReportsProps) {
       </div>
 
       <div style={{ padding: '20px' }}>
-        {/* Reports Grid */}
+        {/* Reports Grid - Horizontal scroll without visible scrollbar */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: window.innerWidth > 1024 
-            ? 'repeat(4, 1fr)' 
-            : window.innerWidth > 640 
-              ? 'repeat(2, 1fr)' 
-              : '1fr',
+          display: 'flex',
           gap: '16px',
           marginBottom: '20px',
-        }}>
+          overflowX: 'auto',
+          scrollbarWidth: 'none', /* Firefox */
+          msOverflowStyle: 'none', /* IE/Edge */
+          WebkitOverflowScrolling: 'touch',
+          scrollSnapType: 'x mandatory',
+          paddingBottom: '8px',
+        }}
+        className="hide-scrollbar"
+        >
           {reports.map((report) => {
             const IconComponent = report.icon;
             const isActive = activeReport === report.id;
@@ -93,6 +96,8 @@ export default function UzumReports({ lang, token }: UzumReportsProps) {
                 onClick={() => report.available && setActiveReport(report.id)}
                 disabled={!report.available}
                 style={{
+                  flex: '0 0 auto',
+                  minWidth: '200px',
                   padding: '20px',
                   background: isActive 
                     ? `linear-gradient(135deg, ${report.color} 0%, ${report.color}dd 100%)` 
@@ -115,6 +120,8 @@ export default function UzumReports({ lang, token }: UzumReportsProps) {
                   transform: isActive ? 'translateY(-2px)' : 'translateY(0)',
                   position: 'relative',
                   overflow: 'hidden',
+                  scrollSnapAlign: 'start',
+                  whiteSpace: 'normal',
                 }}
                 onMouseOver={(e) => {
                   if (report.available && !isActive) {
@@ -183,6 +190,12 @@ export default function UzumReports({ lang, token }: UzumReportsProps) {
             );
           })}
         </div>
+
+        <style>{`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
 
         {/* Active Report */}
         {/* Active Report */}

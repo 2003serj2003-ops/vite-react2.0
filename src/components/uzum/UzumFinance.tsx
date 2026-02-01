@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { getShops, getFinanceOrders, getFinanceExpenses } from '../../lib/uzum-api';
 import SmartLoader from '../SmartLoader';
 import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiCalendar } from 'react-icons/fi';
+import { 
+  calculateFinancials, 
+  formatCurrency, 
+  formatDate as formatFinanceDate,
+  sanitizeFinancialData 
+} from '../../lib/finance-utils';
 
 interface UzumFinanceProps {
   lang: 'ru' | 'uz';
@@ -141,23 +147,29 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
 
   function formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
+    return formatFinanceDate(dateString);
   }
 
   function formatPrice(price: number): string {
-    return new Intl.NumberFormat('ru-RU').format(price) + ' сум';
+    return formatCurrency(price, 'сум');
   }
 
   function calculateTotals() {
-    const revenue = orders.reduce((sum, o) => sum + (o.amount || 0), 0);
-    const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-    const profit = revenue - totalExpenses;
-    return { revenue, totalExpenses, profit };
+    // Use correct financial calculation utility
+    const financials = calculateFinancials(orders);
+    
+    // Sanitize to prevent NaN/undefined
+    const sanitized = sanitizeFinancialData(financials);
+    
+    const totalExpenses = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    
+    return {
+      revenue: sanitized.revenue_gross,
+      totalExpenses,
+      profit: sanitized.revenue_gross - totalExpenses,
+      commission: sanitized.commission,
+      revenue_net: sanitized.revenue_net,
+    };
   }
 
   const totals = calculateTotals();
@@ -248,7 +260,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
       </div>
 
       <div style={{ padding: '20px' }}>
-        {/* Tabs */}
+        {/* Tabs - Horizontal scroll without scrollbar */}
         <div style={{
           display: 'flex',
           gap: '8px',
@@ -257,12 +269,21 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
           padding: '6px',
           borderRadius: '12px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-        }}>
+          overflowX: 'auto',
+          scrollbarWidth: 'none', /* Firefox */
+          msOverflowStyle: 'none', /* IE/Edge */
+          WebkitOverflowScrolling: 'touch',
+          scrollSnapType: 'x mandatory',
+        }}
+        // Hide scrollbar for Chrome/Safari/Opera
+        className="hide-scrollbar"
+        >
           <button
             onClick={() => setActiveTab('orders')}
             style={{
-              flex: 1,
-              padding: '12px',
+              flex: '0 0 auto',
+              minWidth: '140px',
+              padding: '12px 16px',
               border: 'none',
               borderRadius: '8px',
               fontSize: '15px',
@@ -273,6 +294,8 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                 : 'transparent',
               color: activeTab === 'orders' ? 'white' : '#6b7280',
               transition: 'all 0.2s',
+              scrollSnapAlign: 'start',
+              whiteSpace: 'nowrap',
             }}
           >
             {t.orders} ({orders.length})
@@ -280,8 +303,9 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
           <button
             onClick={() => setActiveTab('expenses')}
             style={{
-              flex: 1,
-              padding: '12px',
+              flex: '0 0 auto',
+              minWidth: '140px',
+              padding: '12px 16px',
               border: 'none',
               borderRadius: '8px',
               fontSize: '15px',
@@ -292,11 +316,19 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                 : 'transparent',
               color: activeTab === 'expenses' ? 'white' : '#6b7280',
               transition: 'all 0.2s',
+              scrollSnapAlign: 'start',
+              whiteSpace: 'nowrap',
             }}
           >
             {t.expenses} ({expenses.length})
           </button>
         </div>
+
+        <style>{`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
 
         {/* Date Filter Info */}
         <div style={{

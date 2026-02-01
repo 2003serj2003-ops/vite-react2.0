@@ -1,4 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import FullScreenChartModal from '../FullScreenChartModal';
+import { FiMaximize2 } from 'react-icons/fi';
 
 interface ChartProps {
   data: {
@@ -13,9 +15,23 @@ interface ChartProps {
 }
 
 export default function UzumChart({ data, type, height = 300, showValues = true, title }: ChartProps) {
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    drawChart();
+    
+    // Redraw on window resize
+    const handleResize = () => {
+      drawChart();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [data, type, showValues, isFullScreen]);
+
+  function drawChart() {
     if (!canvasRef.current || data.length === 0) return;
 
     const canvas = canvasRef.current;
@@ -32,8 +48,8 @@ export default function UzumChart({ data, type, height = 300, showValues = true,
     // Clear canvas
     ctx.clearRect(0, 0, rect.width, rect.height);
 
-    // Padding
-    const padding = { top: 40, right: 20, bottom: 60, left: 60 };
+    // Improved padding for better readability
+    const padding = { top: 50, right: 30, bottom: 80, left: 80 };
     const chartWidth = rect.width - padding.left - padding.right;
     const chartHeight = rect.height - padding.top - padding.bottom;
 
@@ -53,7 +69,7 @@ export default function UzumChart({ data, type, height = 300, showValues = true,
     } else if (type === 'pie') {
       drawPieChart(ctx, data, rect.width, rect.height, defaultColors, showValues);
     }
-  }, [data, type, showValues]);
+  }
 
   function drawBarChart(
     ctx: CanvasRenderingContext2D,
@@ -68,16 +84,16 @@ export default function UzumChart({ data, type, height = 300, showValues = true,
     const barWidth = width / data.length - 10;
     const barSpacing = 10;
 
-    // Draw Y axis labels
-    ctx.font = '12px system-ui';
-    ctx.fillStyle = '#6b7280';
+    // Draw Y axis labels with improved font size
+    ctx.font = 'bold 14px Inter, system-ui';
+    ctx.fillStyle = '#374151';
     ctx.textAlign = 'right';
     for (let i = 0; i <= 5; i++) {
       const value = (maxValue / 5) * i;
       const y = padding.top + height - (height / 5) * i;
-      ctx.fillText(formatNumber(value), padding.left - 10, y + 5);
+      ctx.fillText(formatNumberReadable(value), padding.left - 10, y + 5);
       
-      // Draw grid line
+      // Draw grid line with better visibility
       ctx.strokeStyle = '#e5e7eb';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -99,14 +115,14 @@ export default function UzumChart({ data, type, height = 300, showValues = true,
       // Value on top
       if (showValues) {
         ctx.fillStyle = '#111';
-        ctx.font = 'bold 12px system-ui';
+        ctx.font = 'bold 14px Inter, system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText(formatNumber(item.value), x + barWidth / 2, y - 5);
+        ctx.fillText(formatNumberReadable(item.value), x + barWidth / 2, y - 8);
       }
 
-      // Label
-      ctx.fillStyle = '#374151';
-      ctx.font = '11px system-ui';
+      // Label with improved readability
+      ctx.fillStyle = '#111827';
+      ctx.font = '12px Inter, system-ui';
       ctx.textAlign = 'center';
       ctx.save();
       ctx.translate(x + barWidth / 2, padding.top + height + 15);
@@ -138,19 +154,19 @@ export default function UzumChart({ data, type, height = 300, showValues = true,
       ctx.stroke();
     }
 
-    // Draw Y axis labels
-    ctx.font = '12px system-ui';
-    ctx.fillStyle = '#6b7280';
+    // Draw Y axis labels with improved font
+    ctx.font = 'bold 14px Inter, system-ui';
+    ctx.fillStyle = '#374151';
     ctx.textAlign = 'right';
     for (let i = 0; i <= 5; i++) {
       const value = maxValue - (maxValue / 5) * i;
       const y = padding.top + (height / 5) * i;
-      ctx.fillText(formatNumber(value), padding.left - 10, y + 5);
+      ctx.fillText(formatNumberReadable(value), padding.left - 10, y + 5);
     }
 
-    // Draw line
+    // Draw line with better visibility
     ctx.strokeStyle = colors[0];
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.beginPath();
@@ -172,22 +188,22 @@ export default function UzumChart({ data, type, height = 300, showValues = true,
       const x = padding.left + index * pointSpacing;
       const y = padding.top + height - (item.value / maxValue) * height;
 
-      // Point circle
+      // Point circle with better visibility
       ctx.fillStyle = colors[0];
       ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
       ctx.fill();
 
       // White border
       ctx.strokeStyle = 'white';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Label
-      ctx.fillStyle = '#374151';
-      ctx.font = '11px system-ui';
+      // Label with improved font
+      ctx.fillStyle = '#111827';
+      ctx.font = '12px Inter, system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText(truncateText(item.label, 10), x, padding.top + height + 20);
+      ctx.fillText(truncateText(item.label, 10), x, padding.top + height + 25);
     });
   }
 
@@ -223,7 +239,7 @@ export default function UzumChart({ data, type, height = 300, showValues = true,
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Label
+      // Label with improved font and contrast
       if (showValues && item.value > 0) {
         const labelAngle = currentAngle + sliceAngle / 2;
         const labelRadius = radius * 0.7;
@@ -233,73 +249,131 @@ export default function UzumChart({ data, type, height = 300, showValues = true,
         const percentage = ((item.value / total) * 100).toFixed(1);
         
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 12px system-ui';
+        ctx.font = 'bold 14px Inter, system-ui';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        
+        // Add text shadow for better readability
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 4;
         ctx.fillText(`${percentage}%`, labelX, labelY);
+        ctx.shadowBlur = 0;
       }
 
       currentAngle += sliceAngle;
     });
 
-    // Legend
+    // Legend with improved font
     const legendX = 20;
-    let legendY = height - data.length * 25;
+    let legendY = height - data.length * 30;
 
     data.forEach((item, index) => {
       // Color box
       ctx.fillStyle = item.color || colors[index % colors.length];
-      ctx.fillRect(legendX, legendY, 15, 15);
+      ctx.fillRect(legendX, legendY, 18, 18);
 
-      // Text
-      ctx.fillStyle = '#374151';
-      ctx.font = '12px system-ui';
+      // Text with better readability
+      ctx.fillStyle = '#111827';
+      ctx.font = '13px Inter, system-ui';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      const text = `${truncateText(item.label, 20)}: ${formatNumber(item.value)}`;
-      ctx.fillText(text, legendX + 20, legendY + 7);
+      const text = `${truncateText(item.label, 20)}: ${formatNumberReadable(item.value)}`;
+      ctx.fillText(text, legendX + 24, legendY + 9);
 
-      legendY += 25;
+      legendY += 30;
     });
   }
 
-  function formatNumber(num: number): string {
+  function formatNumberReadable(num: number): string {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-    return Math.round(num).toString();
+    return new Intl.NumberFormat('ru-RU').format(Math.round(num));
   }
 
   function truncateText(text: string, maxLength: number): string {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   }
 
-  return (
-    <div style={{
-      width: '100%',
-      backgroundColor: 'white',
-      borderRadius: '16px',
-      padding: '20px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-    }}>
-      {title && (
-        <h3 style={{
-          fontSize: '16px',
-          fontWeight: '700',
-          color: '#111',
-          marginBottom: '20px',
-          marginTop: 0,
-        }}>
-          {title}
-        </h3>
-      )}
+  const chartContent = (
+    <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
       <canvas
         ref={canvasRef}
         style={{
           width: '100%',
-          height: `${height}px`,
+          height: `${isFullScreen ? 600 : height}px`,
           display: 'block',
         }}
       />
     </div>
+  );
+
+  return (
+    <>
+      <div style={{
+        width: '100%',
+        backgroundColor: 'white',
+        borderRadius: '16px',
+        padding: '20px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        position: 'relative',
+      }}>
+        {title && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '20px',
+          }}>
+            <h3 style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              color: '#111',
+              margin: 0,
+              fontFamily: 'Poppins, sans-serif',
+            }}>
+              {title}
+            </h3>
+            <button
+              onClick={() => setIsFullScreen(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                border: 'none',
+                borderRadius: '8px',
+                backgroundColor: '#f3f4f6',
+                color: '#374151',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontFamily: 'Inter, sans-serif',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#1E6FDB';
+                e.currentTarget.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f3f4f6';
+                e.currentTarget.style.color = '#374151';
+              }}
+            >
+              <FiMaximize2 size={16} />
+              Открыть график
+            </button>
+          </div>
+        )}
+        {chartContent}
+      </div>
+
+      <FullScreenChartModal
+        isOpen={isFullScreen}
+        onClose={() => setIsFullScreen(false)}
+        title={title || 'График'}
+      >
+        {chartContent}
+      </FullScreenChartModal>
+    </>
   );
 }
