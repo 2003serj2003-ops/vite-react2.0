@@ -13,98 +13,158 @@ const PROXY_URL = import.meta.env.DEV
   ? '/api/uzum-proxy'  // Vite proxy в разработке
   : 'https://ykbouygdeqrohizeqlmc.supabase.co/functions/v1/uzum-proxy'; // Supabase Edge Function в продакшене
 
+// Rate limiting configuration
+const RATE_LIMIT_DELAY = 500; // минимальная задержка между запросами (мс)
+const MAX_RETRIES = 3; // максимальное количество повторов
+const INITIAL_RETRY_DELAY = 1000; // начальная задержка при повторе (мс)
+
+// Очередь запросов для rate limiting
+let requestQueue: Promise<any> = Promise.resolve();
+let lastRequestTime = 0;
+
 /**
- * Base API request handler
+ * Добавить задержку для rate limiting
+ */
+async function rateLimitDelay() {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+  if (timeSinceLastRequest < RATE_LIMIT_DELAY) {
+    await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY - timeSinceLastRequest));
+  }
+  lastRequestTime = Date.now();
+}
+
+/**
+ * Задержка с exponential backoff
+ */
+async function exponentialBackoff(attempt: number) {
+  const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt);
+  console.log(`⏳ Waiting ${delay}ms before retry (attempt ${attempt + 1}/${MAX_RETRIES})`);
+  await new Promise(resolve => setTimeout(resolve, delay));
+}
+
+/**
+ * Base API request handler with rate limiting and retry
  */
 async function apiRequest<T>(
   endpoint: string,
   token: string,
   options: RequestInit = {}
 ): Promise<{ data?: T; error?: string; status: number }> {
-  try {
-    let response: Response;
+  // Добавляем запрос в очередь для rate limiting
+  return requestQueue = requestQueue.then(async () => {
+    await rateLimitDelay();
+    
+    // Попытки с retry при ошибке 429
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        let response: Response;
 
-    if (USE_PROXY) {
-      // Используем прокси
-      const proxyBody: any = {
-        path: endpoint,
-        method: options.method || 'GET',
-        headers: {
-          'Authorization': token,
-        },
-      };
+        if (USE_PROXY) {
+          // Используем прокси
+          const proxyBody: any = {
+            path: endpoint,
+            method: options.method || 'GET',
+            headers: {
+              'Authorization': token,
+            },
+          };
 
-      // Добавляем body только если он есть и метод не GET
-      if (options.body && options.method && options.method !== 'GET') {
-        proxyBody.body = typeof options.body === 'string' 
-          ? JSON.parse(options.body) 
-          : options.body;
+          // Добавляем body только если он есть и метод не GET
+          if (options.body && options.method && options.method !== 'GET') {
+            proxyBody.body = typeof options.body === 'string' 
+              ? JSON.parse(options.body) 
+              : options.body;
+          }
+
+          if (attempt === 0) {
+            console.log('🔹 [Uzum API Client] Request:', {
+              url: PROXY_URL,
+              proxyBody: JSON.stringify(proxyBody)
+            });
+          }
+
+          response = await fetch(PROXY_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+            },
+            body: JSON.stringify(proxyBody),
+          });
+        } else {
+          // Прямой запрос (продакшен - Uzum API разрешает CORS)
+          const url = `https://api-seller.uzum.uz/api/seller-openapi${endpoint}`;
+          response = await fetch(url, {
+            ...options,
+            headers: {
+              'Authorization': token,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Origin': window.location.origin,
+              'Referer': window.location.href,
+              ...options.headers,
+            },
+            mode: 'cors',
+            credentials: 'omit',
+          });
+        }
+
+        const status = response.status;
+
+        // Обработка ошибки 429 - Too Many Requests
+        if (status === 429) {
+          if (attempt < MAX_RETRIES - 1) {
+            console.warn(`⚠️ Rate limit exceeded (429), retrying... (${attempt + 1}/${MAX_RETRIES})`);
+            await exponentialBackoff(attempt);
+            continue; // повторяем попытку
+          } else {
+            console.error('❌ Max retries reached for rate limiting');
+            return { error: 'Превышен лимит запросов. Попробуйте позже', status };
+          }
+        }
+
+        if (!response.ok) {
+          // Логируем тело ошибки для отладки
+          const errorText = await response.text();
+          console.error(`API Error ${status}:`, errorText);
+          
+          if (status === 401) return { error: 'Неверный токен', status };
+          if (status === 403) return { error: 'Доступ запрещён', status };
+          if (status === 404) return { error: 'Ресурс не найден', status };
+          if (status === 400) return { error: `Неверный запрос: ${errorText}`, status };
+          if (status >= 500) return { error: 'Ошибка сервера', status };
+          
+          return { error: `Ошибка ${status}`, status };
+        }
+
+        const data = await response.json();
+        
+        // Uzum API возвращает ответ в формате { payload: ..., timestamp: ... }
+        // Извлекаем payload если он есть
+        if (data && typeof data === 'object' && 'payload' in data) {
+          console.log('📦 [API] Extracted payload from response');
+          return { data: data.payload, status };
+        }
+        
+        return { data, status };
+      } catch (error: any) {
+        if (attempt < MAX_RETRIES - 1) {
+          console.warn(`⚠️ Request failed, retrying... (${attempt + 1}/${MAX_RETRIES})`, error.message);
+          await exponentialBackoff(attempt);
+          continue;
+        }
+        console.error('API Request error:', error);
+        return {
+          error: error.message || 'Ошибка сети',
+          status: 0
+        };
       }
-
-      console.log('🔹 [Uzum API Client] Request:', {
-        url: PROXY_URL,
-        proxyBody: JSON.stringify(proxyBody)
-      });
-
-      response = await fetch(PROXY_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
-        },
-        body: JSON.stringify(proxyBody),
-      });
-    } else {
-      // Прямой запрос (продакшен - Uzum API разрешает CORS)
-      const url = `https://api-seller.uzum.uz/api/seller-openapi${endpoint}`;
-      response = await fetch(url, {
-        ...options,
-        headers: {
-          'Authorization': token,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Origin': window.location.origin,
-          'Referer': window.location.href,
-          ...options.headers,
-        },
-        mode: 'cors',
-        credentials: 'omit',
-      });
-    }
-
-    const status = response.status;
-
-    if (!response.ok) {
-      // Логируем тело ошибки для отладки
-      const errorText = await response.text();
-      console.error(`API Error ${status}:`, errorText);
-      
-      if (status === 401) return { error: 'Неверный токен', status };
-      if (status === 403) return { error: 'Доступ запрещён', status };
-      if (status === 404) return { error: 'Ресурс не найден', status };
-      if (status === 400) return { error: `Неверный запрос: ${errorText}`, status };
-      if (status >= 500) return { error: 'Ошибка сервера', status };
-      
-      return { error: `Ошибка ${status}`, status };
-    }
-
-    const data = await response.json();
-    
-    // Uzum API возвращает ответ в формате { payload: ..., timestamp: ... }
-    // Извлекаем payload если он есть
-    if (data && typeof data === 'object' && 'payload' in data) {
-      console.log('📦 [API] Extracted payload from response');
-      return { data: data.payload, status };
     }
     
-    return { data, status };
-  } catch (error: any) {
-    console.error('API Request error:', error);
-    return {
-      error: error.message || 'Ошибка сети',
-      status: 0
-    };
-  }
+    // Не должно сюда попасть, но на всякий случай
+    return { error: 'Неизвестная ошибка', status: 0 };
+  });
 }
 
 // ============================================================================

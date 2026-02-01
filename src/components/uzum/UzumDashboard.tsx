@@ -154,19 +154,16 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             }));
           }
 
-          // Load orders count - use Promise.all for parallel requests (faster!)
+          // Load orders count - sequential to avoid rate limiting
           const statuses = ['CREATED', 'PACKING', 'PENDING_DELIVERY', 'DELIVERING', 'DELIVERED', 
                            'ACCEPTED_AT_DP', 'DELIVERED_TO_CUSTOMER_DELIVERY_POINT', 
                            'COMPLETED', 'CANCELED', 'PENDING_CANCELLATION', 'RETURNED'];
           
-          // Split into chunks of 3 for parallel requests
+          // Process sequentially with rate limiting built into apiRequest
           let totalOrders = 0;
-          for (let i = 0; i < statuses.length; i += 3) {
-            const chunk = statuses.slice(i, i + 3);
-            const results = await Promise.all(
-              chunk.map(status => getFbsOrdersCount(token, shopId, { status }))
-            );
-            totalOrders += results.reduce((sum, r) => sum + (r.count || 0), 0);
+          for (const status of statuses) {
+            const result = await getFbsOrdersCount(token, shopId, { status });
+            totalOrders += result.count || 0;
           }
           
           console.log('📋 Total orders count:', totalOrders);
@@ -175,12 +172,10 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack 
             activeOrders: totalOrders,
           }));
 
-          // Load pending orders in parallel
-          const [createdResult, packingResult, pendingResult] = await Promise.all([
-            getFbsOrdersCount(token, shopId, { status: 'CREATED' }),
-            getFbsOrdersCount(token, shopId, { status: 'PACKING' }),
-            getFbsOrdersCount(token, shopId, { status: 'PENDING_DELIVERY' }),
-          ]);
+          // Load pending orders sequentially
+          const createdResult = await getFbsOrdersCount(token, shopId, { status: 'CREATED' });
+          const packingResult = await getFbsOrdersCount(token, shopId, { status: 'PACKING' });
+          const pendingResult = await getFbsOrdersCount(token, shopId, { status: 'PENDING_DELIVERY' });
           
           const pendingTotal = (createdResult.count || 0) + (packingResult.count || 0) + (pendingResult.count || 0);
           
