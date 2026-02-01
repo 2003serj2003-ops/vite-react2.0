@@ -37,9 +37,9 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
 
   const navItems = [
     { id: 'dashboard', icon: FiHome, label: t.dashboard, color: '#1E6FDB' },
-    { id: 'products', icon: FiPackage, label: t.products, color: '#FF9F1C' },
-    { id: 'orders', icon: FiShoppingCart, label: t.orders, color: '#4CAF50' },
-    { id: 'finance', icon: FiDollarSign, label: t.finance, color: '#4CAF50' },
+    { id: 'products', icon: FiPackage, label: t.products, color: 'var(--accent-warning)' },
+    { id: 'orders', icon: FiShoppingCart, label: t.orders, color: 'var(--accent-success)' },
+    { id: 'finance', icon: FiDollarSign, label: t.finance, color: 'var(--accent-success)' },
     { id: 'invoices', icon: FiFileText, label: t.invoices, color: '#1E6FDB' },
     { id: 'reports', icon: FiBarChart2, label: t.reports, color: '#3FA9F5' },
   ] as const;
@@ -50,14 +50,14 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: 'white',
-      borderTop: '1px solid #e5e7eb',
+      backgroundColor: 'var(--bg-card)',
+      borderTop: '1px solid var(--border-primary)',
       padding: '8px 8px calc(8px + env(safe-area-inset-bottom))',
       display: 'flex',
       justifyContent: 'space-around',
       gap: '4px',
       zIndex: 100,
-      boxShadow: '0 -4px 12px rgba(0,0,0,0.08)',
+      boxShadow: '0 -4px 12px rgba(0,0,0,0.15)',
     }}>
       {navItems.map((item) => {
         const isActive = currentPage === item.id;
@@ -84,7 +84,7 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
             }}
             onMouseEnter={(e) => {
               if (!isActive) {
-                e.currentTarget.style.backgroundColor = '#f9fafb';
+                e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
               }
             }}
             onMouseLeave={(e) => {
@@ -121,7 +121,7 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
             }}>
               <Icon 
                 size={18} 
-                color={isActive ? 'white' : '#6b7280'}
+                color={isActive ? 'white' : 'var(--text-secondary)'}
                 style={{ transition: 'all 0.2s' }}
               />
             </div>
@@ -130,7 +130,7 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
             <span style={{
               fontSize: '11px',
               fontWeight: isActive ? '700' : '500',
-              color: isActive ? item.color : '#6b7280',
+              color: isActive ? item.color : 'var(--text-secondary)',
               transition: 'all 0.2s',
               whiteSpace: 'nowrap',
               overflow: 'hidden',

@@ -35,37 +35,38 @@ export default function EmptyState({
 
   return (
     <div style={{
-      padding: '40px 20px',
+      padding: 'var(--spacing-2xl) var(--spacing-lg)',
       textAlign: 'center',
       background: bgColor,
-      borderRadius: '12px',
+      borderRadius: 'var(--radius-lg)',
       border: `2px solid ${borderColor}`,
-      margin: '20px',
+      margin: 'var(--spacing-lg)',
     }}>
       <div style={{
         fontSize: '48px',
-        marginBottom: '16px',
+        marginBottom: 'var(--spacing-lg)',
         lineHeight: '1',
       }}>
         {icon}
       </div>
 
       <h3 style={{
-        fontSize: '16px',
-        fontWeight: 900,
+        fontSize: 'var(--text-lg)',
+        fontWeight: 700,
         color: textColor,
-        marginBottom: '6px',
-        margin: '0 0 6px 0',
+        marginBottom: 'var(--spacing-xs)',
+        margin: `0 0 var(--spacing-xs) 0`,
+        lineHeight: 1.3,
       }}>
         {title}
       </h3>
 
       <p style={{
-        fontSize: '13px',
+        fontSize: 'var(--text-sm)',
         color: textColor,
         opacity: 0.8,
-        marginBottom: actionText ? '16px' : '0',
-        margin: `0 0 ${actionText ? '16px' : '0'} 0`,
+        marginBottom: actionText ? 'var(--spacing-lg)' : '0',
+        margin: `0 0 ${actionText ? 'var(--spacing-lg)' : '0'} 0`,
         lineHeight: '1.5',
       }}>
         {subtitle}
@@ -75,19 +76,19 @@ export default function EmptyState({
         <button
           onClick={onAction}
           style={{
-            padding: '10px 20px',
-            borderRadius: '8px',
+            padding: 'var(--spacing-sm) var(--spacing-lg)',
+            borderRadius: 'var(--radius-md)',
             border: 'none',
             background: '#1E6FDB',
             color: '#fff',
             fontWeight: 700,
-            fontSize: '13px',
+            fontSize: 'var(--text-sm)',
             cursor: 'pointer',
-            transition: 'all .2s',
+            transition: 'all 0.15s ease',
             boxShadow: '0 2px 8px rgba(30,111,219,0.2)',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.transform = 'translateY(-1px)';
             e.currentTarget.style.boxShadow = '0 4px 12px rgba(30,111,219,0.3)';
           }}
           onMouseLeave={(e) => {

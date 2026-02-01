@@ -42,7 +42,7 @@ export default function UzumStatusBlock({
 
   const t = T[lang];
 
-  let statusColor = '#ef4444';
+  let statusColor = 'var(--accent-danger)';
   let statusLabel = t.notConnected;
   let statusIcon = '❌';
   let description = t.description;
@@ -51,13 +51,14 @@ export default function UzumStatusBlock({
 
   if (isConnected) {
     if (hasData) {
-      statusColor = '#4CAF50';
+      statusColor = 'var(--accent-success)';
       statusLabel = t.connected;
       statusIcon = '✅';
       description = t.descriptionConnected;
       showConnectBtn = false;
       showOpenBtn = true;
     } else {
+      statusColor = 'var(--accent-warning)';
       statusLabel = t.connectedNoData;
       statusIcon = '⏳';
       description = t.descriptionNoData;
@@ -71,11 +72,11 @@ export default function UzumStatusBlock({
       position: 'relative',
       padding: '24px',
       background: isConnected && hasData 
-        ? 'linear-gradient(135deg, #4CAF5010 0%, #34d39920 100%)'
+        ? 'var(--accent-success-bg)'
         : isConnected 
-        ? 'linear-gradient(135deg, #FF9F1C10 0%, #fbbf2420 100%)'
-        : 'linear-gradient(135deg, #ef444410 0%, #f8717120 100%)',
-      border: `2px solid ${statusColor}30`,
+        ? 'var(--accent-warning-bg)'
+        : 'var(--accent-danger-bg)',
+      border: `2px solid ${statusColor}`,
       borderRadius: '20px',
       marginBottom: '20px',
       overflow: 'hidden',

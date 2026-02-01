@@ -5,14 +5,10 @@ import UzumWeeklyChart from './UzumWeeklyChart';
 import SmartLoader from '../SmartLoader';
 import Tooltip from '../Tooltip';
 import { 
-  FiPackage, 
-  FiShoppingCart, 
   FiDollarSign, 
-  FiBarChart2,
   FiRefreshCw,
   FiTrendingUp,
-  FiTrendingDown,
-  FiBox
+  FiTrendingDown
 } from 'react-icons/fi';
 
 interface UzumDashboardProps {
@@ -568,7 +564,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
   };
 
   return (
-    <div className="list" style={{ padding: '0' }}>
+    <div className="list p-0">
       {/* Stylized Top App Bar */}
       <div style={{
         position: 'sticky',
@@ -642,7 +638,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               style={{
                 width: '36px',
                 height: '36px',
-                backgroundColor: refreshing ? '#e5e7eb' : '#4CAF50',
+                backgroundColor: refreshing ? '#e5e7eb' : 'var(--accent-success)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
@@ -664,7 +660,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               style={{
                 width: '36px',
                 height: '36px',
-                backgroundColor: '#FF9F1C',
+                backgroundColor: 'var(--accent-warning)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
@@ -685,7 +681,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               style={{
                 width: '36px',
                 height: '36px',
-                backgroundColor: '#ef4444',
+                backgroundColor: 'var(--accent-danger)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
@@ -762,7 +758,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             }}
             style={{
               padding: '6px 12px',
-              backgroundColor: '#4CAF50',
+              backgroundColor: 'var(--accent-success)',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -969,12 +965,12 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                 <div style={{
                   fontSize: '28px',
                   fontWeight: 700,
-                  color: stats.profit < 0 ? '#ef4444' : '#4CAF50',
+                  color: stats.profit < 0 ? 'var(--accent-danger)' : 'var(--accent-success)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
                 }}>
-                  {stats.profit < 0 ? <FiTrendingDown color="#ef4444" size={24} /> : <FiTrendingUp color="#4CAF50" size={24} />}
+                  {stats.profit < 0 ? <FiTrendingDown color="var(--accent-danger)" size={24} /> : <FiTrendingUp color="var(--accent-success)" size={24} />}
                   {formatNumber(stats.profit)}
                 </div>
               </div>
@@ -1008,7 +1004,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                 <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>
                   {t.fbsQty}
                 </div>
-                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#4CAF50' }}>
+                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: 'var(--accent-success)' }}>
                   {stats.fbsStock}
                 </div>
               </div>
@@ -1016,7 +1012,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                 <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>
                   {t.dbsQty}
                 </div>
-                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: '#FF9F1C' }}>
+                <div style={{ fontSize: window.innerWidth > 640 ? '24px' : '20px', fontWeight: 700, color: 'var(--accent-warning)' }}>
                   {stats.dbsStock}
                 </div>
               </div>
@@ -1163,8 +1159,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
               {[
                 { icon: '📱', label: t.marketing, value: financeBreakdown.marketing, color: '#3FA9F5' },
                 { icon: '💵', label: t.commission, value: financeBreakdown.commission, color: '#1E6FDB' },
-                { icon: '🚚', label: t.logistics, value: financeBreakdown.logistics, color: '#FF9F1C' },
-                { icon: '⚠️', label: t.fines, value: financeBreakdown.fines, color: '#FF9F1C' },
+                { icon: '🚚', label: t.logistics, value: financeBreakdown.logistics, color: 'var(--accent-warning)' },
+                { icon: '⚠️', label: t.fines, value: financeBreakdown.fines, color: 'var(--accent-warning)' },
               ].map((item, i) => (
                 <div key={i}>
                   <div style={{
@@ -1207,169 +1203,6 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           </div>
         </div>
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="uzum-grid" style={{
-        gridTemplateColumns: window.innerWidth > 768 ? 'repeat(5, 1fr)' : 'repeat(2, 1fr)',
-        gap: '8px',
-        padding: '0 16px 20px',
-      }}>
-        <button
-          onClick={() => onNavigate('products')}
-          className="uzum-card"
-          style={{
-            cursor: 'pointer',
-            textAlign: 'center',
-            padding: window.innerWidth > 640 ? '24px' : '16px',
-            border: 'none',
-            background: 'white',
-          }}
-        >
-          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-            <FiPackage size={window.innerWidth > 640 ? 32 : 28} color="#1E6FDB" />
-          </div>
-          <div style={{
-            fontSize: window.innerWidth > 640 ? '24px' : '20px',
-            fontWeight: 700,
-            color: '#1E6FDB',
-            marginBottom: '4px',
-          }}>
-            {stats.totalProducts}
-          </div>
-          <div style={{
-            fontSize: window.innerWidth > 640 ? '14px' : '12px',
-            color: '#666',
-          }}>
-            {t.products}
-          </div>
-        </button>
-
-        <button
-          onClick={() => onNavigate('orders')}
-          className="uzum-card"
-          style={{
-            cursor: 'pointer',
-            textAlign: 'center',
-            padding: window.innerWidth > 640 ? '24px' : '16px',
-            border: 'none',
-            background: 'white',
-          }}
-        >
-          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-            <FiShoppingCart size={window.innerWidth > 640 ? 32 : 28} color="#4CAF50" />
-          </div>
-          <div style={{
-            fontSize: window.innerWidth > 640 ? '24px' : '20px',
-            fontWeight: 700,
-            color: '#4CAF50',
-            marginBottom: '4px',
-          }}>
-            {stats.activeOrders}
-          </div>
-          <div style={{
-            fontSize: window.innerWidth > 640 ? '14px' : '12px',
-            color: '#666',
-          }}>
-            {t.orders}
-          </div>
-        </button>
-
-        <button
-          onClick={() => onNavigate('finance')}
-          className="uzum-card"
-          style={{
-            cursor: 'pointer',
-            textAlign: 'center',
-            padding: window.innerWidth > 640 ? '24px' : '16px',
-            border: 'none',
-            background: 'white',
-          }}
-        >
-          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-            <FiDollarSign size={window.innerWidth > 640 ? 32 : 28} color="#FF9F1C" />
-          </div>
-          <div style={{
-            fontSize: window.innerWidth > 640 ? '24px' : '20px',
-            fontWeight: 700,
-            color: '#FF9F1C',
-            marginBottom: '4px',
-          }}>
-            {formatNumber(stats.toPay)}
-          </div>
-          <div style={{
-            fontSize: window.innerWidth > 640 ? '14px' : '12px',
-            color: '#666',
-          }}>
-            {t.finance}
-          </div>
-        </button>
-
-        <button
-          onClick={() => onNavigate('stocks')}
-          className="uzum-card"
-          style={{
-            cursor: 'pointer',
-            textAlign: 'center',
-            padding: window.innerWidth > 640 ? '24px' : '16px',
-            border: 'none',
-            background: 'white',
-          }}
-        >
-          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-            <FiBox size={window.innerWidth > 640 ? 32 : 28} color="#1E6FDB" />
-          </div>
-          <div style={{
-            fontSize: window.innerWidth > 640 ? '24px' : '20px',
-            fontWeight: 700,
-            color: '#1E6FDB',
-            marginBottom: '4px',
-          }}>
-            {stats.fbsStock}
-          </div>
-          <div style={{
-            fontSize: window.innerWidth > 640 ? '14px' : '12px',
-            color: '#666',
-          }}>
-            {t.stocks}
-          </div>
-        </button>
-
-        <button
-          onClick={() => {
-            alert(
-              lang === 'ru' 
-                ? 'Товары\nЗаказы\nФинансы\nОстатки\nНакладные\nОтчёты'
-                : 'Mahsulotlar\nBuyurtmalar\nMoliya\nQoldiqlar\nHujjatlar\nHisobotlar'
-            );
-          }}
-          className="uzum-card"
-          style={{
-            cursor: 'pointer',
-            textAlign: 'center',
-            padding: window.innerWidth > 640 ? '24px' : '16px',
-            border: 'none',
-            background: 'white',
-          }}
-        >
-          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-            <FiBarChart2 size={window.innerWidth > 640 ? 32 : 28} color="#3FA9F5" />
-          </div>
-          <div style={{
-            fontSize: window.innerWidth > 640 ? '16px' : '14px',
-            fontWeight: 700,
-            color: '#3FA9F5',
-            marginBottom: '4px',
-          }}>
-            {t.menu}
-          </div>
-          <div style={{
-            fontSize: window.innerWidth > 640 ? '14px' : '12px',
-            color: '#666',
-          }}>
-            {lang === 'ru' ? 'Все разделы' : 'Barcha bo\'limlar'}
-          </div>
-        </button>
       </div>
 
       {/* Weekly Chart Modal */}

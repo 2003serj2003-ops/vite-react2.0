@@ -117,16 +117,16 @@ export function formatOrderStatus(status: string, lang: 'ru' | 'uz' = 'ru'): str
 export function getOrderStatusColor(status: string): string {
   const colorMap: { [key: string]: string } = {
     CREATED: '#1E6FDB', // blue
-    PACKING: '#FF9F1C', // amber
+    PACKING: 'var(--accent-warning)', // amber
     PENDING_DELIVERY: '#3FA9F5', // purple
     DELIVERING: '#06b6d4', // cyan
-    DELIVERED: '#4CAF50', // green
-    ACCEPTED_AT_DP: '#4CAF50', // green
-    DELIVERED_TO_CUSTOMER_DELIVERY_POINT: '#4CAF50', // green
-    COMPLETED: '#4CAF50', // green
-    CANCELED: '#ef4444', // red
-    PENDING_CANCELLATION: '#f97316', // orange
-    RETURNED: '#dc2626', // red
+    DELIVERED: 'var(--accent-success)', // green
+    ACCEPTED_AT_DP: 'var(--accent-success)', // green
+    DELIVERED_TO_CUSTOMER_DELIVERY_POINT: 'var(--accent-success)', // green
+    COMPLETED: 'var(--accent-success)', // green
+    CANCELED: 'var(--accent-danger)', // red
+    PENDING_CANCELLATION: 'var(--accent-warning)', // orange
+    RETURNED: 'var(--accent-danger)', // red
   };
 
   return colorMap[status] || '#6b7280'; // gray default

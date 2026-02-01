@@ -19,11 +19,13 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
   const [orders, setOrders] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<7 | 30 | 90 | 'all'>(30); // По умолчанию 30 дней
   
-  // Даты: с 1 января 2026 по сегодняшний день
-  // Важно: API может не поддерживать фильтрацию по датам, загружаем всё и фильтруем на клиенте
-  const dateFromMs = new Date('2026-01-01T00:00:00').getTime();
+  // Динамический расчёт дат на основе выбранного периода
   const dateToMs = new Date().getTime();
+  const dateFromMs = period === 'all' 
+    ? new Date('2024-01-01T00:00:00').getTime() // Для "всё время" берём с 2024 года
+    : dateToMs - (period * 24 * 60 * 60 * 1000); // Вычитаем N дней
 
   const T = {
     ru: {
@@ -46,6 +48,11 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
       revenue: 'Выручка',
       totalExpenses: 'Расходы',
       profit: 'Прибыль',
+      period7: '7 дней',
+      period30: '30 дней',
+      period90: '90 дней',
+      periodAll: 'Всё время',
+      selectPeriod: 'Выберите период:',
     },
     uz: {
       title: 'Moliya',
@@ -67,6 +74,11 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
       revenue: 'Daromad',
       totalExpenses: 'Xarajatlar',
       profit: 'Foyda',
+      period7: '7 kun',
+      period30: '30 kun',
+      period90: '90 kun',
+      periodAll: 'Barcha vaqt',
+      selectPeriod: 'Davrni tanlang:',
     },
   };
 
@@ -74,7 +86,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
 
   useEffect(() => {
     loadShopAndData();
-  }, [token, activeTab]);
+  }, [token, activeTab, period]);
 
   async function loadShopAndData() {
     setLoading(true);
@@ -179,7 +191,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
   }
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', background: '#f8f9fa', paddingBottom: '80px' }}>
+    <div style={{ width: '100%', minHeight: '100%', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Header */}
       <div style={{
         background: 'linear-gradient(135deg, #0B1C2D 0%, #1E6FDB 50%, #3FA9F5 100%)',
@@ -193,6 +205,39 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
           </h1>
         </div>
 
+        {/* Period Selector */}
+        <div style={{ marginTop: '16px' }}>
+          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', marginBottom: '8px' }}>
+            {t.selectPeriod}
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {[
+              { value: 7 as const, label: t.period7 },
+              { value: 30 as const, label: t.period30 },
+              { value: 90 as const, label: t.period90 },
+              { value: 'all' as const, label: t.periodAll },
+            ].map((item) => (
+              <button
+                key={item.value}
+                onClick={() => setPeriod(item.value)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  backgroundColor: period === item.value ? 'white' : 'rgba(255,255,255,0.2)',
+                  color: period === item.value ? '#1E6FDB' : 'white',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Summary Cards */}
         <div style={{
           display: 'grid',
@@ -200,75 +245,71 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
           gap: '12px',
         }}>
           <div style={{
-            background: 'rgba(76,175,80, 0.2)',
+            background: 'var(--bg-card)',
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             padding: '16px',
-            border: '1px solid rgba(76,175,80, 0.3)',
+            border: '1px solid var(--border-primary)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <FiTrendingUp size={20} />
-              <div style={{ fontSize: '13px', opacity: 0.9 }}>
+              <FiTrendingUp size={20} color="var(--accent-success)" />
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
                 {t.revenue}
               </div>
             </div>
-            <div style={{ fontSize: '26px', fontWeight: '700' }}>
+            <div style={{ fontSize: '26px', fontWeight: '700', color: 'var(--text-primary)' }}>
               {formatPrice(totals.revenue)}
             </div>
           </div>
 
           <div style={{
-            background: 'rgba(239, 68, 68, 0.2)',
+            background: 'var(--bg-card)',
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             padding: '16px',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            border: '1px solid var(--border-primary)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <FiTrendingDown size={20} />
-              <div style={{ fontSize: '13px', opacity: 0.9 }}>
+              <FiTrendingDown size={20} color="var(--accent-danger)" />
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
                 {t.totalExpenses}
               </div>
             </div>
-            <div style={{ fontSize: '26px', fontWeight: '700' }}>
+            <div style={{ fontSize: '26px', fontWeight: '700', color: 'var(--text-primary)' }}>
               {formatPrice(totals.totalExpenses)}
             </div>
           </div>
 
           <div style={{
-            background: totals.profit >= 0 
-              ? 'rgba(30,111,219, 0.2)' 
-              : 'rgba(239, 68, 68, 0.2)',
+            background: 'var(--bg-card)',
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             padding: '16px',
-            border: totals.profit >= 0 
-              ? '1px solid rgba(30,111,219, 0.3)' 
-              : '1px solid rgba(239, 68, 68, 0.3)',
+            border: '1px solid var(--border-primary)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <FiDollarSign size={20} />
-              <div style={{ fontSize: '13px', opacity: 0.9 }}>
+              <FiDollarSign size={20} color={totals.profit >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)'} />
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
                 {t.profit}
               </div>
             </div>
-            <div style={{ fontSize: '26px', fontWeight: '700' }}>
+            <div style={{ fontSize: '26px', fontWeight: '700', color: totals.profit >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)' }}>
               {formatPrice(totals.profit)}
             </div>
           </div>
         </div>
       </div>
 
-      <div style={{ padding: '20px' }}>
+      <div className="p-lg">
         {/* Tabs - Horizontal scroll without scrollbar */}
         <div style={{
           display: 'flex',
           gap: '8px',
           marginBottom: '20px',
-          backgroundColor: 'white',
+          backgroundColor: 'var(--bg-card)',
           padding: '6px',
           borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          boxShadow: 'var(--shadow-sm)',
           overflowX: 'auto',
           scrollbarWidth: 'none', /* Firefox */
           msOverflowStyle: 'none', /* IE/Edge */
@@ -290,9 +331,9 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
               fontWeight: '600',
               cursor: 'pointer',
               background: activeTab === 'orders' 
-                ? 'linear-gradient(135deg, #1E6FDB 0%, #4CAF50 100%)' 
+                ? 'linear-gradient(135deg, #1E6FDB 0%, var(--accent-success) 100%)' 
                 : 'transparent',
-              color: activeTab === 'orders' ? 'white' : '#6b7280',
+                color: activeTab === 'orders' ? 'white' : 'var(--text-secondary)',
               transition: 'all 0.2s',
               scrollSnapAlign: 'start',
               whiteSpace: 'nowrap',
@@ -312,9 +353,9 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
               fontWeight: '600',
               cursor: 'pointer',
               background: activeTab === 'expenses' 
-                ? 'linear-gradient(135deg, #1E6FDB 0%, #4CAF50 100%)' 
+                ? 'linear-gradient(135deg, #1E6FDB 0%, var(--accent-success) 100%)' 
                 : 'transparent',
-              color: activeTab === 'expenses' ? 'white' : '#6b7280',
+                color: activeTab === 'expenses' ? 'white' : 'var(--text-secondary)',
               transition: 'all 0.2s',
               scrollSnapAlign: 'start',
               whiteSpace: 'nowrap',
@@ -343,7 +384,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
         }}>
           <FiCalendar size={24} style={{ color: '#1E6FDB' }} />
           <div style={{ fontSize: '14px', color: '#1e3a8a' }}>
-            <strong>{t.dateFrom}:</strong> 01.01.2026 – <strong>{t.dateTo}:</strong> {new Date().toLocaleDateString('ru-RU')}
+            <strong>{t.dateFrom}:</strong> {new Date(dateFromMs).toLocaleDateString('ru-RU')} – <strong>{t.dateTo}:</strong> {new Date(dateToMs).toLocaleDateString('ru-RU')}
           </div>
         </div>
 
@@ -351,17 +392,17 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
       {/* Content */}
       {activeTab === 'orders' && (
         <div style={{
-          backgroundColor: 'white',
+          backgroundColor: 'var(--bg-card)',
           borderRadius: '16px',
           padding: '20px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          boxShadow: 'var(--shadow-sm)',
           overflowX: 'auto',
         }}>
           {orders.length === 0 ? (
             <div style={{
               padding: '60px 20px',
               textAlign: 'center',
-              color: '#9ca3af',
+              color: 'var(--text-secondary)',
               fontSize: '16px',
             }}>
               📭 {t.noData}
@@ -373,15 +414,15 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
             }}>
               <thead>
                 <tr style={{
-                  backgroundColor: '#f9fafb',
-                  borderBottom: '2px solid #e5e7eb',
+                  backgroundColor: 'var(--bg-secondary)',
+                  borderBottom: '2px solid var(--border-primary)',
                 }}>
                   <th style={{
                     padding: '14px',
                     textAlign: 'left',
                     fontSize: '13px',
                     fontWeight: '600',
-                    color: '#6b7280',
+                    color: 'var(--text-secondary)',
                   }}>
                     {t.orderNumber}
                   </th>
@@ -441,7 +482,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                       fontSize: '14px',
                       fontWeight: '600',
                       textAlign: 'right',
-                      color: '#4CAF50',
+                      color: 'var(--accent-success)',
                     }}>
                       {formatPrice(order.amount || 0)}
                     </td>
@@ -450,7 +491,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                       fontSize: '14px',
                       fontWeight: '600',
                       textAlign: 'right',
-                      color: '#ef4444',
+                      color: 'var(--accent-success)',
                     }}>
                       {formatPrice(order.commission || 0)}
                     </td>
@@ -561,7 +602,7 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
                       fontSize: '14px',
                       fontWeight: '600',
                       textAlign: 'right',
-                      color: '#ef4444',
+                      color: 'var(--accent-danger)',
                     }}>
                       {formatPrice(expense.amount || 0)}
                     </td>

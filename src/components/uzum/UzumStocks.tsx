@@ -184,9 +184,9 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
 
   function getStockLevelColor(level: 'low' | 'medium' | 'high'): string {
     switch (level) {
-      case 'low': return '#ef4444';
-      case 'medium': return '#FF9F1C';
-      case 'high': return '#4CAF50';
+      case 'low': return 'var(--accent-danger)';
+      case 'medium': return 'var(--accent-warning)';
+      case 'high': return 'var(--accent-success)';
     }
   }
 
@@ -213,7 +213,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
   }
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', background: '#f8f9fa', paddingBottom: '80px' }}>
+    <div style={{ width: '100%', minHeight: '100%', background: '#f8f9fa' }}>
       {/* Header */}
       <div style={{
         background: 'linear-gradient(135deg, #0B1C2D 0%, #1E6FDB 50%, #3FA9F5 100%)',
@@ -290,7 +290,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
       </div>
 
       {/* Filters */}
-      <div style={{ padding: '20px' }}>
+      <div className="p-lg">
         {/* Search */}
         <div style={{ position: 'relative', marginBottom: '16px' }}>
           <FiSearch size={20} style={{
@@ -324,9 +324,9 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto' }}>
           {[
             { key: 'all', label: t.all, color: '#6b7280' },
-            { key: 'low', label: t.lowStock, color: '#ef4444' },
-            { key: 'medium', label: t.mediumStock, color: '#FF9F1C' },
-            { key: 'high', label: t.highStock, color: '#4CAF50' },
+            { key: 'low', label: t.lowStock, color: 'var(--accent-danger)' },
+            { key: 'medium', label: t.mediumStock, color: 'var(--accent-warning)' },
+            { key: 'high', label: t.highStock, color: 'var(--accent-success)' },
           ].map(({ key, label, color }) => (
             <button
               key={key}
@@ -366,7 +366,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
         {/* Changes Indicator */}
         {hasChanges && (
           <div style={{
-            background: 'linear-gradient(135deg, #1E6FDB 0%, #4CAF50 100%)',
+            background: 'linear-gradient(135deg, #1E6FDB 0%, var(--accent-success) 100%)',
             borderRadius: '12px',
             padding: '16px',
             marginBottom: '16px',
@@ -546,7 +546,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                       {item.dbsLinked && (
                         <span style={{
                           padding: '3px 8px',
-                          background: 'linear-gradient(135deg, #FF9F1C 0%, #d97706 100%)',
+                          background: 'linear-gradient(135deg, var(--accent-warning) 0%, #d97706 100%)',
                           color: 'white',
                           borderRadius: '6px',
                           fontSize: '11px',
@@ -572,7 +572,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                           onClick={() => handleQuickChange(item.skuId, displayAmount, 10)}
                           style={{
                             padding: '6px 10px',
-                            background: 'linear-gradient(135deg, #4CAF50 0%, #4CAF50 100%)',
+                            background: 'linear-gradient(135deg, var(--accent-success) 0%, var(--accent-success) 100%)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '6px',
@@ -591,7 +591,7 @@ export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
                           onClick={() => handleQuickChange(item.skuId, displayAmount, -10)}
                           style={{
                             padding: '6px 10px',
-                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                            background: 'linear-gradient(135deg, var(--accent-danger) 0%, #dc2626 100%)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '6px',

@@ -56,7 +56,7 @@ export default function UzumReports({ lang, token }: UzumReportsProps) {
   ];
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', background: '#f8f9fa', paddingBottom: '80px' }}>
+    <div style={{ width: '100%', minHeight: '100%', background: '#f8f9fa' }}>
       {/* Header */}
       <div style={{
         background: 'linear-gradient(135deg, #0B1C2D 0%, #1E6FDB 50%, #3FA9F5 100%)',
@@ -71,7 +71,7 @@ export default function UzumReports({ lang, token }: UzumReportsProps) {
         </div>
       </div>
 
-      <div style={{ padding: '20px' }}>
+      <div className="p-lg">
         {/* Reports Grid - Horizontal scroll without visible scrollbar */}
         <div style={{
           display: 'flex',

@@ -16,6 +16,13 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Inline редактирование цены
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [editingPriceValue, setEditingPriceValue] = useState<string>('');
+  const [savingPrice, setSavingPrice] = useState<string | null>(null);
+  const [priceError, setPriceError] = useState<string>('');
+  const [toast, setToast] = useState<{message: string; type: 'success' | 'error'} | null>(null);
 
   const T = {
     ru: {
@@ -37,6 +44,13 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       inactive: 'Неактивен',
       barcode: 'Штрихкод',
       brand: 'Бренд',
+      editPrice: 'Изменить цену',
+      savePrice: 'Сохранить',
+      cancel: 'Отмена',
+      priceUpdated: 'Цена обновлена',
+      priceError: 'Ошибка обновления цены',
+      invalidPrice: 'Некорректная цена',
+      enterNewPrice: 'Введите новую цену',
     },
     uz: {
       title: 'Mahsulotlar',
@@ -57,6 +71,13 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       inactive: 'Nofaol',
       barcode: 'Shtrix-kod',
       brand: 'Brend',
+      editPrice: 'Narxni o\'zgartirish',
+      savePrice: 'Saqlash',
+      cancel: 'Bekor qilish',
+      priceUpdated: 'Narx yangilandi',
+      priceError: 'Narxni yangilashda xatolik',
+      invalidPrice: 'Noto\'g\'ri narx',
+      enterNewPrice: 'Yangi narxni kiriting',
     },
   };
 
@@ -101,6 +122,78 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       console.error('Products load error:', error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Toast автоскрытие
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  // Начать редактирование цены
+  function startEditPrice(product: any, e: React.MouseEvent) {
+    e.stopPropagation();
+    const productId = product.id || product.productId || product.sku;
+    setEditingPriceId(productId);
+    setEditingPriceValue(product.price?.toString() || '');
+    setPriceError('');
+  }
+
+  // Отмена редактирования
+  function cancelEditPrice(e: React.MouseEvent) {
+    e.stopPropagation();
+    setEditingPriceId(null);
+    setEditingPriceValue('');
+    setPriceError('');
+  }
+
+  // Сохранение цены
+  async function savePrice(product: any, e: React.MouseEvent) {
+    e.stopPropagation();
+    
+    const newPrice = parseFloat(editingPriceValue);
+    
+    // Валидация
+    if (isNaN(newPrice) || newPrice < 0) {
+      setPriceError(t.invalidPrice);
+      return;
+    }
+
+    const productId = product.id || product.productId || product.sku;
+    setSavingPrice(productId);
+    setPriceError('');
+
+    try {
+      // TODO: Здесь должен быть вызов API для обновления цены
+      // await updateProductPrice(token, shopId, productId, newPrice);
+      
+      // Имитация запроса (200ms)
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Обновляем локально
+      const updatedProducts = products.map(p => {
+        const pId = p.id || p.productId || p.sku;
+        return pId === productId ? { ...p, price: newPrice } : p;
+      });
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts.filter(p => 
+        searchQuery.trim() === '' ||
+        p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.sku?.toLowerCase().includes(searchQuery.toLowerCase())
+      ));
+      
+      // Успех
+      setToast({ message: t.priceUpdated, type: 'success' });
+      setEditingPriceId(null);
+    } catch (error) {
+      console.error('Price update error:', error);
+      setToast({ message: t.priceError, type: 'error' });
+      setPriceError(t.priceError);
+    } finally {
+      setSavingPrice(null);
     }
   }
 
@@ -242,18 +335,24 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
           {filteredProducts.map((product: any) => {
             const images = getProductImages(product);
             const firstImage = images[0];
+            const productId = product.id || product.productId || product.sku;
+            const isEditingPrice = editingPriceId === productId;
+            const isSavingPrice = savingPrice === productId;
             
             return (
             <div
-              key={product.id || product.productId || product.sku}
-              onClick={() => {
-                setSelectedProduct(product);
-                setCurrentImageIndex(0);
-              }}
+              key={productId}
               className="cardCream"
               style={{
-                cursor: 'pointer',
+                cursor: isEditingPrice ? 'default' : 'pointer',
                 transition: 'all 0.2s',
+                position: 'relative',
+              }}
+              onClick={() => {
+                if (!isEditingPrice) {
+                  setSelectedProduct(product);
+                  setCurrentImageIndex(0);
+                }
               }}
             >
               {/* Product Image or Placeholder */}
@@ -303,63 +402,178 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
                 </div>
               )}
 
+              {/* Product Title - улучшенная иерархия */}
               <div style={{
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: 600,
-                marginBottom: '6px',
-                color: '#111',
+                marginBottom: '8px',
+                color: 'var(--text-primary)',
+                lineHeight: '1.4',
+                minHeight: '42px',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
               }}>
                 {product.title || product.name || 'Без названия'}
               </div>
               
-              {/* Product ID */}
-              {(product.id || product.productId) && (
-                <div style={{
-                  fontSize: '11px',
-                  color: '#999',
-                  marginBottom: '4px',
-                }}>
-                  ID: {product.id || product.productId}
-                </div>
-              )}
-              
-              {/* SKU */}
+              {/* SKU - приглушённый */}
               <div style={{
                 fontSize: '12px',
-                color: '#666',
-                marginBottom: '8px',
+                color: 'var(--text-secondary)',
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
               }}>
-                {t.sku}: {product.sku || 'N/A'}
+                <span style={{ opacity: 0.7 }}>{t.sku}:</span>
+                <span style={{ fontWeight: 500 }}>{product.sku || 'N/A'}</span>
               </div>
               
+              {/* Price Section - INLINE EDITING */}
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center',
+                alignItems: 'flex-start',
+                gap: '8px',
+                marginBottom: '8px',
               }}>
-                <div style={{
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  color: '#1E6FDB',
-                }}>
-                  {product.price ? formatPrice(product.price) : 'N/A'}
-                </div>
-                {product.stock !== undefined && (
-                  <div style={{
-                    padding: '2px 8px',
-                    backgroundColor: product.stock > 0 ? '#dcfce7' : '#fee2e2',
-                    color: product.stock > 0 ? '#166534' : '#991b1b',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                  }}>
-                    {product.stock}
+                {!isEditingPrice ? (
+                  <>
+                    {/* Цена - главный элемент */}
+                    <div style={{
+                      fontSize: '20px',
+                      fontWeight: 700,
+                      color: 'var(--text-primary)',
+                      flex: 1,
+                    }}>
+                      {product.price ? formatPrice(product.price) : 'N/A'}
+                    </div>
+                    {/* Кнопка редактирования */}
+                    <button
+                      onClick={(e) => startEditPrice(product, e)}
+                      style={{
+                        padding: '6px 10px',
+                        backgroundColor: 'var(--accent-warning-bg)',
+                        color: 'var(--accent-warning)',
+                        border: `1px solid var(--accent-warning-border)`,
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--accent-warning)';
+                        e.currentTarget.style.color = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--accent-warning-bg)';
+                        e.currentTarget.style.color = 'var(--accent-warning)';
+                      }}
+                    >
+                      ✏️
+                    </button>
+                  </>
+                ) : (
+                  /* Inline Price Editor */
+                  <div style={{ width: '100%' }} onClick={(e) => e.stopPropagation()}>
+                    <div style={{
+                      display: 'flex',
+                      gap: '6px',
+                      marginBottom: priceError ? '4px' : '0',
+                    }}>
+                      <input
+                        type="number"
+                        value={editingPriceValue}
+                        onChange={(e) => setEditingPriceValue(e.target.value)}
+                        placeholder={t.enterNewPrice}
+                        autoFocus
+                        disabled={isSavingPrice}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          fontSize: '16px',
+                          fontWeight: 600,
+                          border: `2px solid ${priceError ? 'var(--accent-danger)' : 'var(--accent-warning)'}`,
+                          borderRadius: '8px',
+                          outline: 'none',
+                          backgroundColor: 'white',
+                          color: 'var(--text-primary)',
+                          transition: 'all 0.15s',
+                        }}
+                      />
+                      <button
+                        onClick={(e) => savePrice(product, e)}
+                        disabled={isSavingPrice || !editingPriceValue}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: isSavingPrice || !editingPriceValue ? '#e5e7eb' : 'var(--accent-success)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: isSavingPrice || !editingPriceValue ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.15s',
+                          opacity: isSavingPrice || !editingPriceValue ? 0.6 : 1,
+                        }}
+                      >
+                        {isSavingPrice ? '⏳' : '✓'}
+                      </button>
+                      <button
+                        onClick={(e) => cancelEditPrice(e)}
+                        disabled={isSavingPrice}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: 'var(--bg-secondary)',
+                          color: 'var(--text-secondary)',
+                          border: '1px solid var(--border-primary)',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: isSavingPrice ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.15s',
+                          opacity: isSavingPrice ? 0.6 : 1,
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                    {priceError && (
+                      <div style={{
+                        fontSize: '11px',
+                        color: 'var(--accent-danger)',
+                        marginTop: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}>
+                        ⚠️ {priceError}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
+              
+              {/* Stock - вторичный индикатор */}
+              {product.stock !== undefined && (
+                <div style={{
+                  display: 'inline-block',
+                  padding: '4px 10px',
+                  backgroundColor: product.stock > 0 ? 'var(--accent-success-bg)' : 'var(--accent-danger-bg)',
+                  color: product.stock > 0 ? 'var(--accent-success)' : 'var(--accent-danger)',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                }}>
+                  {t.stock}: {product.stock}
+                </div>
+              )}
             </div>
             );
           })}
@@ -584,6 +798,43 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
           </div>
         </div>
       )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          padding: '12px 24px',
+          borderRadius: '12px',
+          backgroundColor: toast.type === 'success' ? 'var(--accent-success)' : 'var(--accent-danger)',
+          color: 'white',
+          fontSize: '14px',
+          fontWeight: 600,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          animation: 'slideDown 0.3s ease',
+        }}>
+          {toast.type === 'success' ? '✓' : '⚠️'} {toast.message}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

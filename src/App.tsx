@@ -2086,7 +2086,7 @@ export default function App() {
         )}
 
         {route.name === "home" && (
-          <div className="page" style={{ overflow: "hidden" }}>
+          <div className="page" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
             {/* Боковое меню */}
             {menuOpen && (
               <>
@@ -2235,7 +2235,14 @@ export default function App() {
               searchDropdown={renderSearchResults()}
             />
 
-            {/* Приветственный блок */}
+            {/* Scrollable Content */}
+            <div style={{ 
+              flex: 1, 
+              overflowY: "auto", 
+              paddingBottom: "80px",
+              WebkitOverflowScrolling: 'touch'
+            }}>
+              {/* Приветственный блок */}
             <div style={{ 
               padding: "20px 16px",
               background: "linear-gradient(135deg, #1E6FDB 0%, #3FA9F5 100%)",
@@ -2352,13 +2359,13 @@ export default function App() {
               </div>
             </div>
 
-            {/* Блок новостей - увеличенный */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+            {/* Блок новостей */}
+            <div style={{ padding: "16px", paddingTop: 0 }}>
               <div style={{ 
                 fontSize: "18px", 
                 fontWeight: 900, 
                 color: "var(--text-primary)", 
-                padding: "8px 16px 12px",
+                padding: "8px 0 12px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between"
@@ -2380,7 +2387,7 @@ export default function App() {
                   Все →
                 </button>
               </div>
-              <div className="list" style={{ paddingTop: 0, paddingBottom: "80px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {news.slice(0, 6).map((n) => (
                   <div key={n.id} className="cardCream newsPreview" onClick={() => setRoute({ name: "news_card", newsId: n.id })}>
                     <div className="row" style={{ justifyContent: "space-between", marginBottom: "8px" }}>
@@ -2394,6 +2401,7 @@ export default function App() {
                   </div>
                 ))}
               </div>
+            </div>
             </div>
 
             {/* Bottom Bar */}
@@ -2521,15 +2529,20 @@ export default function App() {
         )}
 
         {route.name === "uzum" && (
-          <div className="page">
+          <div className="page" style={{ 
+            height: '100vh', 
+            overflow: 'hidden', /* Запретить скролл самой страницы */
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
             {/* Connected: Show Navigation and Pages */}
             {uzumConnected && (
               <>  
-                {/* Page Content */}
+                {/* Page Content - фиксированная высота с учетом нижней навигации */}
                 <div style={{ 
-                  flex: 1, 
+                  height: 'calc(100vh - 80px)', /* Высота экрана минус навигация */
                   overflow: 'auto',
-                  paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' // Отступ для нижней навигации
+                  WebkitOverflowScrolling: 'touch' /* Плавный скролл на iOS */
                 }}>
                   {uzumCurrentPage === 'dashboard' && (
                     <UzumDashboard 
@@ -2658,7 +2671,7 @@ export default function App() {
                   {uzumError && (
                     <div className="cardCream" style={{
                       background: "var(--bg-error)",
-                      border: "2px solid #ef4444",
+                      border: "2px solid var(--accent-danger)",
                       marginBottom: "12px"
                     }}>
                       <div style={{
@@ -2778,7 +2791,7 @@ export default function App() {
                             right: "45px",
                             top: "50%",
                             transform: "translateY(-50%)",
-                            color: "#4CAF50",
+                            color: "var(--accent-success)",
                             fontSize: "12px",
                             fontWeight: 600
                           }}>
@@ -2838,7 +2851,7 @@ export default function App() {
                             right: "45px",
                             top: "50%",
                             transform: "translateY(-50%)",
-                            color: uzumPin.length >= 6 && uzumPin.length <= 10 ? "#4CAF50" : "#FF9F1C",
+                            color: uzumPin.length >= 6 && uzumPin.length <= 10 ? "var(--accent-success)" : "var(--accent-warning)",
                             fontSize: "12px",
                             fontWeight: 600
                           }}>
@@ -2880,13 +2893,13 @@ export default function App() {
                   {uzumShops.length > 0 && (
                     <div className="cardCream" style={{
                       background: "linear-gradient(135deg, #dcfce7, #bbf7d0)",
-                      border: "2px solid #4CAF50"
+                      border: "2px solid var(--accent-success)"
                     }}>
                       <div style={{
                         fontSize: "16px",
                         fontWeight: 900,
                         marginBottom: "12px",
-                        color: "#4CAF50",
+                        color: "var(--accent-success)",
                         display: "flex",
                         alignItems: "center",
                         gap: "8px"
@@ -2945,7 +2958,7 @@ export default function App() {
                       </div>
                       <div style={{
                         fontSize: "13px",
-                        color: "#4CAF50",
+                        color: "var(--accent-success)",
                         marginTop: "12px",
                         fontWeight: 600,
                         textAlign: "center"
