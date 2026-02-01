@@ -665,12 +665,6 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           </button>
         </div>
       </div>
-            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
-          }}
-        >
-          ❌ {window.innerWidth > 640 ? (lang === 'ru' ? 'Отключить интеграцию' : 'Integratsiyani o\'chirish') : ''}
-        </button>
-      </div>
 
       {/* Header */}
       <div className="uzum-header" style={{ marginTop: 0 }}>
