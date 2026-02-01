@@ -555,7 +555,37 @@ export default function App() {
 
       if (data) {
         setUzumIntegrationId(data.id);
-        setUzumConnected(true);
+        
+        // Расшифровываем токен из базы данных
+        // Пробуем получить PIN из session storage
+        const sessionPIN = sessionStorage.getItem('uzum_pin_temp');
+        
+        if (sessionPIN && data.token_cipher && data.token_iv && data.token_salt) {
+          try {
+            const { decryptToken } = await import('./lib/crypto');
+            const decrypted = await decryptToken(
+              data.token_cipher,
+              data.token_iv,
+              data.token_salt,
+              sessionPIN
+            );
+            
+            if (decrypted) {
+              setUzumDecryptedToken(decrypted);
+              setUzumConnected(true);
+              console.log('[Уzum] ✓ Token decrypted from session');
+            } else {
+              // PIN неверный, требуется повторное подключение
+              console.log('[Uzum] Session PIN invalid, need reconnect');
+            }
+          } catch (err) {
+            console.error('[Uzum] Decryption error:', err);
+          }
+        } else {
+          // PIN нет в session storage, потребуется повторное подключение
+          console.log('[Uzum] No session PIN, need reconnect');
+        }
+        
         setUzumShops(data.metadata?.shops || []);
         setUzumSellerInfo(data.metadata?.sellerInfo || null);
         console.log('[Uzum] ✓ Integration loaded');
@@ -683,6 +713,10 @@ export default function App() {
       setUzumIntegrationId(data.id);
       setUzumConnected(true);
       setUzumDecryptedToken(uzumToken); // Сохраняем для использования в API
+      
+      // Сохраняем PIN в session storage для автоматической расшифровки при перезагрузке
+      sessionStorage.setItem('uzum_pin_temp', uzumPin);
+      console.log('[Uzum] ✓ PIN saved to session storage');
       
       // Clear sensitive data from input state
       setUzumToken('');

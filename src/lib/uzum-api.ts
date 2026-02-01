@@ -617,20 +617,21 @@ export async function updateFbsSkuStocks(
   success: boolean;
   error?: string;
 }> {
-  // API требует массив объектов с полем skuId (не sku)
+  // API требует массив объектов с полем skuId (не sku) и amount
+  // Прямой массив, без обёртки {stocks: [...]}
   const formattedStocks = stocks.map(item => ({
     skuId: Number(item.sku),
     amount: item.stock
   }));
 
-  console.log('📦 [updateFbsSkuStocks] Sending:', formattedStocks);
+  console.log('📦 [updateFbsSkuStocks] Sending:', JSON.stringify(formattedStocks, null, 2));
 
   const result = await apiRequest<any>(
     '/v2/fbs/sku/stocks',
     token,
     {
       method: 'POST',
-      body: JSON.stringify({ stocks: formattedStocks })
+      body: JSON.stringify(formattedStocks)  // Прямой массив, без {stocks: ...}
     }
   );
 
