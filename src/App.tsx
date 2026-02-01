@@ -2457,7 +2457,8 @@ export default function App() {
 
             {/* Компонент паспорта */}
             <Profile 
-              lang={lang} 
+              lang={lang}
+              onNavigateBack={() => setRoute({ name: "uzum" })}
               onNavigateToUzum={() => setRoute({ name: "uzum" })}
             />
 

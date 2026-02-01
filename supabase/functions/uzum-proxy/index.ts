@@ -68,8 +68,10 @@ serve(async (req: Request) => {
 
     // НЕ добавляем body для GET запросов
     if (body && method !== 'GET' && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-      requestOptions.body = JSON.stringify(body);
-      console.log('[Uzum Proxy] Added body to request');
+      // Если body уже строка JSON, используем как есть
+      // Иначе сериализуем в JSON
+      requestOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
+      console.log('[Uzum Proxy] Added body to request:', typeof body);
     }
 
     console.log(`[Uzum Proxy] ${method} ${uzumApiUrl}`);
