@@ -4,12 +4,13 @@ import {
   FiShoppingCart, 
   FiDollarSign,
   FiFileText,
-  FiBarChart2
+  FiBarChart2,
+  FiLayers
 } from 'react-icons/fi';
 
 interface UzumNavigationProps {
-  currentPage: 'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports';
-  onNavigate: (page: 'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports') => void;
+  currentPage: 'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports' | 'stocks';
+  onNavigate: (page: 'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports' | 'stocks') => void;
   lang: 'ru' | 'uz';
 }
 
@@ -20,6 +21,7 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
       products: 'Товары',
       orders: 'Заказы',
       finance: 'Финансы',
+      stocks: 'Остатки',
       invoices: 'Накладные',
       reports: 'Отчеты'
     },
@@ -28,6 +30,7 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
       products: 'Mahsulotlar',
       orders: 'Buyurtmalar',
       finance: 'Moliya',
+      stocks: 'Qoldiqlar',
       invoices: 'Hujjatlar',
       reports: 'Hisobotlar'
     }
@@ -40,6 +43,7 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
     { id: 'products', icon: FiPackage, label: t.products, color: 'var(--accent-warning)' },
     { id: 'orders', icon: FiShoppingCart, label: t.orders, color: 'var(--accent-success)' },
     { id: 'finance', icon: FiDollarSign, label: t.finance, color: 'var(--accent-success)' },
+    { id: 'stocks', icon: FiLayers, label: t.stocks, color: '#9333EA' },
     { id: 'invoices', icon: FiFileText, label: t.invoices, color: '#1E6FDB' },
     { id: 'reports', icon: FiBarChart2, label: t.reports, color: '#3FA9F5' },
   ] as const;
