@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import UzumSalesReport from './reports/UzumSalesReport';
 import UzumInventoryReport from './reports/UzumInventoryReport';
+import UzumTopProductsReport from './reports/UzumTopProductsReport';
+import UzumSimpleReport from './reports/UzumSimpleReport';
 
 interface UzumReportsProps {
   lang: 'ru' | 'uz';
@@ -44,11 +46,11 @@ export default function UzumReports({ lang, token, onNavigateBack }: UzumReports
 
   const reports = [
     { id: 'sales' as ReportType, icon: '📊', label: t.salesReport, available: true },
-    { id: 'top-products' as ReportType, icon: '🏆', label: t.topProducts, available: false },
-    { id: 'non-liquid' as ReportType, icon: '⚠️', label: t.nonLiquid, available: false },
-    { id: 'paid-storage' as ReportType, icon: '💰', label: t.paidStorage, available: false },
-    { id: 'returned' as ReportType, icon: '↩️', label: t.returned, available: false },
-    { id: 'paid-out' as ReportType, icon: '💵', label: t.paidOut, available: false },
+    { id: 'top-products' as ReportType, icon: '🏆', label: t.topProducts, available: true },
+    { id: 'non-liquid' as ReportType, icon: '⚠️', label: t.nonLiquid, available: true },
+    { id: 'paid-storage' as ReportType, icon: '💰', label: t.paidStorage, available: true },
+    { id: 'returned' as ReportType, icon: '↩️', label: t.returned, available: true },
+    { id: 'paid-out' as ReportType, icon: '💵', label: t.paidOut, available: true },
     { id: 'inventory' as ReportType, icon: '📦', label: t.inventoryReport, available: true },
   ];
 
@@ -141,19 +143,20 @@ export default function UzumReports({ lang, token, onNavigateBack }: UzumReports
         {activeReport === 'inventory' && (
           <UzumInventoryReport lang={lang} token={token} />
         )}
-        {!['sales', 'inventory'].includes(activeReport) && (
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '60px 20px',
-            textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</div>
-            <div style={{ fontSize: '18px', fontWeight: '600', color: '#6b7280' }}>
-              {t.comingSoon}
-            </div>
-          </div>
+        {activeReport === 'top-products' && (
+          <UzumTopProductsReport lang={lang} token={token} />
+        )}
+        {activeReport === 'non-liquid' && (
+          <UzumSimpleReport lang={lang} token={token} type="non-liquid" />
+        )}
+        {activeReport === 'paid-storage' && (
+          <UzumSimpleReport lang={lang} token={token} type="paid-storage" />
+        )}
+        {activeReport === 'returned' && (
+          <UzumSimpleReport lang={lang} token={token} type="returned" />
+        )}
+        {activeReport === 'paid-out' && (
+          <UzumSimpleReport lang={lang} token={token} type="paid-out" />
         )}
       </div>
     </div>
