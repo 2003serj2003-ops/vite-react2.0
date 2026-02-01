@@ -2448,7 +2448,12 @@ export default function App() {
         )}
 
         {route.name === "profile" && (
-          <div className="page">
+          <div className="page" style={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            height: '100%',
+            overflow: 'hidden'
+          }}>
             <TopBar
               t={t}
               lang={lang}
@@ -2460,12 +2465,20 @@ export default function App() {
               onHome={goHome}
             />
 
-            {/* Компонент паспорта */}
-            <Profile 
-              lang={lang}
-              onNavigateBack={() => setRoute({ name: "uzum" })}
-              onNavigateToUzum={() => setRoute({ name: "uzum" })}
-            />
+            {/* Контейнер для профиля с прокруткой */}
+            <div style={{
+              flex: 1,
+              overflowY: 'auto',
+              paddingBottom: '80px', // отступ для bottomBar
+              WebkitOverflowScrolling: 'touch'
+            }}>
+              {/* Компонент паспорта */}
+              <Profile 
+                lang={lang}
+                onNavigateBack={() => setRoute({ name: "uzum" })}
+                onNavigateToUzum={() => setRoute({ name: "uzum" })}
+              />
+            </div>
 
             <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
           </div>
