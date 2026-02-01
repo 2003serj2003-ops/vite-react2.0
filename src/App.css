@@ -189,10 +189,11 @@ body{
 
 /* Для страниц с bottom bar */
 .page .bottomBar {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 1000;
 }
 
 .topbar{

@@ -72,9 +72,8 @@ async function apiRequest<T>(
 
           // Добавляем body только если он есть и метод не GET
           if (options.body && options.method && options.method !== 'GET') {
-            proxyBody.body = typeof options.body === 'string' 
-              ? JSON.parse(options.body) 
-              : options.body;
+            // Отправляем body как строку JSON, чтобы прокси мог его передать как есть
+            proxyBody.body = options.body;
           }
 
           if (attempt === 0) {

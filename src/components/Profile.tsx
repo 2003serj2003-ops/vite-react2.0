@@ -28,7 +28,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
     name: 'Имя',
     username: 'Username',
     userId: 'ID пользователя',
-    integrations: 'ИНТЕГРАЦИИ',
+    integrations: 'ВИЗЫ',
     visa: 'ВИЗА',
     uzum: 'UZUM Market',
     provider: 'Провайдер',
@@ -50,6 +50,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
     loading: 'Загрузка...',
     nationality: 'Гражданство',
     country: 'UZBEKISTAN',
+    footer: '© 2026 Все права защищены. Powered by @uzum_seller_bot',
   } : {
     passport: 'PASPORT',
     title: 'Foydalanuvchi profili',
@@ -58,7 +59,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
     name: 'Ism',
     username: 'Username',
     userId: 'Foydalanuvchi ID',
-    integrations: 'INTEGRATSIYALAR',
+    integrations: 'VIZALAR',
     visa: 'VIZA',
     uzum: 'UZUM Market',
     provider: 'Provayder',
@@ -80,6 +81,7 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
     loading: 'Yuklanmoqda...',
     nationality: 'Fuqarolik',
     country: 'O\'ZBEKISTON',
+    footer: '© 2026 Barcha huquqlar himoyalangan. Powered by @uzum_seller_bot',
   };
 
   useEffect(() => {
@@ -129,10 +131,11 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
   }
 
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       padding: '20px',
+      paddingBottom: '100px', // Отступ для bottomBar
     }}>
       {/* Passport Cover */}
       <div style={{
@@ -363,8 +366,8 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
               backgroundColor: '#ffffff',
               position: 'relative',
             }}>
-              {/* Visa Stamp Effect */}
-              {uzumStatus?.connected && (
+              {/* Visa Stamp Effect - Green for connected, Red for disconnected */}
+              {uzumStatus?.connected ? (
                 <div style={{
                   position: 'absolute',
                   top: '8px',
@@ -387,6 +390,31 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
                     lineHeight: '12px',
                   }}>
                     VALID<br/>✓
+                  </div>
+                </div>
+              ) : (
+                <div style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  width: '60px',
+                  height: '60px',
+                  border: '3px solid #ef4444',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: 'rotate(-15deg)',
+                  opacity: 0.3,
+                }}>
+                  <div style={{
+                    fontSize: '9px',
+                    fontWeight: 700,
+                    color: '#ef4444',
+                    textAlign: 'center',
+                    lineHeight: '11px',
+                  }}>
+                    DENIED<br/>✖
                   </div>
                 </div>
               )}
@@ -536,12 +564,19 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
         {/* Passport Footer */}
         <div style={{
           marginTop: '16px',
+          padding: '12px',
           textAlign: 'center',
           fontSize: '10px',
-          color: 'rgba(255,255,255,0.6)',
-          letterSpacing: '1px',
+          color: 'rgba(255,255,255,0.7)',
+          letterSpacing: '0.5px',
+          lineHeight: '1.4',
         }}>
-          TELEGRAM MINI APP ID: {userId}
+          <div style={{ marginBottom: '4px' }}>
+            {t.footer}
+          </div>
+          <div style={{ opacity: 0.5 }}>
+            TELEGRAM MINI APP ID: {userId}
+          </div>
         </div>
       </div>
     </div>
