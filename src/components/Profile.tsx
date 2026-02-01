@@ -51,7 +51,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
     loading: 'Загрузка...',
     nationality: 'Гражданство',
     country: 'UZBEKISTAN',
-    footer: '© 2026 Все права защищены. Powered by @uzum_seller_bot',
+    footer: '© 2026 Все права защищены. Powered by @CloudGrove',
   } : {
     passport: 'PASPORT',
     title: 'Foydalanuvchi profili',
@@ -82,7 +82,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
     loading: 'Yuklanmoqda...',
     nationality: 'Fuqarolik',
     country: 'O\'ZBEKISTON',
-    footer: '© 2026 Barcha huquqlar himoyalangan. Powered by @uzum_seller_bot',
+    footer: '© 2026 Barcha huquqlar himoyalangan. Powered by @CloudGrove ',
   };
 
   useEffect(() => {

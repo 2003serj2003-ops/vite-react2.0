@@ -2012,15 +2012,32 @@ export default function App() {
                     color: "rgba(20,18,26,.65)",
                     marginBottom: "4px"
                   }}>
-                    Для получения кода доступа
+                    Для получения кода доступа обращаться к
                   </div>
-                  <div style={{ 
-                    fontSize: "13px",
-                    fontWeight: 800,
-                    color: "#6F00FF"
-                  }}>
-                    обратитесь к @alex_uzumm
-                  </div>
+                  <a 
+                    href="https://t.me/CloudGrove"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ 
+                      fontSize: "13px",
+                      fontWeight: 800,
+                      color: "#6F00FF",
+                      textDecoration: "none",
+                      cursor: "pointer",
+                      display: "inline-block",
+                      transition: "all 0.2s"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.textDecoration = "underline";
+                      e.currentTarget.style.transform = "scale(1.05)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.textDecoration = "none";
+                      e.currentTarget.style.transform = "scale(1)";
+                    }}
+                  >
+                    @CloudGrove
+                  </a>
                 </div>
               </div>
             </div>
@@ -2115,6 +2132,17 @@ export default function App() {
                     >
                       <span style={{ fontSize: "24px" }}>💰</span>
                       <span>{lang === "ru" ? "Комиссии" : "Komissiyalar"}</span>
+                    </button>
+
+                    <button
+                      className="menuBtn accent"
+                      onClick={() => {
+                        window.open("https://t.me/CloudGrove", "_blank");
+                        setMenuOpen(false);
+                      }}
+                    >
+                      <span style={{ fontSize: "24px" }}>💬</span>
+                      <span>{lang === "ru" ? "Помощь" : "Yordam"}</span>
                     </button>
                   </div>
                   
@@ -2704,28 +2732,45 @@ export default function App() {
                         <span>🔑</span>
                         Настройка интеграции
                       </div>
-                      <button
-                        onClick={() => setShowUzumOnboarding(true)}
-                        style={{
-                          padding: "6px 12px",
-                          backgroundColor: "#7c3aed",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                        }}
-                      >
-                        ❓ Как подключить?
-                      </button>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          onClick={() => setShowUzumOnboarding(true)}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#3b82f6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                          }}
+                        >
+                          ❓ Инструкция
+                        </button>
+                        <button
+                          onClick={() => window.open("https://t.me/CloudGrove", "_blank")}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#10b981",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                          }}
+                        >
+                          💬 Помощь
+                        </button>
+                      </div>
                     </div>
                     <div style={{
                       fontSize: "13px",
                       color: "#666",
                       marginBottom: "16px",
                     }}>
-                      Нужна помощь? Нажмите "Как подключить?" для пошаговой инструкции
+                      Нужна помощь с подключением? Напишите @CloudGrove
                     </div>
                     
                     {/* Token Input */}
