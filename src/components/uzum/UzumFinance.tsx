@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getShops, getFinanceOrders, getFinanceExpenses } from '../../lib/uzum-api';
+import SmartLoader from '../SmartLoader';
+import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiCalendar } from 'react-icons/fi';
 
 interface UzumFinanceProps {
   lang: 'ru' | 'uz';
@@ -160,298 +162,385 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
 
   const totals = calculateTotals();
 
+  if (loading) {
+    return <SmartLoader type="finance" />;
+  }
+
   return (
-    <div className="uzum-container">
-      {/* Summary Cards */}
-      <div className="uzum-stat-grid">
-        <div className="uzum-stat-card">
-          <div className="uzum-stat-label">
-            💰 {t.revenue}
-          </div>
-          <div className="uzum-stat-value" style={{ color: '#22c55e' }}>
-            {formatPrice(totals.revenue)}
-          </div>
-        </div>
-
-        <div className="uzum-stat-card">
-          <div className="uzum-stat-label">
-            📉 {t.totalExpenses}
-          </div>
-          <div className="uzum-stat-value" style={{ color: '#ef4444' }}>
-            {formatPrice(totals.totalExpenses)}
-          </div>
-        </div>
-
-        <div className="uzum-stat-card">
-          <div className="uzum-stat-label">
-            📈 {t.profit}
-          </div>
-          <div className="uzum-stat-value" style={{ color: totals.profit >= 0 ? '#3b82f6' : '#ef4444' }}>
-            {formatPrice(totals.profit)}
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="uzum-tabs">
-        <button
-          className={`uzum-tab ${activeTab === 'orders' ? 'active' : ''}`}
-          onClick={() => setActiveTab('orders')}
-        >
-          📊 {t.orders}
-        </button>
-        <button
-          className={`uzum-tab ${activeTab === 'expenses' ? 'active' : ''}`}
-          onClick={() => setActiveTab('expenses')}
-        >
-          📉 {t.expenses}
-        </button>
-      </div>
-
-      {/* Info message about date filter */}
+    <div style={{ width: '100%', minHeight: '100vh', background: '#f8f9fa', paddingBottom: '80px' }}>
+      {/* Header */}
       <div style={{
-        backgroundColor: '#f0f9ff',
-        border: '1px solid #bae6fd',
-        borderRadius: '8px',
-        padding: '12px 16px',
-        marginBottom: '24px',
-        fontSize: '14px',
-        color: '#0369a1',
+        background: 'linear-gradient(135deg, #1e1b4b 0%, #7c3aed 50%, #a855f7 100%)',
+        padding: '24px 20px',
+        color: 'white',
       }}>
-        📅 Фильтр: с 1 января 2026 по текущий день
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <FiDollarSign size={32} />
+          <h1 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
+            {t.title}
+          </h1>
+        </div>
+
+        {/* Summary Cards */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: window.innerWidth > 640 ? 'repeat(3, 1fr)' : '1fr',
+          gap: '12px',
+        }}>
+          <div style={{
+            background: 'rgba(34, 197, 94, 0.2)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '16px',
+            border: '1px solid rgba(34, 197, 94, 0.3)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              <FiTrendingUp size={20} />
+              <div style={{ fontSize: '13px', opacity: 0.9 }}>
+                {t.revenue}
+              </div>
+            </div>
+            <div style={{ fontSize: '26px', fontWeight: '700' }}>
+              {formatPrice(totals.revenue)}
+            </div>
+          </div>
+
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.2)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '16px',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              <FiTrendingDown size={20} />
+              <div style={{ fontSize: '13px', opacity: 0.9 }}>
+                {t.totalExpenses}
+              </div>
+            </div>
+            <div style={{ fontSize: '26px', fontWeight: '700' }}>
+              {formatPrice(totals.totalExpenses)}
+            </div>
+          </div>
+
+          <div style={{
+            background: totals.profit >= 0 
+              ? 'rgba(59, 130, 246, 0.2)' 
+              : 'rgba(239, 68, 68, 0.2)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '16px',
+            border: totals.profit >= 0 
+              ? '1px solid rgba(59, 130, 246, 0.3)' 
+              : '1px solid rgba(239, 68, 68, 0.3)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              <FiDollarSign size={20} />
+              <div style={{ fontSize: '13px', opacity: 0.9 }}>
+                {t.profit}
+              </div>
+            </div>
+            <div style={{ fontSize: '26px', fontWeight: '700' }}>
+              {formatPrice(totals.profit)}
+            </div>
+          </div>
+        </div>
       </div>
+
+      <div style={{ padding: '20px' }}>
+        {/* Tabs */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: '20px',
+          backgroundColor: 'white',
+          padding: '6px',
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        }}>
+          <button
+            onClick={() => setActiveTab('orders')}
+            style={{
+              flex: 1,
+              padding: '12px',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '15px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              background: activeTab === 'orders' 
+                ? 'linear-gradient(135deg, #7c3aed 0%, #22c55e 100%)' 
+                : 'transparent',
+              color: activeTab === 'orders' ? 'white' : '#6b7280',
+              transition: 'all 0.2s',
+            }}
+          >
+            {t.orders} ({orders.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('expenses')}
+            style={{
+              flex: 1,
+              padding: '12px',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '15px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              background: activeTab === 'expenses' 
+                ? 'linear-gradient(135deg, #7c3aed 0%, #22c55e 100%)' 
+                : 'transparent',
+              color: activeTab === 'expenses' ? 'white' : '#6b7280',
+              transition: 'all 0.2s',
+            }}
+          >
+            {t.expenses} ({expenses.length})
+          </button>
+        </div>
+
+        {/* Date Filter Info */}
+        <div style={{
+          backgroundColor: '#dbeafe',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          border: '2px solid #93c5fd',
+        }}>
+          <FiCalendar size={24} style={{ color: '#3b82f6' }} />
+          <div style={{ fontSize: '14px', color: '#1e3a8a' }}>
+            <strong>{t.dateFrom}:</strong> 01.01.2026 – <strong>{t.dateTo}:</strong> {new Date().toLocaleDateString('ru-RU')}
+          </div>
+        </div>
 
       {/* Content */}
-      {loading ? (
-        <div className="uzum-loader-container">
-          <div className="uzum-loader" />
-          <div style={{ fontSize: '16px', color: '#6b7280' }}>
-            {t.loading}
-          </div>
+      {/* Content */}
+      {activeTab === 'orders' && (
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '16px',
+          padding: '20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          overflowX: 'auto',
+        }}>
+          {orders.length === 0 ? (
+            <div style={{
+              padding: '60px 20px',
+              textAlign: 'center',
+              color: '#9ca3af',
+              fontSize: '16px',
+            }}>
+              📭 {t.noData}
+            </div>
+          ) : (
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+            }}>
+              <thead>
+                <tr style={{
+                  backgroundColor: '#f9fafb',
+                  borderBottom: '2px solid #e5e7eb',
+                }}>
+                  <th style={{
+                    padding: '14px',
+                    textAlign: 'left',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#6b7280',
+                  }}>
+                    {t.orderNumber}
+                  </th>
+                  <th style={{
+                    padding: '14px',
+                    textAlign: 'left',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#6b7280',
+                  }}>
+                    {t.date}
+                  </th>
+                  <th style={{
+                    padding: '14px',
+                    textAlign: 'right',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#6b7280',
+                  }}>
+                    {t.amount}
+                  </th>
+                  <th style={{
+                    padding: '14px',
+                    textAlign: 'right',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#6b7280',
+                  }}>
+                    {t.commission}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((order: any, idx: number) => (
+                  <tr
+                    key={idx}
+                    style={{
+                      borderBottom: '1px solid #f3f4f6',
+                    }}
+                  >
+                    <td style={{
+                      padding: '14px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                    }}>
+                      #{order.order_number || order.id || idx + 1}
+                    </td>
+                    <td style={{
+                      padding: '14px',
+                      fontSize: '14px',
+                      color: '#6b7280',
+                    }}>
+                      {formatDate(order.date || order.created_at)}
+                    </td>
+                    <td style={{
+                      padding: '14px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      textAlign: 'right',
+                      color: '#22c55e',
+                    }}>
+                      {formatPrice(order.amount || 0)}
+                    </td>
+                    <td style={{
+                      padding: '14px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      textAlign: 'right',
+                      color: '#ef4444',
+                    }}>
+                      {formatPrice(order.commission || 0)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
-      ) : (
-        <>
-          {activeTab === 'orders' && (
-            <div className="uzum-table-container">
-              {orders.length === 0 ? (
-                <div style={{
-                  padding: '60px 20px',
-                  textAlign: 'center',
-                  color: '#9ca3af',
-                  fontSize: '16px',
-                }}>
-                  📭 {t.noData}
-                </div>
-              ) : (
-                <table style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                }}>
-                  <thead>
-                    <tr style={{
-                      backgroundColor: '#f9fafb',
-                      borderBottom: '2px solid #e5e7eb',
-                    }}>
-                      <th style={{
-                        padding: window.innerWidth > 640 ? '16px' : '12px',
-                        textAlign: 'left',
-                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                        fontWeight: '600',
-                        color: '#6b7280',
-                      }}>
-                        {t.orderNumber}
-                      </th>
-                      <th style={{
-                        padding: window.innerWidth > 640 ? '16px' : '12px',
-                        textAlign: 'left',
-                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                        fontWeight: '600',
-                        color: '#6b7280',
-                      }}>
-                        {t.date}
-                      </th>
-                      <th style={{
-                        padding: window.innerWidth > 640 ? '16px' : '12px',
-                        textAlign: 'right',
-                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                        fontWeight: '600',
-                        color: '#6b7280',
-                      }}>
-                        {t.amount}
-                      </th>
-                      {window.innerWidth > 640 && (
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'right',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                        }}>
-                          {t.commission}
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((order: any, idx: number) => (
-                      <tr
-                        key={idx}
-                        style={{
-                          borderBottom: '1px solid #f3f4f6',
-                        }}
-                      >
-                        <td style={{
-                          padding: window.innerWidth > 640 ? '16px' : '12px',
-                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                          fontWeight: '600',
-                        }}>
-                          #{order.order_number || order.id || idx + 1}
-                        </td>
-                        <td style={{
-                          padding: window.innerWidth > 640 ? '16px' : '12px',
-                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                          color: '#6b7280',
-                        }}>
-                          {formatDate(order.date || order.created_at)}
-                        </td>
-                        <td style={{
-                          padding: window.innerWidth > 640 ? '16px' : '12px',
-                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                          fontWeight: '600',
-                          textAlign: 'right',
-                          color: '#22c55e',
-                        }}>
-                          {formatPrice(order.amount || 0)}
-                        </td>
-                        {window.innerWidth > 640 && (
-                          <td style={{
-                            padding: '16px',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            textAlign: 'right',
-                            color: '#ef4444',
-                          }}>
-                            {formatPrice(order.commission || 0)}
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'expenses' && (
-            <div className="uzum-table-container">
-              {expenses.length === 0 ? (
-                <div style={{
-                  padding: '60px 20px',
-                  textAlign: 'center',
-                  color: '#9ca3af',
-                  fontSize: '16px',
-                }}>
-                  📭 {t.noData}
-                </div>
-              ) : (
-                <table style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                }}>
-                  <thead>
-                    <tr style={{
-                      backgroundColor: '#f9fafb',
-                      borderBottom: '2px solid #e5e7eb',
-                    }}>
-                      <th style={{
-                        padding: window.innerWidth > 640 ? '16px' : '12px',
-                        textAlign: 'left',
-                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                        fontWeight: '600',
-                        color: '#6b7280',
-                      }}>
-                        {t.date}
-                      </th>
-                      {window.innerWidth > 640 && (
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'left',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                        }}>
-                          {t.type}
-                        </th>
-                      )}
-                      <th style={{
-                        padding: window.innerWidth > 640 ? '16px' : '12px',
-                        textAlign: 'left',
-                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                        fontWeight: '600',
-                        color: '#6b7280',
-                      }}>
-                        {t.description}
-                      </th>
-                      <th style={{
-                        padding: window.innerWidth > 640 ? '16px' : '12px',
-                        textAlign: 'right',
-                        fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                        fontWeight: '600',
-                        color: '#6b7280',
-                      }}>
-                        {t.amount}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {expenses.map((expense: any, idx: number) => (
-                      <tr
-                        key={idx}
-                        style={{
-                          borderBottom: '1px solid #f3f4f6',
-                        }}
-                      >
-                        <td style={{
-                          padding: window.innerWidth > 640 ? '16px' : '12px',
-                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                          color: '#6b7280',
-                        }}>
-                          {formatDate(expense.date || expense.created_at)}
-                        </td>
-                        {window.innerWidth > 640 && (
-                          <td style={{
-                            padding: '16px',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                          }}>
-                            {expense.type || 'N/A'}
-                          </td>
-                        )}
-                        <td style={{
-                          padding: window.innerWidth > 640 ? '16px' : '12px',
-                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                          color: '#6b7280',
-                        }}>
-                          {expense.description || 'N/A'}
-                        </td>
-                        <td style={{
-                          padding: window.innerWidth > 640 ? '16px' : '12px',
-                          fontSize: window.innerWidth > 640 ? '14px' : '12px',
-                          fontWeight: '600',
-                          textAlign: 'right',
-                          color: '#ef4444',
-                        }}>
-                          {formatPrice(expense.amount || 0)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
-        </>
       )}
+
+      {activeTab === 'expenses' && (
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '16px',
+          padding: '20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          overflowX: 'auto',
+        }}>
+          {expenses.length === 0 ? (
+            <div style={{
+              padding: '60px 20px',
+              textAlign: 'center',
+              color: '#9ca3af',
+              fontSize: '16px',
+            }}>
+              📭 {t.noData}
+            </div>
+          ) : (
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+            }}>
+              <thead>
+                <tr style={{
+                  backgroundColor: '#f9fafb',
+                  borderBottom: '2px solid #e5e7eb',
+                }}>
+                  <th style={{
+                    padding: '14px',
+                    textAlign: 'left',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#6b7280',
+                  }}>
+                    {t.date}
+                  </th>
+                  <th style={{
+                    padding: '14px',
+                    textAlign: 'left',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#6b7280',
+                  }}>
+                    {t.type}
+                  </th>
+                  <th style={{
+                    padding: '14px',
+                    textAlign: 'left',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#6b7280',
+                  }}>
+                    {t.description}
+                  </th>
+                  <th style={{
+                    padding: '14px',
+                    textAlign: 'right',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#6b7280',
+                  }}>
+                    {t.amount}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {expenses.map((expense: any, idx: number) => (
+                  <tr
+                    key={idx}
+                    style={{
+                      borderBottom: '1px solid #f3f4f6',
+                    }}
+                  >
+                    <td style={{
+                      padding: '14px',
+                      fontSize: '14px',
+                      color: '#6b7280',
+                    }}>
+                      {formatDate(expense.date || expense.created_at)}
+                    </td>
+                    <td style={{
+                      padding: '14px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                    }}>
+                      {expense.type || 'N/A'}
+                    </td>
+                    <td style={{
+                      padding: '14px',
+                      fontSize: '14px',
+                      color: '#6b7280',
+                    }}>
+                      {expense.description || 'N/A'}
+                    </td>
+                    <td style={{
+                      padding: '14px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      textAlign: 'right',
+                      color: '#ef4444',
+                    }}>
+                      {formatPrice(expense.amount || 0)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+      </div>
     </div>
   );
 }

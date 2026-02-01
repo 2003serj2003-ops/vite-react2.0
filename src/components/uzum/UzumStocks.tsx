@@ -1,116 +1,120 @@
 import { useState, useEffect } from 'react';
 import { getFbsSkuStocks, updateFbsSkuStocks, getProducts } from '../../lib/uzum-api';
+import SmartLoader from '../SmartLoader';
+import { FiPackage, FiSearch, FiCheckCircle, FiX, FiTrendingUp, FiTrendingDown, FiAlertCircle } from 'react-icons/fi';
+
+interface UzumStocksProps {
+  lang: 'ru' | 'uz';
+  token: string;
+  shopId: number;
+  onNavigate?: (page: string) => void;
+}
 
 interface StockItem {
   skuId: number;
-  skuTitle: string;
+  productId?: number;
   productTitle: string;
-  barcode: string;
+  skuTitle: string;
   amount: number;
-  fbsAllowed: boolean;
-  dbsAllowed: boolean;
-  fbsLinked: boolean;
-  dbsLinked: boolean;
-  sellerSkuCode?: string;
+  barcode?: string;
+  fbsLinked?: boolean;
+  dbsLinked?: boolean;
   image?: string;
   previewImage?: string;
 }
 
-interface UzumStocksProps {
-  token: string;
-  shopId?: number | string;
-  onNavigate: (view: string) => void;
-  lang?: 'ru' | 'uz';
-}
-
-export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: UzumStocksProps) {
+export default function UzumStocks({ lang, token, shopId }: UzumStocksProps) {
   const [stocks, setStocks] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [editedStocks, setEditedStocks] = useState<{ [key: number]: number }>({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterLevel, setFilterLevel] = useState<'all' | 'low' | 'medium' | 'high'>('all');
 
-  const t = lang === 'ru' ? {
-    title: 'Обновление остатков',
-    back: 'Назад',
-    loading: 'Загрузка...',
-    updating: 'Обновление...',
-    sku: 'SKU',
-    product: 'Товар',
-    barcode: 'Штрихкод',
-    currentStock: 'Текущий остаток',
-    newStock: 'Новый остаток',
-    fbs: 'FBS',
-    dbs: 'DBS',
-    linked: 'Привязан',
-    notLinked: 'Не привязан',
-    search: 'Поиск по названию или SKU',
-    updateAll: 'Обновить всё',
-    reset: 'Сбросить',
-    updated: 'Остатки обновлены',
-    error: 'Ошибка обновления',
-    noChanges: 'Нет изменений',
-    totalItems: 'Всего товаров',
-    totalStock: 'Общий остаток',
-  } : {
-    title: 'Qoldiqlarni yangilash',
-    back: 'Orqaga',
-    loading: 'Yuklanmoqda...',
-    updating: 'Yangilanmoqda...',
-    sku: 'SKU',
-    product: 'Mahsulot',
-    barcode: 'Shtrix-kod',
-    currentStock: 'Joriy qoldiq',
-    newStock: 'Yangi qoldiq',
-    fbs: 'FBS',
-    dbs: 'DBS',
-    linked: 'Bog\'langan',
-    notLinked: 'Bog\'lanmagan',
-    search: 'Nomi yoki SKU bo\'yicha qidirish',
-    updateAll: 'Hammasini yangilash',
-    reset: 'Bekor qilish',
-    updated: 'Qoldiqlar yangilandi',
-    error: 'Yangilashda xato',
-    noChanges: 'O\'zgarishlar yo\'q',
-    totalItems: 'Jami mahsulotlar',
-    totalStock: 'Umumiy qoldiq',
+  const T = {
+    ru: {
+      title: 'Инвентаризация склада',
+      back: 'Назад',
+      loading: 'Загрузка...',
+      search: 'Поиск по названию или SKU...',
+      totalItems: 'Всего товаров',
+      totalStock: 'Всего остатков',
+      updateAll: 'Сохранить изменения',
+      reset: 'Отменить',
+      updating: 'Обновление...',
+      noChanges: 'Нет изменений для сохранения',
+      updated: 'Остатки успешно обновлены',
+      error: 'Ошибка при обновлении',
+      currentStock: 'Текущий',
+      newStock: 'Новый',
+      fbs: 'FBS',
+      dbs: 'DBS',
+      lowStock: 'Низкий',
+      mediumStock: 'Средний',
+      highStock: 'Высокий',
+      all: 'Все',
+      quickActions: 'Быстрые действия',
+      changesSaved: 'Изменения',
+    },
+    uz: {
+      title: 'Ombor inventarizatsiyasi',
+      back: 'Orqaga',
+      loading: 'Yuklanmoqda...',
+      search: 'Nomi yoki SKU bo\'yicha qidirish...',
+      totalItems: 'Jami mahsulotlar',
+      totalStock: 'Jami qoldiqlar',
+      updateAll: 'O\'zgarishlarni saqlash',
+      reset: 'Bekor qilish',
+      updating: 'Yangilanmoqda...',
+      noChanges: 'Saqlash uchun o\'zgarishlar yo\'q',
+      updated: 'Qoldiqlar muvaffaqiyatli yangilandi',
+      error: 'Yangilashda xato',
+      currentStock: 'Joriy',
+      newStock: 'Yangi',
+      fbs: 'FBS',
+      dbs: 'DBS',
+      lowStock: 'Past',
+      mediumStock: 'O\'rta',
+      highStock: 'Yuqori',
+      all: 'Hammasi',
+      quickActions: 'Tez harakatlar',
+      changesSaved: 'O\'zgarishlar',
+    },
   };
+
+  const t = T[lang];
 
   useEffect(() => {
     loadStocks();
-  }, []);
+  }, [token, shopId]);
 
   async function loadStocks() {
     setLoading(true);
     try {
-      // Получаем остатки
-      const result = await getFbsSkuStocks(token);
+      const result = await getFbsSkuStocks(token, { limit: 1000 });
+      
       if (result.success && result.stocks) {
         let enrichedStocks = result.stocks;
         
-        // Если есть shopId, получаем данные продуктов для изображений
-        if (shopId) {
-          const productsResult = await getProducts(token, shopId);
-          if (productsResult.success && productsResult.products) {
-            // Создаем карту SKU -> изображение
-            const skuImageMap = new Map<number, string>();
-            
-            for (const product of productsResult.products) {
-              if (product.skuList && Array.isArray(product.skuList)) {
-                for (const sku of product.skuList) {
-                  if (sku.skuId && (sku.previewImage || product.image)) {
-                    skuImageMap.set(Number(sku.skuId), sku.previewImage || product.image);
-                  }
+        // Обогащаем данные изображениями из products API
+        const productsResult = await getProducts(token, shopId);
+        if (productsResult.success && productsResult.products) {
+          const skuImageMap = new Map<number, string>();
+          
+          for (const product of productsResult.products) {
+            if (product.skuList) {
+              for (const sku of product.skuList) {
+                if (sku.skuId && (sku.previewImage || product.image)) {
+                  skuImageMap.set(Number(sku.skuId), sku.previewImage || product.image);
                 }
               }
             }
-            
-            // Обогащаем данные остатков изображениями
-            enrichedStocks = result.stocks.map(stock => ({
-              ...stock,
-              image: skuImageMap.get(Number(stock.skuId)) || stock.image,
-            }));
           }
+          
+          enrichedStocks = result.stocks.map(stock => ({
+            ...stock,
+            image: skuImageMap.get(Number(stock.skuId)) || stock.image,
+          }));
         }
         
         setStocks(enrichedStocks);
@@ -127,6 +131,14 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
     setEditedStocks(prev => ({
       ...prev,
       [skuId]: numValue
+    }));
+  }
+
+  function handleQuickChange(skuId: number, currentAmount: number, delta: number) {
+    const newAmount = Math.max(0, currentAmount + delta);
+    setEditedStocks(prev => ({
+      ...prev,
+      [skuId]: newAmount
     }));
   }
 
@@ -150,10 +162,7 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
       const result = await updateFbsSkuStocks(token, updates, shopId);
       
       if (result.success) {
-        const message = result.updatedRecords !== undefined 
-          ? `${t.updated} (обновлено: ${result.updatedRecords} из ${result.totalRecords})`
-          : t.updated;
-        alert(message);
+        alert(t.updated);
         setEditedStocks({});
         await loadStocks();
       } else {
@@ -167,157 +176,310 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
     }
   }
 
+  function getStockLevel(amount: number): 'low' | 'medium' | 'high' {
+    if (amount <= 5) return 'low';
+    if (amount <= 20) return 'medium';
+    return 'high';
+  }
+
+  function getStockLevelColor(level: 'low' | 'medium' | 'high'): string {
+    switch (level) {
+      case 'low': return '#ef4444';
+      case 'medium': return '#f59e0b';
+      case 'high': return '#22c55e';
+    }
+  }
+
   const filteredStocks = stocks.filter(item => {
     const query = searchQuery.toLowerCase();
-    return (
+    const matchesSearch = 
       item.skuTitle.toLowerCase().includes(query) ||
       item.productTitle.toLowerCase().includes(query) ||
       item.skuId.toString().includes(query) ||
-      item.barcode?.toLowerCase().includes(query)
-    );
+      item.barcode?.toLowerCase().includes(query);
+    
+    if (!matchesSearch) return false;
+    
+    if (filterLevel === 'all') return true;
+    return getStockLevel(item.amount) === filterLevel;
   });
 
   const totalStock = filteredStocks.reduce((sum, item) => sum + item.amount, 0);
   const hasChanges = Object.keys(editedStocks).length > 0;
+  const lowStockCount = stocks.filter(s => getStockLevel(s.amount) === 'low').length;
 
   if (loading) {
-    return (
-      <div className="uzum-container" style={{ padding: '20px', textAlign: 'center' }}>
-        <div style={{ fontSize: '18px', color: '#666' }}>{t.loading}</div>
-      </div>
-    );
+    return <SmartLoader type="general" />;
   }
 
   return (
-    <div className="uzum-container">
+    <div style={{ width: '100%', minHeight: '100vh', background: '#f8f9fa', paddingBottom: '80px' }}>
       {/* Header */}
-      <div className="uzum-header">
-        <button
-          onClick={() => onNavigate('dashboard')}
-          className="uzum-back-btn"
-          style={{
-            padding: '8px',
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: 'none',
-            borderRadius: '8px',
-            color: 'white',
-            cursor: 'pointer',
+      <div style={{
+        background: 'linear-gradient(135deg, #1e1b4b 0%, #7c3aed 50%, #a855f7 100%)',
+        padding: '24px 20px',
+        color: 'white',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <FiPackage size={32} />
+          <h1 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
+            {t.title}
+          </h1>
+        </div>
+
+        {/* Stats Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: window.innerWidth > 640 ? 'repeat(3, 1fr)' : '1fr',
+          gap: '12px',
+          marginTop: '16px',
+        }}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+          }}>
+            <div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '4px' }}>
+              {t.totalItems}
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: '700' }}>
+              {filteredStocks.length}
+            </div>
+          </div>
+
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+          }}>
+            <div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '4px' }}>
+              {t.totalStock}
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: '700' }}>
+              {totalStock.toLocaleString()}
+            </div>
+          </div>
+
+          <div style={{
+            background: lowStockCount > 0 
+              ? 'rgba(239, 68, 68, 0.2)' 
+              : 'rgba(34, 197, 94, 0.2)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '16px',
+            border: `1px solid ${lowStockCount > 0 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
-          }}
-        >
-          ← {t.back}
-        </button>
-        <h1 className="uzum-header-title">{t.title}</h1>
-      </div>
-
-      {/* Stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: window.innerWidth > 640 ? 'repeat(2, 1fr)' : '1fr',
-        gap: '12px',
-        padding: '16px',
-      }}>
-        <div className="uzum-card" style={{ padding: '12px' }}>
-          <div style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>
-            {t.totalItems}
-          </div>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: '#111' }}>
-            {filteredStocks.length}
-          </div>
-        </div>
-        <div className="uzum-card" style={{ padding: '12px' }}>
-          <div style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>
-            {t.totalStock}
-          </div>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: '#10b981' }}>
-            {totalStock}
+            gap: '12px',
+          }}>
+            <FiAlertCircle size={24} />
+            <div>
+              <div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '2px' }}>
+                {t.lowStock}
+              </div>
+              <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                {lowStockCount}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Search */}
-      <div style={{ padding: '0 16px 16px' }}>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={t.search}
-          style={{
-            width: '100%',
-            padding: '12px',
-            fontSize: '14px',
-            border: '1px solid #e5e7eb',
-            borderRadius: '8px',
-            outline: 'none',
-          }}
-        />
-      </div>
+      {/* Filters */}
+      <div style={{ padding: '20px' }}>
+        {/* Search */}
+        <div style={{ position: 'relative', marginBottom: '16px' }}>
+          <FiSearch size={20} style={{
+            position: 'absolute',
+            left: '16px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: '#9ca3af',
+          }} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t.search}
+            style={{
+              width: '100%',
+              padding: '14px 14px 14px 48px',
+              fontSize: '15px',
+              border: '2px solid #e5e7eb',
+              borderRadius: '12px',
+              outline: 'none',
+              transition: 'border 0.2s',
+              backgroundColor: 'white',
+            }}
+            onFocus={(e) => e.currentTarget.style.borderColor = '#7c3aed'}
+            onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+          />
+        </div>
 
-      {/* Action Buttons */}
-      {hasChanges && (
+        {/* Stock Level Filter */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto' }}>
+          {[
+            { key: 'all', label: t.all, color: '#6b7280' },
+            { key: 'low', label: t.lowStock, color: '#ef4444' },
+            { key: 'medium', label: t.mediumStock, color: '#f59e0b' },
+            { key: 'high', label: t.highStock, color: '#22c55e' },
+          ].map(({ key, label, color }) => (
+            <button
+              key={key}
+              onClick={() => setFilterLevel(key as any)}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '10px',
+                border: 'none',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                background: filterLevel === key ? color : 'white',
+                color: filterLevel === key ? 'white' : '#6b7280',
+                boxShadow: filterLevel === key 
+                  ? `0 4px 12px ${color}40` 
+                  : '0 2px 4px rgba(0,0,0,0.05)',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {label}
+              {key !== 'all' && (
+                <span style={{
+                  marginLeft: '8px',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  background: filterLevel === key ? 'rgba(255,255,255,0.2)' : '#f3f4f6',
+                  fontSize: '12px',
+                }}>
+                  {stocks.filter(s => getStockLevel(s.amount) === key).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Changes Indicator */}
+        {hasChanges && (
+          <div style={{
+            background: 'linear-gradient(135deg, #7c3aed 0%, #22c55e 100%)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <FiCheckCircle size={24} />
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: '700' }}>
+                  {t.changesSaved}: {Object.keys(editedStocks).length}
+                </div>
+                <div style={{ fontSize: '13px', opacity: 0.9 }}>
+                  {t.quickActions}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={handleReset}
+                disabled={updating}
+                style={{
+                  padding: '10px 16px',
+                  backgroundColor: 'rgba(0,0,0,0.2)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: updating ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <FiX size={16} />
+                {t.reset}
+              </button>
+              <button
+                onClick={handleUpdateAll}
+                disabled={updating}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: 'white',
+                  color: '#7c3aed',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  cursor: updating ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <FiCheckCircle size={16} />
+                {updating ? t.updating : t.updateAll}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Stock Items Grid */}
         <div style={{
-          display: 'flex',
-          gap: '8px',
-          padding: '0 16px 16px',
+          display: 'grid',
+          gridTemplateColumns: window.innerWidth > 1024 ? 'repeat(2, 1fr)' : '1fr',
+          gap: '16px',
         }}>
-          <button
-            onClick={handleUpdateAll}
-            disabled={updating}
-            style={{
-              flex: 1,
-              padding: '12px',
-              backgroundColor: updating ? '#9ca3af' : '#10b981',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: updating ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {updating ? t.updating : `${t.updateAll} (${Object.keys(editedStocks).length})`}
-          </button>
-          <button
-            onClick={handleReset}
-            disabled={updating}
-            style={{
-              padding: '12px 20px',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: updating ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {t.reset}
-          </button>
-        </div>
-      )}
-
-      {/* Stocks List */}
-      <div style={{ padding: '0 16px 20px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {filteredStocks.map((item) => {
             const hasEdit = editedStocks[item.skuId] !== undefined;
             const displayAmount = hasEdit ? editedStocks[item.skuId] : item.amount;
+            const stockLevel = getStockLevel(item.amount);
+            const stockColor = getStockLevelColor(stockLevel);
 
             return (
-              <div key={item.skuId} className="uzum-card" style={{ padding: '16px' }}>
+              <div
+                key={item.skuId}
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: '16px',
+                  padding: '16px',
+                  boxShadow: hasEdit 
+                    ? '0 4px 16px rgba(124, 58, 237, 0.2)' 
+                    : '0 2px 8px rgba(0,0,0,0.06)',
+                  border: hasEdit ? '2px solid #7c3aed' : '2px solid transparent',
+                  transition: 'all 0.2s',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Stock Level Indicator */}
                 <div style={{
-                  display: 'flex',
-                  flexDirection: window.innerWidth > 640 ? 'row' : 'column',
-                  gap: '16px',
-                }}>
-                  {/* Product Image */}
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: stockColor,
+                }} />
+
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  {/* Image */}
                   {(item.image || item.previewImage) && (
                     <div style={{
-                      width: window.innerWidth > 640 ? '80px' : '100%',
+                      width: '80px',
                       height: '80px',
                       flexShrink: 0,
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      background: '#f3f4f6',
                     }}>
                       <img
                         src={item.image || item.previewImage}
@@ -326,119 +488,166 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
-                          borderRadius: '8px',
                         }}
                       />
                     </div>
                   )}
-                  
+
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       fontSize: '15px',
-                      fontWeight: 600,
+                      fontWeight: '700',
                       color: '#111',
-                      marginBottom: '6px',
-                      lineHeight: '1.4',
+                      marginBottom: '4px',
+                      lineHeight: '1.3',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
                     }}>
                       {item.productTitle}
                     </div>
                     <div style={{
                       fontSize: '13px',
-                      color: '#666',
+                      color: '#6b7280',
                       marginBottom: '8px',
-                      lineHeight: '1.4',
                     }}>
                       {item.skuTitle}
                     </div>
-                    <div style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '8px',
-                      fontSize: '12px',
-                    }}>
+
+                    {/* Tags */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
                       <span style={{
-                        padding: '4px 8px',
+                        padding: '3px 8px',
                         backgroundColor: '#f3f4f6',
-                        borderRadius: '4px',
-                        color: '#666',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        color: '#6b7280',
                         fontFamily: 'monospace',
                       }}>
-                        ID: {item.skuId}
+                        #{item.skuId}
                       </span>
-                      {item.barcode && (
-                        <span style={{
-                          padding: '4px 8px',
-                          backgroundColor: '#f3f4f6',
-                          borderRadius: '4px',
-                          color: '#666',
-                          fontFamily: 'monospace',
-                        }}>
-                          {item.barcode}
-                        </span>
-                      )}
                       {item.fbsLinked && (
                         <span style={{
-                          padding: '4px 8px',
-                          backgroundColor: '#dcfce7',
-                          color: '#16a34a',
-                          borderRadius: '4px',
-                          fontWeight: 600,
+                          padding: '3px 8px',
+                          background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+                          color: 'white',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '700',
                         }}>
                           {t.fbs}
                         </span>
                       )}
                       {item.dbsLinked && (
                         <span style={{
-                          padding: '4px 8px',
-                          backgroundColor: '#fef3c7',
-                          color: '#ca8a04',
-                          borderRadius: '4px',
-                          fontWeight: 600,
+                          padding: '3px 8px',
+                          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                          color: 'white',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '700',
                         }}>
                           {t.dbs}
                         </span>
                       )}
                     </div>
-                  </div>
 
-                  {/* Stock Input */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                  }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
-                        {t.currentStock}
+                    {/* Stock Controls */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px',
+                      background: hasEdit ? '#f0fdf4' : '#f9fafb',
+                      borderRadius: '12px',
+                    }}>
+                      {/* Quick Actions */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <button
+                          onClick={() => handleQuickChange(item.skuId, displayAmount, 10)}
+                          style={{
+                            padding: '6px 10px',
+                            background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <FiTrendingUp size={14} />
+                          +10
+                        </button>
+                        <button
+                          onClick={() => handleQuickChange(item.skuId, displayAmount, -10)}
+                          style={{
+                            padding: '6px 10px',
+                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <FiTrendingDown size={14} />
+                          -10
+                        </button>
                       </div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#666' }}>
-                        {item.amount}
+
+                      {/* Current Stock */}
+                      <div style={{ textAlign: 'center', flex: 1 }}>
+                        <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>
+                          {t.currentStock}
+                        </div>
+                        <div style={{
+                          fontSize: '24px',
+                          fontWeight: '700',
+                          color: stockColor,
+                        }}>
+                          {item.amount}
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ fontSize: '20px', color: '#ccc' }}>→</div>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
-                        {t.newStock}
+
+                      {/* Arrow */}
+                      <div style={{ fontSize: '20px', color: '#d1d5db' }}>→</div>
+
+                      {/* New Stock Input */}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px', textAlign: 'center' }}>
+                          {t.newStock}
+                        </div>
+                        <input
+                          type="number"
+                          min="0"
+                          value={displayAmount}
+                          onChange={(e) => handleStockChange(item.skuId, e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '10px',
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            textAlign: 'center',
+                            border: hasEdit ? '2px solid #7c3aed' : '2px solid #e5e7eb',
+                            borderRadius: '10px',
+                            outline: 'none',
+                            background: 'white',
+                            color: '#111',
+                          }}
+                        />
                       </div>
-                      <input
-                        type="number"
-                        min="0"
-                        value={displayAmount}
-                        onChange={(e) => handleStockChange(item.skuId, e.target.value)}
-                        style={{
-                          width: '80px',
-                          padding: '8px',
-                          fontSize: '16px',
-                          fontWeight: 600,
-                          textAlign: 'center',
-                          border: hasEdit ? '2px solid #10b981' : '1px solid #e5e7eb',
-                          borderRadius: '8px',
-                          outline: 'none',
-                          backgroundColor: hasEdit ? '#f0fdf4' : 'white',
-                          color: '#111',
-                        }}
-                      />
                     </div>
                   </div>
                 </div>
@@ -446,6 +655,19 @@ export default function UzumStocks({ token, shopId, onNavigate, lang = 'ru' }: U
             );
           })}
         </div>
+
+        {filteredStocks.length === 0 && (
+          <div style={{
+            textAlign: 'center',
+            padding: '60px 20px',
+            color: '#9ca3af',
+          }}>
+            <FiPackage size={64} style={{ opacity: 0.3, marginBottom: '16px' }} />
+            <div style={{ fontSize: '18px', fontWeight: '600' }}>
+              Товары не найдены
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

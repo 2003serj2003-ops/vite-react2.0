@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getShops, getProducts, getFbsSkuStocks } from '../../../lib/uzum-api';
+import UzumChart from '../UzumChart';
+import { FiPackage } from 'react-icons/fi';
 
 interface UzumInventoryReportProps {
   lang: 'ru' | 'uz';
@@ -187,6 +189,22 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
     costFBSFBO: acc.costFBSFBO + row.costFBSFBO,
   }), { inStock: 0, costFBO: 0, fboQty: 0, costFBS: 0, fbsQty: 0, costFBSFBO: 0 });
 
+  // Chart data
+  const stockByType = [
+    { label: 'FBO', value: totals.fboQty, color: '#3b82f6' },
+    { label: 'FBS', value: totals.fbsQty, color: '#22c55e' },
+  ];
+
+  const topStockProducts = [...filteredData]
+    .sort((a, b) => b.inStock - a.inStock)
+    .slice(0, 10)
+    .map(p => ({ label: p.name.substring(0, 20), value: p.inStock }));
+
+  const topValueProducts = [...filteredData]
+    .sort((a, b) => b.costFBSFBO - a.costFBSFBO)
+    .slice(0, 10)
+    .map(p => ({ label: p.name.substring(0, 20), value: p.costFBSFBO }));
+
   if (loading) {
     return (
       <div style={{
@@ -228,14 +246,15 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
           flexWrap: 'wrap',
           gap: '16px',
         }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0, color: '#1f2937' }}>
-            📦 {t.title}
+          <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0, color: '#1f2937', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <FiPackage size={28} style={{ color: '#7c3aed' }} />
+            {t.title}
           </h2>
           <button
             onClick={downloadReport}
             style={{
               padding: '12px 24px',
-              backgroundColor: '#22c55e',
+              background: 'linear-gradient(135deg, #7c3aed 0%, #22c55e 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
@@ -245,6 +264,15 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 16px rgba(124, 58, 237, 0.3)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             ⬇️ {t.download}
@@ -298,6 +326,119 @@ export default function UzumInventoryReport({ lang, token }: UzumInventoryReport
           </div>
         </div>
       </div>
+
+      {/* Charts Section */}
+      {filteredData.length > 0 && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: window.innerWidth > 1024 ? 'repeat(3, 1fr)' : '1fr',
+          gap: '20px',
+          marginBottom: '20px',
+        }}>
+          {/* Summary Cards */}
+          <div style={{
+            background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+            borderRadius: '16px',
+            padding: '24px',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+              {t.inStock}
+            </div>
+            <div style={{ fontSize: '36px', fontWeight: '700' }}>
+              {totals.inStock.toLocaleString()}
+            </div>
+            <FiPackage size={60} style={{ opacity: 0.2, position: 'absolute', top: '20px', right: '20px' }} />
+          </div>
+
+          <div style={{
+            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+            borderRadius: '16px',
+            padding: '24px',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+              FBO
+            </div>
+            <div style={{ fontSize: '36px', fontWeight: '700' }}>
+              {totals.fboQty.toLocaleString()}
+            </div>
+            <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '8px' }}>
+              {totals.costFBO.toLocaleString()} сум
+            </div>
+            <FiPackage size={60} style={{ opacity: 0.2, position: 'absolute', top: '20px', right: '20px' }} />
+          </div>
+
+          <div style={{
+            background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+            borderRadius: '16px',
+            padding: '24px',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+              FBS
+            </div>
+            <div style={{ fontSize: '36px', fontWeight: '700' }}>
+              {totals.fbsQty.toLocaleString()}
+            </div>
+            <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '8px' }}>
+              {totals.costFBS.toLocaleString()} сум
+            </div>
+            <FiPackage size={60} style={{ opacity: 0.2, position: 'absolute', top: '20px', right: '20px' }} />
+          </div>
+        </div>
+      )}
+
+      {/* Charts Row */}
+      {filteredData.length > 0 && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: window.innerWidth > 1024 ? 'repeat(3, 1fr)' : '1fr',
+          gap: '20px',
+          marginBottom: '20px',
+        }}>
+          {/* Stock Distribution */}
+          <UzumChart
+            data={stockByType}
+            type="pie"
+            title="Распределение FBO/FBS"
+            height={280}
+          />
+
+          {/* Top Stock Products */}
+          {topStockProducts.length > 0 && (
+            <div style={{ gridColumn: window.innerWidth > 1024 ? 'span 2' : 'span 1' }}>
+              <UzumChart
+                data={topStockProducts}
+                type="bar"
+                title="ТОП-10 товаров по остаткам"
+                height={280}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Value Chart */}
+      {topValueProducts.length > 0 && (
+        <div style={{ marginBottom: '20px' }}>
+          <UzumChart
+            data={topValueProducts}
+            type="bar"
+            title="ТОП-10 товаров по стоимости на складе"
+            height={300}
+          />
+        </div>
+      )}
 
       {/* Table */}
       <div style={{

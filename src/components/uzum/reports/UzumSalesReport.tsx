@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getShops, getProducts, getFinanceOrders, getFbsSkuStocks } from '../../../lib/uzum-api';
+import UzumChart from '../UzumChart';
+import { FiTrendingUp, FiPackage, FiDollarSign } from 'react-icons/fi';
 
 interface UzumSalesReportProps {
   lang: 'ru' | 'uz';
@@ -252,6 +254,22 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
     );
   }
 
+  // Prepare chart data
+  const topSoldProducts = [...salesData]
+    .sort((a, b) => b.sold - a.sold)
+    .slice(0, 10)
+    .map(p => ({ label: p.name.substring(0, 20), value: p.sold }));
+
+  const topRevenueProducts = [...salesData]
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 10)
+    .map(p => ({ label: p.name.substring(0, 20), value: p.revenue }));
+
+  const stockDistribution = salesData
+    .filter(p => p.inStock > 0)
+    .slice(0, 8)
+    .map(p => ({ label: p.name.substring(0, 15), value: p.inStock }));
+
   return (
     <div style={{ width: '100%', padding: '0' }}>
       {/* Header */}
@@ -269,14 +287,15 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
           flexWrap: 'wrap',
           gap: '16px',
         }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
-            📊 {t.title}
+          <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <FiTrendingUp size={28} style={{ color: '#7c3aed' }} />
+            {t.title}
           </h2>
           <button
             onClick={downloadReport}
             style={{
               padding: '12px 24px',
-              backgroundColor: '#22c55e',
+              background: 'linear-gradient(135deg, #7c3aed 0%, #22c55e 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
@@ -286,6 +305,15 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 16px rgba(124, 58, 237, 0.3)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             ⬇️ {t.download}
@@ -355,6 +383,127 @@ export default function UzumSalesReport({ lang, token }: UzumSalesReportProps) {
           </div>
         </div>
       </div>
+
+      {/* Charts Section */}
+      {salesData.length > 0 && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: window.innerWidth > 1024 ? 'repeat(2, 1fr)' : '1fr',
+          gap: '20px',
+          marginBottom: '20px',
+        }}>
+          {/* Summary Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '16px',
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+              borderRadius: '16px',
+              padding: '20px',
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+            }}>
+              <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+                {t.sold}
+              </div>
+              <div style={{ fontSize: '32px', fontWeight: '700' }}>
+                {totals.sold.toLocaleString()}
+              </div>
+              <FiPackage size={40} style={{ opacity: 0.3, position: 'absolute', top: '20px', right: '20px' }} />
+            </div>
+
+            <div style={{
+              background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+              borderRadius: '16px',
+              padding: '20px',
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)',
+            }}>
+              <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+                {t.revenue}
+              </div>
+              <div style={{ fontSize: '28px', fontWeight: '700' }}>
+                {formatPrice(totals.revenue)}
+              </div>
+              <FiDollarSign size={40} style={{ opacity: 0.3, position: 'absolute', top: '20px', right: '20px' }} />
+            </div>
+
+            <div style={{
+              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+              borderRadius: '16px',
+              padding: '20px',
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+            }}>
+              <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+                {t.toPay}
+              </div>
+              <div style={{ fontSize: '28px', fontWeight: '700' }}>
+                {formatPrice(totals.toPay)}
+              </div>
+              <FiDollarSign size={40} style={{ opacity: 0.3, position: 'absolute', top: '20px', right: '20px' }} />
+            </div>
+
+            <div style={{
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              borderRadius: '16px',
+              padding: '20px',
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+            }}>
+              <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+                {t.monthlyPotential}
+              </div>
+              <div style={{ fontSize: '32px', fontWeight: '700' }}>
+                {totals.monthlyPotential.toLocaleString()}
+              </div>
+              <FiTrendingUp size={40} style={{ opacity: 0.3, position: 'absolute', top: '20px', right: '20px' }} />
+            </div>
+          </div>
+
+          {/* Stock Distribution Pie Chart */}
+          {stockDistribution.length > 0 && (
+            <UzumChart
+              data={stockDistribution}
+              type="pie"
+              title={`${t.inStock} - Распределение`}
+              height={300}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Charts Row */}
+      {salesData.length > 0 && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: window.innerWidth > 1024 ? 'repeat(2, 1fr)' : '1fr',
+          gap: '20px',
+          marginBottom: '20px',
+        }}>
+          {/* Top Sold Products Chart */}
+          {topSoldProducts.length > 0 && (
+            <UzumChart
+              data={topSoldProducts}
+              type="bar"
+              title="ТОП-10 продаж по количеству"
+              height={350}
+            />
+          )}
+
+          {/* Top Revenue Products Chart */}
+          {topRevenueProducts.length > 0 && (
+            <UzumChart
+              data={topRevenueProducts}
+              type="bar"
+              title="ТОП-10 продаж по выручке"
+              height={350}
+            />
+          )}
+        </div>
+      )}
 
       {/* Table */}
       <div style={{
