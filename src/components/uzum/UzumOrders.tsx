@@ -319,9 +319,17 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
     }
   }
 
-  function formatDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
+  function formatDate(dateString: string | number): string {
+    if (!dateString) return 'Нет данных';
+    
+    // Если это timestamp (число)
+    const date = typeof dateString === 'number' 
+      ? new Date(dateString) 
+      : new Date(dateString);
+    
+    // Проверяем валидность даты
+    if (isNaN(date.getTime())) return 'Неверная дата';
+    
     return date.toLocaleDateString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
@@ -393,7 +401,10 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
     <div className="list" style={{
       width: '100%',
       maxWidth: '100%',
-      overflow: 'visible',
+      height: '100%',
+      overflow: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
     }}>
       {/* Status Filter - Fixed and Always Visible */}
       <div style={{
@@ -545,7 +556,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                         color: '#6b7280',
                         marginBottom: '8px',
                       }}>
-                        {t.date}: {formatDate(order.created_at || order.date)}
+                        {t.date}: {formatDate(order.dateCreated || order.created_at || order.date || order.createdAt)}
                       </div>
                       <div style={{
                         display: 'inline-block',
@@ -568,13 +579,18 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
                         color: '#22c55e',
                         marginBottom: '4px',
                       }}>
-                        {order.total ? formatPrice(order.total) : 'N/A'}
+                        {order.total || order.totalPrice || order.price ? 
+                          formatPrice(order.total || order.totalPrice || order.price) : 
+                          '—'}
                       </div>
                       <div style={{
                         fontSize: '14px',
                         color: '#6b7280',
                       }}>
-                        {order.items?.length || 0} {t.items}
+                        {(() => {
+                          const itemsCount = order.items?.length || order.itemsCount || order.productsCount || 0;
+                          return itemsCount > 0 ? `${itemsCount} ${t.items}` : t.items;
+                        })()}
                       </div>
                     </div>
                   </div>
