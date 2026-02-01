@@ -8,6 +8,7 @@ import UzumDashboard from "./components/uzum/UzumDashboard";
 import UzumProducts from "./components/uzum/UzumProducts";
 import UzumOrders from "./components/uzum/UzumOrders";
 import UzumFinance from "./components/uzum/UzumFinance";
+import UzumInvoices from "./components/uzum/UzumInvoices";
 
 type Lang = "ru" | "uz";
 
@@ -352,7 +353,7 @@ export default function App() {
   const [uzumIntegrationId, setUzumIntegrationId] = useState<string | null>(null);
   const [showUzumToken, setShowUzumToken] = useState(false);
   const [showUzumPin, setShowUzumPin] = useState(false);
-  const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance'>('dashboard');
+  const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance' | 'invoices'>('dashboard');
   const [uzumDecryptedToken, setUzumDecryptedToken] = useState(""); // Для использования в API запросах
   console.log('Uzum integration ID:', uzumIntegrationId); // используем переменную
 
@@ -2819,6 +2820,23 @@ export default function App() {
                   >
                     💰 {lang === 'ru' ? 'Финансы' : 'Moliya'}
                   </button>
+                  <button
+                    onClick={() => setUzumCurrentPage('invoices')}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: uzumCurrentPage === 'invoices' ? '#8b5cf6' : '#f3f4f6',
+                      color: uzumCurrentPage === 'invoices' ? 'white' : '#374151',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    📄 {lang === 'ru' ? 'Накладные' : 'Hisob-fakturalar'}
+                  </button>
                 </div>
 
                 {/* Page Content */}
@@ -2847,6 +2865,12 @@ export default function App() {
                   )}
                   {uzumCurrentPage === 'finance' && (
                     <UzumFinance 
+                      lang={lang} 
+                      token={uzumDecryptedToken}
+                    />
+                  )}
+                  {uzumCurrentPage === 'invoices' && (
+                    <UzumInvoices 
                       lang={lang} 
                       token={uzumDecryptedToken}
                     />
