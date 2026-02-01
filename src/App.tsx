@@ -1793,7 +1793,8 @@ export default function App() {
             justifyContent: "center",
             padding: "16px",
             minHeight: "100vh",
-            position: "relative"
+            position: "relative",
+            background: "var(--bg-primary)"
           }}>
             {/* Theme Toggle */}
             <div style={{
@@ -1860,10 +1861,7 @@ export default function App() {
                   fontSize: "28px",
                   fontWeight: 900,
                   margin: 0,
-                  background: "linear-gradient(135deg, #1E6FDB, #3FA9F5)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
+                  color: "var(--text-primary)",
                   lineHeight: 1.2,
                   letterSpacing: "-0.5px"
                 }}>
@@ -1873,11 +1871,11 @@ export default function App() {
 
               {/* Основная карточка */}
               <div style={{
-                background: "linear-gradient(145deg, #ffffff, #fdfcff)",
+                background: "var(--bg-card)",
                 borderRadius: "20px",
                 padding: "20px 18px",
-                boxShadow: "0 8px 32px rgba(30,111,219,.1), 0 3px 8px rgba(0,0,0,.05)",
-                border: "2px solid rgba(30,111,219,.1)"
+                boxShadow: "var(--shadow-md)",
+                border: "2px solid var(--border-secondary)"
               }}>
                 {/* Поле ввода кода */}
                 <div style={{ marginBottom: "14px" }}>
@@ -1885,7 +1883,7 @@ export default function App() {
                     display: "block",
                     fontSize: "12px",
                     fontWeight: 700,
-                    color: "rgba(20,18,26,.7)",
+                    color: "var(--text-secondary)",
                     marginBottom: "6px",
                     textTransform: "uppercase",
                     letterSpacing: "0.5px"
@@ -1920,10 +1918,10 @@ export default function App() {
                     style={{
                       width: "100%",
                       padding: "11px 14px",
-                      border: "2px solid rgba(30,111,219,.2)",
+                      border: "2px solid var(--border-secondary)",
                       borderRadius: "12px",
-                      background: rulesExpanded ? "rgba(30,111,219,.05)" : "transparent",
-                      color: "rgba(20,18,26,.85)",
+                      background: rulesExpanded ? "var(--bg-secondary)" : "transparent",
+                      color: "var(--text-primary)",
                       fontWeight: 700,
                       fontSize: "13px",
                       cursor: "pointer",
@@ -2229,9 +2227,9 @@ export default function App() {
                     padding: "8px"
                   }}
                 >
-                  <span style={{ display: "block", width: "20px", height: "2px", background: "#1E6FDB", borderRadius: "1px" }}></span>
-                  <span style={{ display: "block", width: "20px", height: "2px", background: "#1E6FDB", borderRadius: "1px" }}></span>
-                  <span style={{ display: "block", width: "20px", height: "2px", background: "#1E6FDB", borderRadius: "1px" }}></span>
+                  <span style={{ display: "block", width: "20px", height: "2px", background: "var(--accent)", borderRadius: "1px" }}></span>
+                  <span style={{ display: "block", width: "20px", height: "2px", background: "var(--accent)", borderRadius: "1px" }}></span>
+                  <span style={{ display: "block", width: "20px", height: "2px", background: "var(--accent)", borderRadius: "1px" }}></span>
                 </button>
               }
               searchDropdown={renderSearchResults()}
@@ -2281,7 +2279,7 @@ export default function App() {
                 <div style={{ 
                   fontSize: "24px", 
                   fontWeight: 900, 
-                  color: "#fff",
+                  color: "var(--text-on-color)",
                   display: "flex",
                   alignItems: "center",
                   gap: "8px"
@@ -2359,7 +2357,7 @@ export default function App() {
               <div style={{ 
                 fontSize: "18px", 
                 fontWeight: 900, 
-                color: "#111", 
+                color: "var(--text-primary)", 
                 padding: "8px 16px 12px",
                 display: "flex",
                 alignItems: "center",
@@ -2370,12 +2368,12 @@ export default function App() {
                   onClick={() => setRoute({ name: "news" })}
                   style={{
                     padding: "6px 12px",
-                    border: "2px solid rgba(30,111,219,.2)",
+                    border: "2px solid var(--border-primary)",
                     borderRadius: "8px",
-                    background: "#FFF8E8",
+                    background: "var(--bg-secondary)",
                     fontSize: "12px",
                     fontWeight: 700,
-                    color: "#1E6FDB",
+                    color: "var(--accent)",
                     cursor: "pointer"
                   }}
                 >
@@ -2428,7 +2426,7 @@ export default function App() {
                 }}
               >
                 <span style={{ fontSize: "24px" }}>❓</span>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "#1E6FDB" }}>FAQ</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--accent)" }}>FAQ</span>
               </button>
               
               <button
@@ -2445,7 +2443,7 @@ export default function App() {
                 }}
               >
                 <span style={{ fontSize: "24px" }}>📂</span>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "#1E6FDB" }}>Разделы</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--accent)" }}>Разделы</span>
               </button>
               
               <button
@@ -2462,7 +2460,7 @@ export default function App() {
                 }}
               >
                 <span style={{ fontSize: "20px" }}>🛒</span>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "#1E6FDB" }}>Uzum</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--accent)" }}>Uzum</span>
               </button>
               
               <button
@@ -2659,7 +2657,7 @@ export default function App() {
                   {/* Error Display */}
                   {uzumError && (
                     <div className="cardCream" style={{
-                      background: "#fee2e2",
+                      background: "var(--bg-error)",
                       border: "2px solid #ef4444",
                       marginBottom: "12px"
                     }}>
@@ -2679,7 +2677,7 @@ export default function App() {
                       fontSize: "18px",
                       fontWeight: 900,
                       marginBottom: "8px",
-                      color: "#1E6FDB",
+                      color: "var(--accent)",
                       display: "flex",
                       alignItems: "center",
                       gap: "8px",
@@ -2694,7 +2692,7 @@ export default function App() {
                           onClick={() => setShowUzumOnboarding(true)}
                           style={{
                             padding: "6px 12px",
-                            backgroundColor: "#1E6FDB",
+                            backgroundColor: "var(--accent)",
                             color: "white",
                             border: "none",
                             borderRadius: "6px",
@@ -2709,7 +2707,7 @@ export default function App() {
                           onClick={() => window.open("https://t.me/CloudGrove", "_blank")}
                           style={{
                             padding: "6px 12px",
-                            backgroundColor: "#4CAF50",
+                            backgroundColor: "var(--color-success)",
                             color: "white",
                             border: "none",
                             borderRadius: "6px",
@@ -2724,7 +2722,7 @@ export default function App() {
                     </div>
                     <div style={{
                       fontSize: "13px",
-                      color: "#666",
+                      color: "var(--text-secondary)",
                       marginBottom: "16px",
                     }}>
                       Нужна помощь с подключением? Напишите @CloudGrove
@@ -2737,7 +2735,7 @@ export default function App() {
                         fontSize: "13px",
                         fontWeight: 700,
                         marginBottom: "8px",
-                        color: "rgba(0,0,0,0.7)"
+                        color: "var(--text-secondary)"
                       }}>
                         Uzum API Token
                       </label>
@@ -3296,11 +3294,11 @@ export default function App() {
                           width: "100%",
                           padding: "10px",
                           borderRadius: "10px",
-                          border: "2px solid rgba(30,111,219,.2)",
-                          background: "#fff",
+                          border: "2px solid var(--border-secondary)",
+                          background: "var(--bg-card)",
                           fontSize: "13px",
                           fontWeight: 600,
-                          color: "#111"
+                          color: "var(--text-primary)"
                         }}
                       >
                         <option value="">{lang === "ru" ? "Выберите категорию..." : "Turkumni tanlang..."}</option>
@@ -3400,11 +3398,11 @@ export default function App() {
                             width: "100%",
                             padding: "12px",
                             borderRadius: "10px",
-                            border: "2px solid rgba(30,111,219,.2)",
-                            background: "#fff",
+                            border: "2px solid var(--border-secondary)",
+                            background: "var(--bg-card)",
                             fontSize: "14px",
                             fontWeight: 600,
-                            color: "#111"
+                            color: "var(--text-primary)"
                           }}
                         />
                       </div>
@@ -3477,11 +3475,11 @@ export default function App() {
                     width: "100%",
                     padding: "12px",
                     borderRadius: "12px",
-                    border: "2px solid rgba(30,111,219,.2)",
-                    background: "#fff",
+                    border: "2px solid var(--border-secondary)",
+                    background: "var(--bg-card)",
                     fontSize: "14px",
                     fontWeight: 600,
-                    color: "#111",
+                    color: "var(--text-primary)",
                     outline: "none",
                     transition: "border-color .2s"
                   }}
@@ -3495,9 +3493,9 @@ export default function App() {
                     marginTop: "12px",
                     maxHeight: "300px",
                     overflowY: "auto",
-                    border: "2px solid rgba(30,111,219,.15)",
+                    border: "2px solid var(--border-primary)",
                     borderRadius: "12px",
-                    background: "#fff"
+                    background: "var(--bg-card)"
                   }}>
                     {commissionResults.map((item) => {
                       // Собираем полный путь категории (с конца к началу)
@@ -3628,9 +3626,9 @@ export default function App() {
                       marginTop: "16px",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: "2px solid rgba(30,111,219,.2)",
-                      background: "#fff",
-                      color: "#1E6FDB",
+                      border: "2px solid var(--border-secondary)",
+                      background: "var(--bg-card)",
+                      color: "var(--accent)",
                       fontWeight: 700,
                       fontSize: "14px",
                       cursor: "pointer"
@@ -4459,9 +4457,9 @@ export default function App() {
                     <div style={{ 
                       marginTop: "16px", 
                       padding: "16px", 
-                      background: "#d4edda", 
+                      background: "var(--bg-success)", 
                       borderRadius: "12px", 
-                      border: "2px solid #28a745" 
+                      border: "2px solid var(--color-success)" 
                     }}>
                       <div style={{ fontWeight: 900, marginBottom: 8, color: "#155724" }}>✅ Код создан успешно!</div>
                       <div style={{ 
@@ -4469,9 +4467,9 @@ export default function App() {
                         fontSize: "20px", 
                         fontWeight: 900, 
                         letterSpacing: "2px", 
-                        color: "#111",
+                        color: "var(--text-primary)",
                         padding: "12px",
-                        background: "#fff",
+                        background: "var(--bg-card)",
                         borderRadius: "8px",
                         textAlign: "center",
                         marginBottom: "12px"
@@ -4520,8 +4518,8 @@ export default function App() {
                                   borderRadius: 6, 
                                   fontSize: 11, 
                                   fontWeight: 900,
-                                  background: "#e3f2fd",
-                                  color: "#1565c0"
+                                  background: "var(--bg-info)",
+                                  color: "var(--color-info)"
                                 }}>
                                   {ac.role === "owner" ? "👑 OWNER" : ac.role === "admin" ? "⚙️ ADMIN" : ac.role === "editor" ? "✏️ EDITOR" : "👁️ VIEWER"}
                                 </span>
