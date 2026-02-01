@@ -574,11 +574,16 @@ export async function getFbsSkuStocks(
   // Вариант 2: { items: [...] }
   // Вариант 3: { stocks: [...] }
   // Вариант 4: { data: [...] }
+  // Вариант 5: { skuAmountList: [...] } ← UZUM API использует это!
   let stocks = null;
   
   if (result.data) {
     if (Array.isArray(result.data)) {
       stocks = result.data;
+    } else if (Array.isArray(result.data.skuAmountList)) {
+      // UZUM API возвращает данные в поле skuAmountList
+      stocks = result.data.skuAmountList;
+      console.log('📊 [getFbsSkuStocks] Found skuAmountList with', stocks.length, 'items');
     } else if (Array.isArray(result.data.items)) {
       stocks = result.data.items;
     } else if (Array.isArray(result.data.stocks)) {
@@ -588,13 +593,18 @@ export async function getFbsSkuStocks(
     }
   }
 
+  const parsedStocks = stocks || [];
   console.log('📊 [getFbsSkuStocks] Parsed stocks:', { 
-    success: !!stocks, 
-    count: stocks ? stocks.length : 0,
-    sample: stocks ? stocks[0] : null 
+    success: parsedStocks.length > 0, 
+    count: parsedStocks.length,
+    sample: parsedStocks[0] || null 
   });
 
-  return { success: true, stocks: stocks || [] };
+  if (parsedStocks.length === 0) {
+    console.warn('📊 [getFbsSkuStocks] No stocks found! Response keys:', Object.keys(result.data || {}));
+  }
+
+  return { success: true, stocks: parsedStocks };
 }
 
 /**
@@ -720,11 +730,20 @@ export async function getFinanceExpenses(
 
   console.log('💸 Raw finance expenses API response:', result.data);
 
-  // API возвращает {payload: {payments: [...]}}
+  // API возвращает разные структуры:
+  // Вариант 1: {payments: [...]} ← UZUM API использует это!
+  // Вариант 2: {payload: {payments: [...]}}
+  // Вариант 3: Прямой массив [...]
+  // Вариант 4: {expenses: [...]}
   let expenses: any[] = [];
   let total = 0;
 
-  if (result.data?.payload?.payments) {
+  if (result.data?.payments && Array.isArray(result.data.payments)) {
+    // UZUM API возвращает данные напрямую в поле payments
+    expenses = result.data.payments;
+    total = result.data.totalElements || expenses.length;
+    console.log('💸 [getFinanceExpenses] Found payments array with', expenses.length, 'items');
+  } else if (result.data?.payload?.payments) {
     expenses = result.data.payload.payments;
     total = result.data.payload.totalElements || expenses.length;
   } else if (Array.isArray(result.data)) {
@@ -733,7 +752,15 @@ export async function getFinanceExpenses(
   } else if (result.data?.expenses) {
     expenses = result.data.expenses;
     total = result.data.totalElements || expenses.length;
+  } else {
+    console.warn('💸 [getFinanceExpenses] Unknown response structure:', Object.keys(result.data || {}));
   }
+
+  console.log('💸 [getFinanceExpenses] Parsed expenses:', {
+    success: expenses.length > 0,
+    count: expenses.length,
+    sample: expenses[0]
+  });
 
   return { success: true, expenses, total };
 }

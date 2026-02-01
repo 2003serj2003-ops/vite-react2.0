@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UZUM Dashboard Debug</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #7c3aed;
+      margin-top: 0;
+    }
+    h2 {
+      color: #333;
+      border-bottom: 2px solid #7c3aed;
+      padding-bottom: 10px;
+    }
+    button {
+      background: #7c3aed;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button:hover {
+      background: #6d28d9;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .output {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 15px;
+      margin-top: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .success {
+      color: #22c55e;
+      font-weight: 600;
+    }
+    .error {
+      color: #ef4444;
+      font-weight: 600;
+    }
+    .info {
+      color: #3b82f6;
+      font-weight: 600;
+    }
+    .warn {
+      color: #f59e0b;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-bottom: 5px;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 UZUM Dashboard Debug</h1>
+  
+  <div class="section">
+    <h2>Настройки подключения</h2>
+    <input type="text" id="token" placeholder="Введите UZUM токен" />
+    <input type="text" id="shopId" placeholder="Введите Shop ID" />
+    <button onclick="saveCredentials()">Сохранить учетные данные</button>
+    <div id="creds-status" class="output" style="display: none;"></div>
+  </div>
+
+  <div class="section">
+    <h2>Тесты API</h2>
+    <button onclick="testStocks()">Проверить остатки (Stocks)</button>
+    <button onclick="testFinanceOrders()">Проверить заказы (Finance Orders)</button>
+    <button onclick="testFinanceExpenses()">Проверить расходы (Finance Expenses)</button>
+    <button onclick="testAll()">Запустить все тесты</button>
+    <button onclick="clearOutput()">Очистить вывод</button>
+  </div>
+
+  <div class="section">
+    <h2>Результаты тестов</h2>
+    <div id="output" class="output">
+      Нажмите на кнопки выше для запуска тестов...
+      
+      ВАЖНО: Откройте консоль браузера (F12) для просмотра детальных логов!
+    </div>
+  </div>
+
+  <div class="section" id="stats-section" style="display: none;">
+    <h2>Статистика</h2>
+    <div id="stats" class="stats"></div>
+  </div>
+
+  <script>
+    const PROXY_URL = 'https://ykbouygdeqrohizeqlmc.supabase.co/functions/v1/uzum-proxy';
+    let TOKEN = '';
+    let SHOP_ID = '';
+
+    // Загружаем сохраненные credentials из localStorage
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('uzum_debug_creds');
+      if (saved) {
+        try {
+          const creds = JSON.parse(saved);
+          TOKEN = creds.token || '';
+          SHOP_ID = creds.shopId || '';
+          document.getElementById('token').value = TOKEN;
+          document.getElementById('shopId').value = SHOP_ID;
+          log('✓ Загружены сохраненные учетные данные', 'success');
+        } catch (e) {
+          console.error('Failed to load saved credentials', e);
+        }
+      }
+    });
+
+    function saveCredentials() {
+      TOKEN = document.getElementById('token').value.trim();
+      SHOP_ID = document.getElementById('shopId').value.trim();
+      
+      if (!TOKEN || !SHOP_ID) {
+        alert('Пожалуйста, заполните оба поля!');
+        return;
+      }
+
+      localStorage.setItem('uzum_debug_creds', JSON.stringify({ token: TOKEN, shopId: SHOP_ID }));
+      
+      const status = document.getElementById('creds-status');
+      status.style.display = 'block';
+      status.innerHTML = '<span class="success">✓ Учетные данные сохранены!</span>';
+      
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 3000);
+    }
+
+    function log(message, type = 'info') {
+      const output = document.getElementById('output');
+      const timestamp = new Date().toLocaleTimeString();
+      const className = type;
+      output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+      output.scrollTop = output.scrollHeight;
+      
+      // Also log to console
+      console.log(`[${timestamp}] ${message}`);
+    }
+
+    function clearOutput() {
+      document.getElementById('output').innerHTML = 'Вывод очищен. Готов к новым тестам...\n\n';
+      document.getElementById('stats-section').style.display = 'none';
+    }
+
+    async function makeRequest(endpoint, method = 'GET', body = null) {
+      if (!TOKEN || !SHOP_ID) {
+        alert('Сначала укажите учетные данные!');
+        throw new Error('Missing credentials');
+      }
+
+      const proxyBody = {
+        path: endpoint,
+        method: method,
+        headers: {
+          'Authorization': TOKEN,
+        },
+      };
+
+      if (body && method !== 'GET') {
+        proxyBody.body = body;
+      }
+
+      console.log('📡 Making request:', { endpoint, method, proxyBody });
+      log(`📡 Запрос: ${method} ${endpoint}`);
+
+      try {
+        const response = await fetch(PROXY_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(proxyBody),
+        });
+
+        const status = response.status;
+        console.log('Response status:', status);
+        log(`   Статус: ${status}`, status === 200 ? 'success' : 'error');
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('Response error:', text);
+          log(`   ❌ Ошибка: ${text}`, 'error');
+          return { success: false, status, error: text };
+        }
+
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        // Извлекаем payload если есть
+        let result = data;
+        if (data && typeof data === 'object' && 'payload' in data) {
+          console.log('Extracting payload from response');
+          log('   📦 Извлечен payload из ответа');
+          result = data.payload;
+        }
+
+        log(`   ✓ Данные получены`, 'success');
+        return { success: true, status, data: result };
+
+      } catch (error) {
+        console.error('Network error:', error);
+        log(`   ❌ Ошибка сети: ${error.message}`, 'error');
+        return { success: false, error: error.message };
+      }
+    }
+
+    async function testStocks() {
+      log('\n═══════════════════════════════════════', 'info');
+      log('ТЕСТ: Проверка остатков (Stocks)', 'info');
+      log('═══════════════════════════════════════\n', 'info');
+
+      const result = await makeRequest('/v2/fbs/sku/stocks?limit=100&offset=0');
+      
+      if (!result.success) {
+        log('\n❌ Не удалось загрузить остатки', 'error');
+        return;
+      }
+
+      console.log('Stocks data:', result.data);
+      log('\n📊 Анализ данных:');
+      log(`   Тип данных: ${typeof result.data}`);
+      log(`   Это массив? ${Array.isArray(result.data)}`);
+      
+      if (result.data && typeof result.data === 'object') {
+        log(`   Ключи: ${Object.keys(result.data).join(', ')}`);
+      }
+
+      // Пробуем извлечь массив остатков
+      let stocks = null;
+      if (Array.isArray(result.data)) {
+        stocks = result.data;
+        log('   ✓ Данные - это прямой массив', 'success');
+      } else if (result.data?.items && Array.isArray(result.data.items)) {
+        stocks = result.data.items;
+        log('   ✓ Данные в поле "items"', 'success');
+      } else if (result.data?.stocks && Array.isArray(result.data.stocks)) {
+        stocks = result.data.stocks;
+        log('   ✓ Данные в поле "stocks"', 'success');
+      } else if (result.data?.data && Array.isArray(result.data.data)) {
+        stocks = result.data.data;
+        log('   ✓ Данные в поле "data"', 'success');
+      } else {
+        log('   ⚠️  Не удалось найти массив остатков', 'warn');
+        log('\n📄 Полный ответ API:', 'warn');
+        log(JSON.stringify(result.data, null, 2), 'warn');
+        return;
+      }
+
+      log(`\n   📦 Найдено товаров: ${stocks.length}`, 'success');
+
+      if (stocks.length === 0) {
+        log('   ⚠️  Нет товаров с остатками!', 'warn');
+        return;
+      }
+
+      // Показываем первый товар для примера
+      console.log('First stock item:', stocks[0]);
+      log('\n   Пример первого товара:');
+      log(JSON.stringify(stocks[0], null, 2));
+
+      // Подсчитываем остатки по типам склада
+      let fboTotal = 0;
+      let fbsTotal = 0;
+      let dbsTotal = 0;
+
+      stocks.forEach((item) => {
+        const warehouseType = item.warehouseType || item.warehouse_type || '';
+        const amount = item.amount || item.stock || item.quantity || 0;
+
+        if (warehouseType.toLowerCase().includes('fbo')) {
+          fboTotal += amount;
+        } else if (warehouseType.toLowerCase().includes('fbs')) {
+          fbsTotal += amount;
+        } else if (warehouseType.toLowerCase().includes('dbs')) {
+          dbsTotal += amount;
+        }
+      });
+
+      const total = fboTotal + fbsTotal + dbsTotal;
+
+      log('\n📊 Итоговые остатки:', 'success');
+      log(`   FBO: ${fboTotal}`, 'success');
+      log(`   FBS: ${fbsTotal}`, 'success');
+      log(`   DBS: ${dbsTotal}`, 'success');
+      log(`   Всего: ${total}`, 'success');
+
+      // Показываем статистику
+      showStats({
+        'FBO остатки': fboTotal,
+        'FBS остатки': fbsTotal,
+        'DBS остатки': dbsTotal,
+        'Всего товаров': stocks.length,
+      });
+    }
+
+    async function testFinanceOrders() {
+      log('\n═══════════════════════════════════════', 'info');
+      log('ТЕСТ: Проверка финансовых заказов (Finance Orders)', 'info');
+      log('═══════════════════════════════════════\n', 'info');
+
+      // Последние 7 дней
+      const endDate = Date.now();
+      const startDate = endDate - (7 * 24 * 60 * 60 * 1000);
+
+      const endpoint = `/v1/finance/orders?shopId=${SHOP_ID}&shopIds=${SHOP_ID}&size=100&page=0&dateFrom=${startDate}&dateTo=${endDate}`;
+      const result = await makeRequest(endpoint);
+      
+      if (!result.success) {
+        log('\n❌ Не удалось загрузить финансовые заказы', 'error');
+        return;
+      }
+
+      console.log('Finance orders data:', result.data);
+      log('\n📊 Анализ данных:');
+      log(`   Тип данных: ${typeof result.data}`);
+      
+      if (result.data && typeof result.data === 'object') {
+        log(`   Ключи: ${Object.keys(result.data).join(', ')}`);
+      }
+
+      // Извлекаем заказы
+      const orders = result.data?.orderItems || [];
+      const total = result.data?.totalElements || 0;
+
+      log(`\n   📦 Найдено заказов: ${orders.length} из ${total}`, 'success');
+
+      if (orders.length === 0) {
+        log('   ⚠️  Нет финансовых заказов за последние 7 дней!', 'warn');
+        return;
+      }
+
+      // Показываем первый заказ для примера
+      console.log('First order:', orders[0]);
+      log('\n   Пример первого заказа:');
+      log(JSON.stringify(orders[0], null, 2));
+
+      // Подсчитываем выручку и прибыль
+      let revenue = 0;
+      let profit = 0;
+
+      orders.forEach(order => {
+        const sellPrice = order.sellPrice || 0;
+        const amount = order.amount || 1;
+        const sellerProfit = order.sellerProfit || 0;
+
+        revenue += sellPrice * amount;
+        profit += sellerProfit * amount;
+      });
+
+      log('\n💰 Финансовые показатели (последние 7 дней):', 'success');
+      log(`   Выручка: ${revenue.toLocaleString('ru-RU')} сум`, 'success');
+      log(`   Прибыль: ${profit.toLocaleString('ru-RU')} сум`, 'success');
+
+      // Показываем статистику
+      showStats({
+        'Заказов': orders.length,
+        'Выручка (сум)': revenue.toLocaleString('ru-RU'),
+        'Прибыль (сум)': profit.toLocaleString('ru-RU'),
+      });
+    }
+
+    async function testFinanceExpenses() {
+      log('\n═══════════════════════════════════════', 'info');
+      log('ТЕСТ: Проверка расходов (Finance Expenses)', 'info');
+      log('═══════════════════════════════════════\n', 'info');
+
+      // Последние 7 дней
+      const endDate = Date.now();
+      const startDate = endDate - (7 * 24 * 60 * 60 * 1000);
+
+      const endpoint = `/v1/finance/expenses?shopIds=${SHOP_ID}&size=100&page=0&dateFrom=${startDate}&dateTo=${endDate}`;
+      const result = await makeRequest(endpoint);
+      
+      if (!result.success) {
+        log('\n❌ Не удалось загрузить расходы', 'error');
+        return;
+      }
+
+      console.log('Finance expenses data:', result.data);
+      log('\n📊 Анализ данных:');
+      log(`   Тип данных: ${typeof result.data}`);
+      
+      if (result.data && typeof result.data === 'object') {
+        log(`   Ключи: ${Object.keys(result.data).join(', ')}`);
+      }
+
+      // Извлекаем расходы - API может возвращать разные структуры
+      let expenses = [];
+      if (result.data?.payload?.payments) {
+        expenses = result.data.payload.payments;
+        log('   ✓ Данные в поле "payload.payments"', 'success');
+      } else if (Array.isArray(result.data)) {
+        expenses = result.data;
+        log('   ✓ Данные - это прямой массив', 'success');
+      } else if (result.data?.expenses) {
+        expenses = result.data.expenses;
+        log('   ✓ Данные в поле "expenses"', 'success');
+      } else {
+        log('   ⚠️  Не удалось найти массив расходов', 'warn');
+        log('\n📄 Полный ответ API:', 'warn');
+        log(JSON.stringify(result.data, null, 2), 'warn');
+        return;
+      }
+
+      log(`\n   📦 Найдено расходов: ${expenses.length}`, 'success');
+
+      if (expenses.length === 0) {
+        log('   ⚠️  Нет расходов за последние 7 дней!', 'warn');
+        return;
+      }
+
+      // Показываем первый расход для примера
+      console.log('First expense:', expenses[0]);
+      log('\n   Пример первого расхода:');
+      log(JSON.stringify(expenses[0], null, 2));
+
+      // Подсчитываем расходы по категориям
+      const expensesByCategory = {
+        marketing: 0,
+        commission: 0,
+        logistics: 0,
+        fines: 0,
+      };
+
+      expenses.forEach(expense => {
+        const amount = Math.abs(
+          expense.paymentPrice || 
+          expense.amount || 
+          expense.price || 
+          expense.sum || 
+          0
+        );
+        
+        const type = (expense.type || expense.category || '').toLowerCase();
+        const source = (expense.source || '').toLowerCase();
+        const description = (expense.description || expense.name || '').toLowerCase();
+        
+        const allText = `${type} ${source} ${description}`.toLowerCase();
+        
+        if (allText.includes('market') || allText.includes('маркет') || allText.includes('marketing') || allText.includes('реклам')) {
+          expensesByCategory.marketing += amount;
+        } else if (allText.includes('commi') || allText.includes('комисс') || allText.includes('fee') || allText.includes('сбор')) {
+          expensesByCategory.commission += amount;
+        } else if (allText.includes('logist') || allText.includes('логист') || allText.includes('delivery') || allText.includes('доставк') || allText.includes('shipping')) {
+          expensesByCategory.logistics += amount;
+        } else if (allText.includes('fine') || allText.includes('штраф') || allText.includes('penalty') || allText.includes('пеня')) {
+          expensesByCategory.fines += amount;
+        } else {
+          expensesByCategory.commission += amount;
+        }
+      });
+
+      const totalExpenses = Object.values(expensesByCategory).reduce((a, b) => a + b, 0);
+
+      log('\n💸 Расходы по категориям (последние 7 дней):', 'success');
+      log(`   Маркетинг: ${expensesByCategory.marketing.toLocaleString('ru-RU')} сум`, 'success');
+      log(`   Комиссия: ${expensesByCategory.commission.toLocaleString('ru-RU')} сум`, 'success');
+      log(`   Логистика: ${expensesByCategory.logistics.toLocaleString('ru-RU')} сум`, 'success');
+      log(`   Штрафы: ${expensesByCategory.fines.toLocaleString('ru-RU')} сум`, 'success');
+      log(`   ИТОГО: ${totalExpenses.toLocaleString('ru-RU')} сум`, 'success');
+
+      // Показываем статистику
+      showStats({
+        'Маркетинг (сум)': expensesByCategory.marketing.toLocaleString('ru-RU'),
+        'Комиссия (сум)': expensesByCategory.commission.toLocaleString('ru-RU'),
+        'Логистика (сум)': expensesByCategory.logistics.toLocaleString('ru-RU'),
+        'Штрафы (сум)': expensesByCategory.fines.toLocaleString('ru-RU'),
+      });
+    }
+
+    async function testAll() {
+      clearOutput();
+      log('🚀 Запуск всех тестов...\n', 'info');
+      
+      await testStocks();
+      await testFinanceOrders();
+      await testFinanceExpenses();
+      
+      log('\n═══════════════════════════════════════', 'info');
+      log('✓ Все тесты завершены', 'success');
+      log('═══════════════════════════════════════\n', 'info');
+    }
+
+    function showStats(stats) {
+      const section = document.getElementById('stats-section');
+      const container = document.getElementById('stats');
+      
+      section.style.display = 'block';
+      container.innerHTML = '';
+      
+      Object.entries(stats).forEach(([label, value]) => {
+        const card = document.createElement('div');
+        card.className = 'stat-card';
+        card.innerHTML = `
+          <div class="stat-label">${label}</div>
+          <div class="stat-value">${value}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>

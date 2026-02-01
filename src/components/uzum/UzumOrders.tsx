@@ -340,16 +340,27 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
               window.open(result.labelUrl, '_blank');
               return;
             } else {
-              // Это JSON данные
-              const labelJson = JSON.stringify({
-                orderId: orderId,
-                timestamp: Date.now(),
-                label: result.label
-              }, null, 2);
+              // Это JSON данные - конвертируем в PDF-подобный текстовый формат
+              const labelText = `
+╔═══════════════════════════════════════╗
+║     UZUM MARKET - ЭТИКЕТКА ЗАКАЗА     ║
+╚═══════════════════════════════════════╝
+
+📦 Заказ №: ${orderId}
+📅 Дата: ${new Date().toLocaleString('ru-RU')}
+🔖 Размер этикетки: ${size}
+
+─────────────────────────────────────────
+
+${JSON.stringify(result.label, null, 2)}
+
+─────────────────────────────────────────
+🔗 Uzum Market Seller
+              `;
               
-              blob = new Blob([labelJson], { type: 'application/json' });
-              fileName = `uzum-label-${orderId}.json`;
-              mimeType = 'application/json';
+              blob = new Blob([labelText], { type: 'text/plain; charset=utf-8' });
+              fileName = `uzum-label-${orderId}.txt`;
+              mimeType = 'text/plain';
             }
 
             // Отправляем файл через Telegram Bot

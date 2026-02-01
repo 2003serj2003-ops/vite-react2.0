@@ -4,6 +4,7 @@ import "./App.css";
 // import Chat from "./Chat"; // ВРЕМЕННО ОТКЛЮЧЕНО - раскомментировать когда доработаешь
 import { encryptToken, validatePin, isCryptoAvailable } from "./lib/crypto";
 import { getShops } from "./lib/uzum-api";
+import * as UzumCache from "./lib/uzum-cache";
 import UzumDashboard from "./components/uzum/UzumDashboard";
 import UzumProducts from "./components/uzum/UzumProducts";
 import UzumOrders from "./components/uzum/UzumOrders";
@@ -775,6 +776,10 @@ export default function App() {
       setUzumPin('');
       setUzumError('');
       setUzumDecryptedToken('');
+      
+      // Очистка кеша при выходе из интеграции
+      console.log('🗑️ Clearing UZUM cache on disconnect');
+      UzumCache.clearCache();
 
       showToast('✓ Интеграция отключена');
       setUzumLoading(false);

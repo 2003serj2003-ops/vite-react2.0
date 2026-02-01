@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getShops, getProducts, getFbsOrdersCount, getFinanceOrders, getFinanceExpenses, getFbsSkuStocks } from '../../lib/uzum-api';
+import * as UzumCache from '../../lib/uzum-cache';
 import UzumWeeklyChart from './UzumWeeklyChart';
 import CoolLoader from '../CoolLoader';
 
@@ -33,6 +34,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
     fines: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [showWeeklyChart, setShowWeeklyChart] = useState(false);
   const [datePeriod, setDatePeriod] = useState<7 | 10 | 30>(7);
 
@@ -56,6 +58,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
       title: 'Главная страница',
       back: 'Назад',
       loading: 'Загрузка...',
+      refreshing: 'Обновление...',
+      refresh: 'Обновить',
       financialData: 'Финансовые данные',
       dateRange: 'На дату',
       revenue: 'Выручка',
@@ -91,6 +95,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
       title: 'Bosh sahifa',
       back: 'Orqaga',
       loading: 'Yuklanmoqda...',
+      refreshing: 'Yangilanmoqda...',
+      refresh: 'Yangilash',
       financialData: 'Moliyaviy malumotlar',
       dateRange: 'Sanadan',
       revenue: 'Daromad',
@@ -128,33 +134,65 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
 
   // Load basic dashboard data once
   useEffect(() => {
+    // Инициализация кеша при первой загрузке
+    if (!UzumCache.getCacheInfo().initialized) {
+      console.log('🆕 First load - initializing cache');
+      UzumCache.initCache(token);
+    }
+    
     loadBasicData();
   }, [token]);
 
   // Load finance data when period changes
   useEffect(() => {
-    if (stats.totalProducts > 0) { // Only load if we have shop data
+    if (shopId) { // Only load if we have shop data
       loadFinanceData();
     }
-  }, [datePeriod]);
+  }, [datePeriod, shopId]);
 
-  async function loadBasicData() {
+  async function loadBasicData(force: boolean = false) {
     setLoading(true);
     try {
+      UzumCache.logCacheState();
+      
+      // Проверяем кеш (если не принудительная перезагрузка)
+      if (!force && UzumCache.hasCachedData('stats') && UzumCache.isCacheValid()) {
+        console.log('✅ Loading from cache');
+        const cachedStats = UzumCache.getCachedData<typeof stats>('stats');
+        const cachedShopId = UzumCache.getCachedShopId();
+        
+        if (cachedStats) {
+          setStats(cachedStats);
+        }
+        if (cachedShopId) {
+          setShopId(cachedShopId);
+        }
+        
+        setLoading(false);
+        return;
+      }
+      
+      console.log('🔄 Loading fresh data from API...');
+      
       // Load shops
       const shopsResult = await getShops(token);
       console.log('🏪 Shops result:', shopsResult);
       if (shopsResult.success && shopsResult.shops) {
+        UzumCache.setCachedData('shops', shopsResult.shops);
+        
         // Load products and orders for first shop
         if (shopsResult.shops.length > 0) {
           const currentShopId = shopsResult.shops[0].id;
           setShopId(currentShopId);
+          UzumCache.updateShopId(currentShopId);
           
           // Load products
           const productsResult = await getProducts(token, currentShopId);
           console.log('📦 Products result:', productsResult);
           
           if (productsResult.success) {
+            UzumCache.setCachedData('products', productsResult.products || []);
+            
             setStats(prev => ({
               ...prev,
               totalProducts: productsResult.total || 0,
@@ -168,6 +206,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             
             if (stocksResult.success && stocksResult.stocks) {
               const stocks = stocksResult.stocks;
+              UzumCache.setCachedData('stocks', stocks);
+              
               let fboTotal = 0;
               let fbsTotal = 0;
               let dbsTotal = 0;
@@ -182,6 +222,19 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                     console.log(`📊 Item ${index}:`, JSON.stringify(item, null, 2));
                   }
                   
+                  // UZUM API формат: { skuId, amount, fbsAllowed, dbsAllowed, ... }
+                  if (typeof item.amount === 'number') {
+                    // Определяем тип склада по флагам
+                    if (item.fbsAllowed && item.fbsLinked) {
+                      fbsTotal += item.amount;
+                    } else if (item.dbsAllowed && item.dbsLinked) {
+                      dbsTotal += item.amount;
+                    } else {
+                      // По умолчанию FBS
+                      fbsTotal += item.amount;
+                    }
+                  }
+                  
                   // Вариант 1: прямые поля fbo, fbs, dbs (числа)
                   if (typeof item.fbo === 'number') fboTotal += item.fbo;
                   if (typeof item.fbs === 'number') fbsTotal += item.fbs;
@@ -191,7 +244,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                   if (item.stocks && typeof item.stocks === 'object') {
                     if (typeof item.stocks.fbo === 'number') fboTotal += item.stocks.fbo;
                     if (typeof item.stocks.fbs === 'number') fbsTotal += item.stocks.fbs;
-                    if (typeof item.stocks.dbs === 'number') fbsTotal += item.stocks.dbs;
+                    if (typeof item.stocks.dbs === 'number') dbsTotal += item.stocks.dbs;
                   }
                   
                   // Вариант 3: поле stock с подполями (объект с числами)
@@ -200,24 +253,20 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
                     if (typeof item.stock.fbs === 'number') fbsTotal += item.stock.fbs;
                     if (typeof item.stock.dbs === 'number') dbsTotal += item.stock.dbs;
                   }
-                  
-                  // Вариант 4: поле quantity или amount (единое поле для всех типов)
-                  if (typeof item.quantity === 'number') {
-                    fbsTotal += item.quantity;
-                  } else if (typeof item.amount === 'number') {
-                    fbsTotal += item.amount;
-                  } else if (typeof item.stock === 'number') {
-                    fbsTotal += item.stock;
-                  }
                 });
               }
               
-              setStats(prev => ({
-                ...prev,
-                fboStock: fboTotal,
-                fbsStock: fbsTotal,
-                dbsStock: dbsTotal,
-              }));
+              setStats(prev => {
+                const newStats = {
+                  ...prev,
+                  fboStock: fboTotal,
+                  fbsStock: fbsTotal,
+                  dbsStock: dbsTotal,
+                };
+                // Сохраняем в кеш
+                UzumCache.setCachedData('stats', newStats);
+                return newStats;
+              });
               
               console.log('📦 ✅ Calculated warehouse stocks:', { fboTotal, fbsTotal, dbsTotal, totalItems: Array.isArray(stocks) ? stocks.length : 0 });
             } else {
@@ -240,10 +289,15 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           }
           
           console.log('📋 Total orders count:', totalOrders);
-          setStats(prev => ({
-            ...prev,
-            activeOrders: totalOrders,
-          }));
+          setStats(prev => {
+            const newStats = {
+              ...prev,
+              activeOrders: totalOrders,
+            };
+            // Сохраняем в кеш
+            UzumCache.setCachedData('stats', newStats);
+            return newStats;
+          });
 
           // Load pending orders sequentially
           const createdResult = await getFbsOrdersCount(token, currentShopId, { status: 'CREATED' });
@@ -252,10 +306,15 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           
           const pendingTotal = (createdResult.count || 0) + (packingResult.count || 0) + (pendingResult.count || 0);
           
-          setStats(prev => ({
-            ...prev,
-            pendingOrders: pendingTotal,
-          }));
+          setStats(prev => {
+            const newStats = {
+              ...prev,
+              pendingOrders: pendingTotal,
+            };
+            // Сохраняем обновленные stats в кеш
+            UzumCache.setCachedData('stats', newStats);
+            return newStats;
+          });
 
           // Load initial finance data
           await loadFinanceData();
@@ -453,8 +512,29 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
     }
   }
 
+  // Функция принудительного обновления данных
+  async function handleRefresh() {
+    setRefreshing(true);
+    try {
+      console.log('🔄 Manual refresh triggered');
+      UzumCache.invalidateCache();
+      await loadBasicData(true); // force = true
+      if (shopId) {
+        await loadFinanceData();
+      }
+    } catch (error) {
+      console.error('Refresh error:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   if (loading) {
     return <CoolLoader text={t.loading} />;
+  }
+
+  if (refreshing) {
+    return <CoolLoader text={t.refreshing} />;
   }
 
   const formatNumber = (num: number) => {
@@ -466,7 +546,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
 
   return (
     <div className="list" style={{ padding: '0' }}>
-      {/* Top Bar with 3 buttons */}
+      {/* Top Bar with 4 buttons */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -474,6 +554,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
         padding: window.innerWidth > 640 ? '16px 20px' : '12px 16px',
         backgroundColor: '#7c3aed',
         boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
+        flexWrap: 'wrap',
+        gap: '8px',
       }}>
         <button
           onClick={onNavigateBack}
@@ -501,52 +583,88 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
           🏠 {window.innerWidth > 640 ? (lang === 'ru' ? 'Обратно в приложение' : 'Ilovaga qaytish') : ''}
         </button>
 
-        <button
-          onClick={onChangeLang || (() => {})}
-          style={{
-            padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            color: 'white',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: window.innerWidth > 640 ? '14px' : '12px',
-            fontWeight: 600,
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-          }}
-        >
-          🌐 {window.innerWidth > 640 ? (lang === 'ru' ? 'O\'zbekcha' : 'Русский') : lang === 'ru' ? 'UZ' : 'RU'}
-        </button>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            style={{
+              padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
+              backgroundColor: refreshing ? 'rgba(156, 163, 175, 0.5)' : 'rgba(34, 197, 94, 0.9)',
+              color: 'white',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '8px',
+              cursor: refreshing ? 'not-allowed' : 'pointer',
+              fontSize: window.innerWidth > 640 ? '14px' : '12px',
+              fontWeight: 600,
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              opacity: refreshing ? 0.7 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!refreshing) e.currentTarget.style.backgroundColor = 'rgba(22, 163, 74, 0.9)';
+            }}
+            onMouseLeave={(e) => {
+              if (!refreshing) e.currentTarget.style.backgroundColor = 'rgba(34, 197, 94, 0.9)';
+            }}
+          >
+            {refreshing ? '⏳' : '🔄'} {window.innerWidth > 640 ? t.refresh : ''}
+          </button>
 
-        <button
-          onClick={onDisconnect || (() => {})}
-          style={{
-            padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
-            backgroundColor: 'rgba(239, 68, 68, 0.9)',
-            color: 'white',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: window.innerWidth > 640 ? '14px' : '12px',
-            fontWeight: 600,
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.9)';
-          }}
-          onMouseLeave={(e) => {
+          <button
+            onClick={onChangeLang || (() => {})}
+            style={{
+              padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: window.innerWidth > 640 ? '14px' : '12px',
+              fontWeight: 600,
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+            }}
+          >
+            🌐 {window.innerWidth > 640 ? (lang === 'ru' ? 'O\'zbekcha' : 'Русский') : lang === 'ru' ? 'UZ' : 'RU'}
+          </button>
+
+          <button
+            onClick={onDisconnect || (() => {})}
+            style={{
+              padding: window.innerWidth > 640 ? '8px 16px' : '6px 12px',
+              backgroundColor: 'rgba(239, 68, 68, 0.9)',
+              color: 'white',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: window.innerWidth > 640 ? '14px' : '12px',
+              fontWeight: 600,
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.9)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
+            }}
+          >
+            🚪 {window.innerWidth > 640 ? (lang === 'ru' ? 'Отключить' : 'Uzish') : ''}
+          </button>
+        </div>
+      </div>
             e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
           }}
         >
@@ -697,8 +815,8 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             </div>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '24px',
+              gridTemplateColumns: window.innerWidth > 640 ? 'repeat(3, 1fr)' : '1fr',
+              gap: window.innerWidth > 640 ? '24px' : '16px',
             }}>
               <div>
                 <div style={{
@@ -763,7 +881,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
             </h2>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: window.innerWidth > 640 ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
+              gridTemplateColumns: window.innerWidth > 640 ? 'repeat(3, 1fr)' : '1fr',
               gap: window.innerWidth > 640 ? '20px' : '12px',
             }}>
               <div>
@@ -897,7 +1015,7 @@ export default function UzumDashboard({ lang, token, onNavigate, onNavigateBack,
 
       {/* Quick Actions */}
       <div className="uzum-grid" style={{
-        gridTemplateColumns: window.innerWidth > 640 ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
+        gridTemplateColumns: window.innerWidth > 640 ? 'repeat(3, 1fr)' : '1fr',
         gap: '12px',
         padding: '0 16px 20px',
       }}>
