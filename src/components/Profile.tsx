@@ -4,9 +4,10 @@ import { getIntegrationStatus, disconnectIntegration, checkIntegrationHealth, ty
 interface ProfileProps {
   lang: 'ru' | 'uz';
   onNavigateBack?: () => void;
+  onNavigateToUzum?: () => void;
 }
 
-export default function Profile({ lang, onNavigateBack }: ProfileProps) {
+export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: ProfileProps) {
   const [, setLoading] = useState(true);
   const [uzumStatus, setUzumStatus] = useState<IntegrationStatus | null>(null);
   const [checking, setChecking] = useState(false);
@@ -133,10 +134,15 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
   return (
     <div style={{
       minHeight: '100vh',
+      maxHeight: '100vh',
+      overflowY: 'auto',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       padding: '20px',
       paddingBottom: '100px', // Отступ для bottomBar
-    }}>
+      // Скрываем скроллбар
+      scrollbarWidth: 'none', // Firefox
+      msOverflowStyle: 'none', // IE and Edge
+    }} className="profile-container">
       {/* Passport Cover */}
       <div style={{
         maxWidth: '420px',
@@ -554,6 +560,27 @@ export default function Profile({ lang, onNavigateBack }: ProfileProps) {
                     }}
                   >
                     {t.reconnect}
+                  </button>
+                )}
+                
+                {/* Кнопка перехода к дашборду UZUM если интеграция подключена */}
+                {uzumStatus?.connected && (
+                  <button
+                    onClick={onNavigateToUzum}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      marginTop: '8px',
+                    }}
+                  >
+                    {lang === 'ru' ? '🛍️ Открыть UZUM Dashboard' : '🛍️ UZUM Dashboard ochish'}
                   </button>
                 )}
               </div>

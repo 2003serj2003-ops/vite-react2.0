@@ -2428,7 +2428,10 @@ export default function App() {
             />
 
             {/* Компонент паспорта */}
-            <Profile lang={lang} />
+            <Profile 
+              lang={lang} 
+              onNavigateToUzum={() => setRoute({ name: "uzum" })}
+            />
 
             <BottomBar userName={userName} userPhoto="" onSignOut={signOut} />
           </div>

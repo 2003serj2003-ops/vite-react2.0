@@ -49,6 +49,11 @@ html,body,#root{
   overflow:hidden;
 }
 
+/* Скрываем скроллбар в профиле (WebKit) */
+.profile-container::-webkit-scrollbar {
+  display: none;
+}
+
 #root {
   display: flex;
   flex-direction: column;
