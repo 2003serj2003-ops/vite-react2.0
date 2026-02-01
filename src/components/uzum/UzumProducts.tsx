@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getShops, getProducts } from '../../lib/uzum-api';
-import CoolLoader from '../CoolLoader';
+import SmartLoader from '../SmartLoader';
 
 interface UzumProductsProps {
   lang: 'ru' | 'uz';
@@ -172,7 +172,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
   }
 
   if (loading) {
-    return <CoolLoader text={t.loading} />;
+    return <SmartLoader type="products" />;
   }
 
   return (

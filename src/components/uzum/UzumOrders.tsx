@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getShops, getFbsOrders, getFbsOrder, cancelFbsOrder, getFbsOrderLabel } from '../../lib/uzum-api';
-import CoolLoader from '../CoolLoader';
+import SmartLoader from '../SmartLoader';
 
 interface UzumOrdersProps {
   lang: 'ru' | 'uz';
@@ -690,7 +690,7 @@ export default function UzumOrders({ lang, token }: UzumOrdersProps) {
   }
 
   if (loading) {
-    return <CoolLoader text={t.loading} />;
+    return <SmartLoader type="orders" />;
   }
 
   return (
