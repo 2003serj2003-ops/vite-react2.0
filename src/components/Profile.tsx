@@ -110,13 +110,25 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
     };
   }, []);
 
+  // Автоматическое обновление статуса каждые 10 секунд
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('[Profile] Auto-refreshing integration status...');
+      loadStatus();
+    }, 10000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   async function loadStatus() {
     setLoading(true);
     try {
+      console.log('[Profile] Loading integration status...');
       const status = await getIntegrationStatus('uzum');
+      console.log('[Profile] Integration status loaded:', status);
       setUzumStatus(status);
     } catch (error) {
-      console.error('Failed to load integration status:', error);
+      console.error('[Profile] Failed to load integration status:', error);
       setUzumStatus(null);
     } finally {
       setLoading(false);
@@ -126,11 +138,16 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
   async function handleCheckConnection() {
     setChecking(true);
     try {
+      console.log('[Profile] Checking connection health...');
       await checkIntegrationHealth('uzum');
       alert(t.checkSuccess);
+      // Обновляем статус после проверки
+      await loadStatus();
     } catch (error) {
-      console.error('Health check failed:', error);
+      console.error('[Profile] Health check failed:', error);
       alert(t.checkFailed);
+      // Обновляем статус даже при ошибке
+      await loadStatus();
     } finally {
       setChecking(false);
     }
@@ -141,12 +158,16 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
     
     setDisconnecting(true);
     try {
+      console.log('[Profile] Disconnecting integration...');
       await disconnectIntegration('uzum');
       alert(t.disconnectSuccess);
       await loadStatus();
+      // Отправляем событие об обновлении интеграции
+      window.dispatchEvent(new CustomEvent('uzum-integration-updated'));
     } catch (error) {
-      console.error('Failed to disconnect:', error);
+      console.error('[Profile] Failed to disconnect:', error);
       alert(t.checkFailed);
+      await loadStatus();
     } finally {
       setDisconnecting(false);
     }
@@ -203,17 +224,50 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
           justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '20px',
+          gap: '12px',
         }}>
-          {onNavigateBack && (
+          <div style={{ display: 'flex', gap: '12px' }}>
+            {onNavigateBack && (
+              <button
+                onClick={onNavigateBack}
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '12px',
+                  color: 'white',
+                  padding: '10px 20px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.3s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.25)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                ← {t.back}
+              </button>
+            )}
+            
+            {/* Кнопка обновления статуса */}
             <button
-              onClick={onNavigateBack}
+              onClick={() => loadStatus()}
               style={{
                 background: 'rgba(255,255,255,0.15)',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255,255,255,0.2)',
                 borderRadius: '12px',
                 color: 'white',
-                padding: '10px 20px',
+                padding: '10px',
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 600,
@@ -224,16 +278,15 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'rgba(255,255,255,0.25)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                e.currentTarget.style.transform = 'translateY(0)';
               }}
+              title="Обновить статус"
             >
-              ← {t.back}
+              🔄
             </button>
-          )}
+          </div>
           
           <ThemeToggle theme={theme} onToggle={handleToggleTheme} />
         </div>
@@ -477,6 +530,23 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
               position: 'relative',
               overflow: 'hidden',
             }}>
+              {/* Debug info - временно */}
+              {import.meta.env.DEV && (
+                <div style={{
+                  position: 'absolute',
+                  top: '4px',
+                  left: '4px',
+                  fontSize: '10px',
+                  backgroundColor: 'rgba(0,0,0,0.7)',
+                  color: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  zIndex: 10,
+                }}>
+                  {uzumStatus === null ? 'NULL' : uzumStatus.connected ? 'CONNECTED' : 'DISCONNECTED'}
+                </div>
+              )}
+              
               {/* Watermark */}
               <div style={{
                 position: 'absolute',
