@@ -549,11 +549,14 @@ export default function App() {
       
       // If we have decrypted token, user is fully connected
       if (result.decryptedToken) {
+        console.log('[Uzum] ✓ Setting decrypted token, length:', result.decryptedToken.length);
         setUzumDecryptedToken(result.decryptedToken);
         setUzumConnected(true);
         console.log('[Uzum] ✓ Integration loaded with token');
       } else {
         // Integration exists but PIN needed
+        console.log('[Uzum] ⚠️ No decrypted token in result');
+        setUzumDecryptedToken('');
         setUzumConnected(false);
         console.log('[Uzum] Integration exists but PIN required:', result.error);
       }

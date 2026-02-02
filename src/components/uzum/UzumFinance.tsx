@@ -89,33 +89,52 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
   }, [token, activeTab, period]);
 
   async function loadShopAndData() {
+    console.log('[UzumFinance] Starting data load...');
+    console.log('[UzumFinance] Token:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN');
+    console.log('[UzumFinance] Period:', period);
+    console.log('[UzumFinance] Active tab:', activeTab);
+    console.log('[UzumFinance] Date range:', new Date(dateFromMs).toISOString(), '-', new Date(dateToMs).toISOString());
+    
     setLoading(true);
     try {
       // Сначала получаем shopId
+      console.log('[UzumFinance] Fetching shops...');
       const shopsResult = await getShops(token);
+      console.log('[UzumFinance] Shops result:', shopsResult);
+      
       if (!shopsResult.success || !shopsResult.shops?.length) {
-        console.error('No shops found');
+        console.error('[UzumFinance] No shops found or error:', shopsResult);
         setLoading(false);
         return;
       }
 
       const currentShopId = shopsResult.shops[0].id;
+      console.log('[UzumFinance] Using shop ID:', currentShopId);
 
       // Затем загружаем данные с датами
       if (activeTab === 'orders') {
+        console.log('[UzumFinance] Fetching orders...');
         const result = await getFinanceOrders(token, currentShopId, {
           size: 100,
           page: 0,
           dateFrom: dateFromMs,
           dateTo: dateToMs,
         });
-        console.log('💰 [Finance] Orders:', result);
+        console.log('💰 [Finance] Orders result:', result);
+        console.log('💰 [Finance] Orders count:', result.orders?.length || 0);
+        
         if (result.success && result.orders) {
-          setOrders(Array.isArray(result.orders) ? result.orders : []);
+          const ordersArray = Array.isArray(result.orders) ? result.orders : [];
+          console.log('💰 [Finance] Setting orders:', ordersArray.length);
+          setOrders(ordersArray);
+        } else {
+          console.error('💰 [Finance] Orders fetch failed or no orders');
+          setOrders([]);
         }
       } else {
         // Загружаем все расходы с пагинацией БЕЗ фильтра дат
         // Затем фильтруем на клиенте
+        console.log('[UzumFinance] Fetching expenses...');
         const allExpenses: any[] = [];
         let page = 0;
         let hasMore = true;
@@ -126,7 +145,8 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
             page,
             // НЕ передаем dateFrom и dateTo - API может их не поддерживать
           });
-          console.log(`💸 [Finance] Expenses page ${page}:`, result);
+          console.log(`💸 [Finance] Expenses page ${page} result:`, result);
+          console.log(`💸 [Finance] Expenses page ${page} count:`, result.expenses?.length || 0);
           
           if (result.success && result.expenses && result.expenses.length > 0) {
             allExpenses.push(...result.expenses);
@@ -137,22 +157,25 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
               await new Promise(resolve => setTimeout(resolve, 100));
             }
           } else {
+            console.log(`💸 [Finance] No more expenses on page ${page}`);
             hasMore = false;
           }
         }
         
         // Фильтруем по датам на клиенте
+        console.log(`💸 [Finance] Total expenses loaded: ${allExpenses.length}`);
         const filteredExpenses = allExpenses.filter(expense => {
           const expenseDate = expense.dateCreated || expense.createdAt || expense.date || 0;
           return expenseDate >= dateFromMs && expenseDate <= dateToMs;
         });
         
-        console.log(`💸 [Finance] Total expenses loaded: ${allExpenses.length}, filtered: ${filteredExpenses.length}`);
+        console.log(`💸 [Finance] Filtered expenses: ${filteredExpenses.length}`);
         setExpenses(filteredExpenses);
       }
     } catch (error) {
-      console.error('Finance load error:', error);
+      console.error('[UzumFinance] Finance load error:', error);
     } finally {
+      console.log('[UzumFinance] Data load finished');
       setLoading(false);
     }
   }
