@@ -656,13 +656,18 @@ export default function App() {
     try {
       // Используем userId если есть, иначе используем фиксированный ID
       const actualUserId = userId || 'default_user';
+      console.log('[handleSaveToken] Using user ID:', actualUserId);
       
       // Encrypt token
+      console.log('[handleSaveToken] Starting token encryption...');
       const encrypted = await encryptToken(uzumToken, uzumPin);
+      console.log('[handleSaveToken] Token encrypted successfully');
       
       // Encrypt PIN for persistent storage
+      console.log('[handleSaveToken] Starting PIN encryption...');
       const { encryptPIN } = await import('./lib/crypto');
       const encryptedPIN = await encryptPIN(uzumPin);
+      console.log('[handleSaveToken] PIN encrypted successfully');
 
       // Prepare metadata
       const metadata = {
@@ -670,11 +675,14 @@ export default function App() {
         sellerInfo: uzumSellerInfo,
         lastVerified: new Date().toISOString()
       };
+      console.log('[handleSaveToken] Metadata prepared:', metadata);
 
       // Get Telegram user ID if available
       const tgUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+      console.log('[handleSaveToken] Telegram user ID:', tgUserId);
 
       // Save to database
+      console.log('[handleSaveToken] Saving to database...');
       const { data, error } = await supabase
         .from('integrations')
         .upsert({
@@ -696,8 +704,11 @@ export default function App() {
         .single();
 
       if (error) {
+        console.error('[handleSaveToken] Database error:', error);
         throw new Error(error.message);
       }
+
+      console.log('[handleSaveToken] Database save successful, data:', data);
 
       setUzumIntegrationId(data.id);
       setUzumConnected(true);
@@ -726,7 +737,13 @@ export default function App() {
       
       setUzumLoading(false);
     } catch (error: any) {
-      setUzumError(error.message || 'Ошибка сохранения');
+      console.error('[handleSaveToken] Error occurred:', error);
+      console.error('[handleSaveToken] Error message:', error.message);
+      console.error('[handleSaveToken] Error stack:', error.stack);
+      
+      const errorMessage = error.message || 'Ошибка сохранения';
+      setUzumError(errorMessage);
+      showToast(`❌ ${errorMessage}`);
       setUzumLoading(false);
     }
   };

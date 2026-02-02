@@ -97,35 +97,54 @@ export async function encryptToken(
   iv: string;
   salt: string;
 }> {
+  console.log('[encryptToken] Starting encryption...');
+  console.log('[encryptToken] Token length:', token?.length);
+  console.log('[encryptToken] PIN length:', pin?.length);
+  
   if (!token || token.trim().length === 0) {
-    throw new Error('Token cannot be empty');
+    console.error('[encryptToken] Token is empty');
+    throw new Error('Токен не может быть пустым');
   }
   if (!pin || pin.length < 6 || pin.length > 10) {
-    throw new Error('PIN must be 6-10 characters');
+    console.error('[encryptToken] Invalid PIN length:', pin?.length);
+    throw new Error('PIN должен быть от 6 до 10 символов');
   }
 
-  // Generate random salt and IV
-  const salt = randomBytes(SALT_LENGTH);
-  const iv = randomBytes(IV_LENGTH);
+  try {
+    // Generate random salt and IV
+    console.log('[encryptToken] Generating salt and IV...');
+    const salt = randomBytes(SALT_LENGTH);
+    const iv = randomBytes(IV_LENGTH);
 
-  // Derive key from PIN
-  const key = await deriveKey(pin, salt);
+    // Derive key from PIN
+    console.log('[encryptToken] Deriving key from PIN...');
+    const key = await deriveKey(pin, salt);
 
-  // Encrypt token
-  const cipherBuffer = await crypto.subtle.encrypt(
-    {
-      name: 'AES-GCM',
-      iv: iv.buffer as ArrayBuffer
-    },
-    key,
-    str2buf(token).buffer as ArrayBuffer
-  );
+    // Encrypt token
+    console.log('[encryptToken] Encrypting token...');
+    const cipherBuffer = await crypto.subtle.encrypt(
+      {
+        name: 'AES-GCM',
+        iv: iv.buffer as ArrayBuffer
+      },
+      key,
+      str2buf(token).buffer as ArrayBuffer
+    );
 
-  return {
-    cipher: buf2base64(cipherBuffer),
-    iv: buf2base64(iv.buffer as ArrayBuffer),
-    salt: buf2base64(salt.buffer as ArrayBuffer)
-  };
+    console.log('[encryptToken] Encryption successful');
+    
+    const result = {
+      cipher: buf2base64(cipherBuffer),
+      iv: buf2base64(iv.buffer as ArrayBuffer),
+      salt: buf2base64(salt.buffer as ArrayBuffer)
+    };
+    
+    console.log('[encryptToken] Result prepared');
+    return result;
+  } catch (error) {
+    console.error('[encryptToken] Encryption failed:', error);
+    throw error;
+  }
 }
 
 /**
@@ -140,10 +159,10 @@ export async function decryptToken(
   pin: string
 ): Promise<string> {
   if (!cipher || !iv || !salt) {
-    throw new Error('Missing encryption data');
+    throw new Error('Отсутствуют данные шифрования');
   }
   if (!pin || pin.length < 6 || pin.length > 10) {
-    throw new Error('PIN must be 6-10 characters');
+    throw new Error('PIN должен быть от 6 до 10 символов');
   }
 
   try {
@@ -222,8 +241,18 @@ export async function encryptPIN(
   iv: string;
   salt: string;
 }> {
+  console.log('[encryptPIN] Starting PIN encryption...');
   const masterKey = getMasterKey();
-  return encryptToken(pin, masterKey);
+  console.log('[encryptPIN] Master key obtained, length:', masterKey.length);
+  
+  try {
+    const result = await encryptToken(pin, masterKey);
+    console.log('[encryptPIN] PIN encryption successful');
+    return result;
+  } catch (error) {
+    console.error('[encryptPIN] PIN encryption failed:', error);
+    throw error;
+  }
 }
 
 /**
