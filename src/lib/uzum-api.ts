@@ -257,8 +257,12 @@ export async function getProducts(
 }
 
 /**
+ * DEPRECATED: API endpoint не существует
  * GET /v1/product/shop/{shopId}/productId/{productId} - Получение деталей продукта с SKU
+ * 
+ * Этот эндпоинт возвращает 404. Вместо него используйте фильтрацию products по productId.
  */
+/*
 export async function getProductDetails(
   token: string,
   shopId: number | string,
@@ -312,6 +316,7 @@ export async function getProductDetails(
   
   return { success: true, product, skus };
 }
+*/
 
 /**
  * POST /v1/product/{shopId}/sendPriceData - Изменение цен SKU
@@ -324,23 +329,33 @@ export async function updateProductPrices(
   success: boolean;
   error?: string;
 }> {
-  console.log('💰 Updating prices:', { shopId, prices });
+  console.log('💰 [updateProductPrices] Input params:', { shopId, prices });
+  
+  // Проверяем что все SKU присутствуют
+  const invalidPrices = prices.filter(p => !p.sku || p.sku === '');
+  if (invalidPrices.length > 0) {
+    console.error('💰 [updateProductPrices] Invalid prices (missing SKU):', invalidPrices);
+    return { success: false, error: 'SKU обязателен для всех цен' };
+  }
+  
+  const requestBody = { prices };
+  console.log('💰 [updateProductPrices] Request body:', JSON.stringify(requestBody, null, 2));
   
   const result = await apiRequest<any>(
     `/v1/product/${shopId}/sendPriceData`,
     token,
     {
       method: 'POST',
-      body: JSON.stringify({ prices })
+      body: JSON.stringify(requestBody)
     }
   );
 
   if (result.error) {
-    console.error('💰 Price update error:', result.error);
+    console.error('💰 [updateProductPrices] API error:', result.error);
     return { success: false, error: result.error };
   }
 
-  console.log('💰 Price update success:', result.data);
+  console.log('💰 [updateProductPrices] Success:', result.data);
   return { success: true };
 }
 

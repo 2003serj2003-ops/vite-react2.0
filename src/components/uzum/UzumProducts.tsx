@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShops, getProducts, getProductDetails, updateProductPrices } from '../../lib/uzum-api';
+import { getShops, getProducts, updateProductPrices } from '../../lib/uzum-api';
 import SmartLoader from '../SmartLoader';
 
 interface UzumProductsProps {
@@ -155,54 +155,59 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
         title: product.title
       });
       
-      // Сначала пытаемся получить детали продукта через API
-      const result = await getProductDetails(token, shopId, productId);
+      // Ищем все SKU для этого productId в списке продуктов
+      // В Uzum Market каждый SKU - это отдельная запись в products
+      const relatedProducts = products.filter(p => {
+        const pId = p.id || p.productId;
+        const pSku = p.sku;
+        
+        // Группируем по productId ИЛИ по общей части SKU (первые символы)
+        // Некоторые SKU одного товара могут иметь общий префикс
+        const skuPrefix = product.sku?.split('-')[0] || product.sku;
+        const currentSkuPrefix = pSku?.split('-')[0] || pSku;
+        
+        return pId === productId || (skuPrefix && currentSkuPrefix === skuPrefix);
+      });
       
-      console.log('📦 [openSkuModal] getProductDetails result:', result);
+      console.log('📦 [openSkuModal] Related products found:', relatedProducts.length);
       
       let foundSkus: any[] = [];
       
-      if (result.success && result.skus && result.skus.length > 0) {
-        foundSkus = result.skus;
-        console.log('📦 [openSkuModal] Using SKUs from API:', foundSkus.length);
+      if (relatedProducts.length > 0) {
+        // Создаем SKU из всех найденных продуктов
+        foundSkus = relatedProducts.map(p => ({
+          sku: p.sku,
+          skuId: p.sku,
+          price: p.price,
+          stock: p.stock || p.quantity || 0,
+          barcode: p.barcode,
+          title: p.title || p.name,
+          productId: p.id || p.productId,
+          // Дополнительные поля если есть
+          brand: p.brand,
+          category: p.category,
+          photo: p.photo || p.mainPhoto || p.image
+        }));
+        console.log('📦 [openSkuModal] Using SKUs from products list:', foundSkus.length);
       } else {
-        // Альтернатива: ищем все SKU для этого productId в списке продуктов
-        const relatedProducts = products.filter(p => {
-          const pId = p.id || p.productId;
-          return pId === productId;
-        });
-        
-        console.log('📦 [openSkuModal] Related products found:', relatedProducts.length);
-        
-        if (relatedProducts.length > 1) {
-          // Несколько продуктов с одним productId = это разные SKU
-          foundSkus = relatedProducts.map(p => ({
-            sku: p.sku,
-            skuId: p.sku,
-            price: p.price,
-            stock: p.stock || p.quantity || 0,
-            barcode: p.barcode,
-            title: p.title || p.name,
-            productId: p.id || p.productId
-          }));
-          console.log('📦 [openSkuModal] Using SKUs from products list:', foundSkus.length);
-        } else {
-          // Единственный продукт - создаем один SKU
-          foundSkus = [{
-            sku: product.sku,
-            skuId: product.sku,
-            price: product.price,
-            stock: product.stock || product.quantity || 0,
-            barcode: product.barcode,
-            title: product.title || product.name,
-            productId: product.id || product.productId
-          }];
-          console.log('📦 [openSkuModal] Using single SKU from product data');
-        }
+        // Если не нашли связанные - показываем хотя бы текущий продукт
+        foundSkus = [{
+          sku: product.sku,
+          skuId: product.sku,
+          price: product.price,
+          stock: product.stock || product.quantity || 0,
+          barcode: product.barcode,
+          title: product.title || product.name,
+          productId: product.id || product.productId,
+          brand: product.brand,
+          category: product.category,
+          photo: product.photo || product.mainPhoto || product.image
+        }];
+        console.log('📦 [openSkuModal] Using single SKU from product data');
       }
       
       setProductSkus(foundSkus);
-      console.log('📦 [openSkuModal] Final SKUs set:', foundSkus.length);
+      console.log('📦 [openSkuModal] Final SKUs set:', foundSkus);
       
     } catch (error) {
       console.error('📦 [openSkuModal] Error loading SKUs:', error);
@@ -255,6 +260,19 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
     }
 
     const skuId = skuItem.sku || skuItem.skuId;
+    
+    console.log('💰 [saveSkuPrice] Saving price for SKU:', {
+      skuItem,
+      skuId,
+      newPrice
+    });
+    
+    if (!skuId) {
+      console.error('💰 [saveSkuPrice] SKU ID is missing!');
+      setToast({ message: 'SKU не найден', type: 'error' });
+      return;
+    }
+    
     setSavingSkuPrice(skuId);
 
     try {
