@@ -171,11 +171,25 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
           100% { background-position: 1000px 0; }
         }
         @keyframes pulse-border {
-          0%, 100% { border-color: #4CAF50; box-shadow: 0 0 0 0 rgba(76,175,80, 0.7); }
-          50% { border-color: #4CAF50; box-shadow: 0 0 0 4px rgba(76,175,80, 0); }
+          0%, 100% { border-color: #22C55E; box-shadow: 0 0 0 0 rgba(34,197,94, 0.7); }
+          50% { border-color: #22C55E; box-shadow: 0 0 0 4px rgba(34,197,94, 0); }
+        }
+        @keyframes pulse-border-red {
+          0%, 100% { border-color: #EF4444; box-shadow: 0 0 0 0 rgba(239,68,68, 0.7); }
+          50% { border-color: #EF4444; box-shadow: 0 0 0 4px rgba(239,68,68, 0); }
         }
         .valid-stamp {
           animation: pulse-border 2s ease-in-out infinite;
+        }
+        .denied-stamp {
+          animation: pulse-border-red 2s ease-in-out infinite;
+        }
+        @keyframes rotate-stamp {
+          0%, 100% { transform: rotate(-15deg); }
+          50% { transform: rotate(-12deg); }
+        }
+        .stamp-seal {
+          animation: rotate-stamp 3s ease-in-out infinite;
         }
       `}</style>
 
@@ -449,17 +463,17 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
 
             {/* VISA Section */}
             <div 
-              className={uzumStatus?.connected ? 'valid-stamp' : ''}
+              className={uzumStatus?.connected ? 'valid-stamp' : 'denied-stamp'}
               style={{
               padding: '20px',
               background: uzumStatus?.connected 
                 ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)'
                 : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
               borderRadius: '12px',
-              border: uzumStatus?.connected ? '3px solid #4CAF50' : '3px solid #ef4444',
+              border: uzumStatus?.connected ? '3px solid #22C55E' : '3px solid #EF4444',
               boxShadow: uzumStatus?.connected 
-                ? '0 8px 24px rgba(16,185,129,0.25)' 
-                : '0 8px 24px rgba(239,68,68,0.25)',
+                ? '0 8px 24px rgba(34,197,94,0.35), inset 0 2px 8px rgba(34,197,94,0.15)' 
+                : '0 8px 24px rgba(239,68,68,0.35), inset 0 2px 8px rgba(239,68,68,0.15)',
               position: 'relative',
               overflow: 'hidden',
             }}>
@@ -469,47 +483,69 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%) rotate(-25deg)',
-                fontSize: '72px',
+                fontSize: '80px',
                 fontWeight: 900,
-                color: uzumStatus?.connected ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
-                letterSpacing: '4px',
+                color: uzumStatus?.connected ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+                letterSpacing: '6px',
                 pointerEvents: 'none',
                 userSelect: 'none',
               }}>
-                {uzumStatus?.connected ? 'VALID' : 'INVALID'}
+                {uzumStatus?.connected ? 'APPROVED' : 'DENIED'}
               </div>
 
-              {/* Visa Stamp */}
-              <div style={{
+              {/* Visa Stamp - Круглая печать */}
+              <div 
+                className="stamp-seal"
+                style={{
                 position: 'absolute',
-                top: '12px',
-                right: '12px',
-                width: '70px',
-                height: '70px',
-                border: `4px solid ${uzumStatus?.connected ? '#4CAF50' : '#ef4444'}`,
+                top: '16px',
+                right: '16px',
+                width: '90px',
+                height: '90px',
+                border: `5px solid ${uzumStatus?.connected ? '#22C55E' : '#EF4444'}`,
                 borderRadius: '50%',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transform: 'rotate(-15deg)',
-                background: uzumStatus?.connected ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                background: uzumStatus?.connected 
+                  ? 'radial-gradient(circle, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 70%)' 
+                  : 'radial-gradient(circle, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.05) 70%)',
+                boxShadow: uzumStatus?.connected 
+                  ? 'inset 0 0 15px rgba(34,197,94,0.3), 0 4px 12px rgba(34,197,94,0.4)'
+                  : 'inset 0 0 15px rgba(239,68,68,0.3), 0 4px 12px rgba(239,68,68,0.4)',
                 zIndex: 2,
               }}>
                 {uzumStatus?.connected ? (
-                  <FiCheckCircle size={24} color="#4CAF50" />
+                  <>
+                    <FiCheckCircle size={32} color="#22C55E" strokeWidth={3} />
+                    <div style={{
+                      fontSize: '11px',
+                      fontWeight: 900,
+                      color: '#22C55E',
+                      marginTop: '4px',
+                      letterSpacing: '1px',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                    }}>
+                      APPROVED
+                    </div>
+                  </>
                 ) : (
-                  <FiXCircle size={24} color="#ef4444" />
+                  <>
+                    <FiXCircle size={32} color="#EF4444" strokeWidth={3} />
+                    <div style={{
+                      fontSize: '11px',
+                      fontWeight: 900,
+                      color: '#EF4444',
+                      marginTop: '4px',
+                      letterSpacing: '1px',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                    }}>
+                      DENIED
+                    </div>
+                  </>
                 )}
-                <div style={{
-                  fontSize: '9px',
-                  fontWeight: 900,
-                  color: uzumStatus?.connected ? '#4CAF50' : '#ef4444',
-                  marginTop: '4px',
-                  letterSpacing: '0.5px',
-                }}>
-                  {uzumStatus?.connected ? 'VALID' : 'DENIED'}
-                </div>
               </div>
 
               {/* Visa Header */}
@@ -523,22 +559,27 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                   gap: '12px',
                   marginBottom: '16px',
                 }}>
-                  <FiShield size={32} color={uzumStatus?.connected ? '#4CAF50' : '#ef4444'} />
+                  <FiShield 
+                    size={36} 
+                    color={uzumStatus?.connected ? '#22C55E' : '#EF4444'} 
+                    strokeWidth={2.5}
+                  />
                   <div>
                     <div style={{
                       fontSize: '10px',
                       fontWeight: 700,
                       color: '#6b7280',
-                      letterSpacing: '1px',
-                      marginBottom: '2px',
+                      letterSpacing: '1.5px',
+                      marginBottom: '4px',
                     }}>
                       {t.visa.toUpperCase()}
                     </div>
                     <div style={{
-                      fontSize: '20px',
+                      fontSize: '22px',
                       fontWeight: 900,
                       color: '#111',
-                      letterSpacing: '1px',
+                      letterSpacing: '1.5px',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.05)',
                     }}>
                       UZUM SELLER
                     </div>
@@ -554,37 +595,38 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                 }}>
                   {/* Status */}
                   <div style={{
-                    background: 'rgba(255,255,255,0.7)',
+                    background: 'rgba(255,255,255,0.8)',
                     backdropFilter: 'blur(10px)',
-                    padding: '12px',
-                    borderRadius: '8px',
+                    padding: '14px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(0,0,0,0.05)',
                   }}>
                     <div style={{
                       fontSize: '9px',
                       fontWeight: 700,
                       color: '#6b7280',
-                      letterSpacing: '0.5px',
-                      marginBottom: '4px',
+                      letterSpacing: '1px',
+                      marginBottom: '6px',
                     }}>
                       STATUS
                     </div>
                     <div style={{
-                      fontSize: '14px',
+                      fontSize: '15px',
                       fontWeight: 900,
-                      color: uzumStatus?.connected ? '#4CAF50' : '#ef4444',
+                      color: uzumStatus?.connected ? '#22C55E' : '#EF4444',
                       letterSpacing: '0.5px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '6px',
+                      gap: '8px',
                     }}>
                       {uzumStatus?.connected ? (
                         <>
-                          <FiCheckCircle size={16} />
+                          <FiCheckCircle size={18} strokeWidth={2.5} />
                           {t.connected}
                         </>
                       ) : (
                         <>
-                          <FiXCircle size={16} />
+                          <FiXCircle size={18} strokeWidth={2.5} />
                           {t.disconnected}
                         </>
                       )}
@@ -594,17 +636,18 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                   {/* Valid From */}
                   {uzumStatus?.connected_at && (
                     <div style={{
-                      background: 'rgba(255,255,255,0.7)',
+                      background: 'rgba(255,255,255,0.8)',
                       backdropFilter: 'blur(10px)',
-                      padding: '12px',
-                      borderRadius: '8px',
+                      padding: '14px',
+                      borderRadius: '10px',
+                      border: '1px solid rgba(0,0,0,0.05)',
                     }}>
                       <div style={{
                         fontSize: '9px',
                         fontWeight: 700,
                         color: '#6b7280',
-                        letterSpacing: '0.5px',
-                        marginBottom: '4px',
+                        letterSpacing: '1px',
+                        marginBottom: '6px',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '4px',
@@ -613,7 +656,7 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                         {t.validFrom.toUpperCase()}
                       </div>
                       <div style={{
-                        fontSize: '13px',
+                        fontSize: '14px',
                         fontWeight: 700,
                         color: '#111',
                       }}>
@@ -629,22 +672,23 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                   {/* Shops Count */}
                   {uzumStatus?.shop_ids && uzumStatus.shop_ids.length > 0 && (
                     <div style={{
-                      background: 'rgba(255,255,255,0.7)',
+                      background: 'rgba(255,255,255,0.8)',
                       backdropFilter: 'blur(10px)',
-                      padding: '12px',
-                      borderRadius: '8px',
+                      padding: '14px',
+                      borderRadius: '10px',
+                      border: '1px solid rgba(0,0,0,0.05)',
                     }}>
                       <div style={{
                         fontSize: '9px',
                         fontWeight: 700,
                         color: '#6b7280',
-                        letterSpacing: '0.5px',
-                        marginBottom: '4px',
+                        letterSpacing: '1px',
+                        marginBottom: '6px',
                       }}>
                         {t.shops.toUpperCase()}
                       </div>
                       <div style={{
-                        fontSize: '18px',
+                        fontSize: '20px',
                         fontWeight: 900,
                         color: '#1E6FDB',
                       }}>
@@ -656,22 +700,23 @@ export default function Profile({ lang, onNavigateBack, onNavigateToUzum }: Prof
                   {/* Token */}
                   {uzumStatus?.token_last4 && (
                     <div style={{
-                      background: 'rgba(255,255,255,0.7)',
+                      background: 'rgba(255,255,255,0.8)',
                       backdropFilter: 'blur(10px)',
-                      padding: '12px',
-                      borderRadius: '8px',
+                      padding: '14px',
+                      borderRadius: '10px',
+                      border: '1px solid rgba(0,0,0,0.05)',
                     }}>
                       <div style={{
                         fontSize: '9px',
                         fontWeight: 700,
                         color: '#6b7280',
-                        letterSpacing: '0.5px',
-                        marginBottom: '4px',
+                        letterSpacing: '1px',
+                        marginBottom: '6px',
                       }}>
                         TOKEN
                       </div>
                       <div style={{
-                        fontSize: '14px',
+                        fontSize: '15px',
                         fontWeight: 700,
                         color: '#111',
                         fontFamily: 'monospace',
