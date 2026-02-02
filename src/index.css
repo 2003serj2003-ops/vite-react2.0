@@ -96,47 +96,48 @@
 
 /* Dark Theme */
 [data-theme="dark"] {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #242424;
-  --bg-card: #2a2a2a;
-  --bg-header: linear-gradient(135deg, #0B1C2D 0%, #1E6FDB 50%, #3FA9F5 100%);
+  /* Sellix Dark Mode Colors */
+  --bg-primary: #0B1220;
+  --bg-secondary: #111A2E;
+  --bg-card: #111A2E;
+  --bg-header: linear-gradient(135deg, #0B1220 0%, #16213A 100%);
   --bg-error: #7F1D1D;
   --bg-success: #1E4620;
-  --bg-info: #1E3A5F;
+  --bg-info: #16213A;
   
   --text-primary: #E5E7EB;
   --text-secondary: #9CA3AF;
-  --text-on-color: #FFFFFF;
+  --text-on-color: #0B1220;
   
-  --border-primary: rgba(229,231,235,0.15);
-  --border-secondary: rgba(30,111,219,0.3);
+  --border-primary: rgba(255,255,255,0.08);
+  --border-secondary: rgba(255,255,255,0.06);
   
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
 
-  /* Accent Colors - Dark Theme (приглушённые) */
-  --accent-success: #5cb85c;
-  --accent-success-hover: #4cae4c;
-  --accent-success-bg: rgba(92, 184, 92, 0.15);
-  --accent-success-border: rgba(92, 184, 92, 0.4);
+  /* Accent Colors - Sellix Green & Orange */
+  --accent-success: #22C55E;
+  --accent-success-hover: #16a34a;
+  --accent-success-bg: rgba(34, 197, 94, 0.15);
+  --accent-success-border: rgba(34, 197, 94, 0.4);
   
-  --accent-warning: #ffb84d;
-  --accent-warning-hover: #ffa31a;
-  --accent-warning-bg: rgba(255, 184, 77, 0.15);
-  --accent-warning-border: rgba(255, 184, 77, 0.4);
+  --accent-warning: #F97316;
+  --accent-warning-hover: #ea580c;
+  --accent-warning-bg: rgba(249, 115, 22, 0.15);
+  --accent-warning-border: rgba(249, 115, 22, 0.4);
   
-  --accent-danger: #ff6b6b;
-  --accent-danger-hover: #ff5252;
-  --accent-danger-bg: rgba(255, 107, 107, 0.15);
-  --accent-danger-border: rgba(255, 107, 107, 0.4);
+  --accent-danger: #EF4444;
+  --accent-danger-hover: #dc2626;
+  --accent-danger-bg: rgba(239, 68, 68, 0.15);
+  --accent-danger-border: rgba(239, 68, 68, 0.4);
   
   /* Text Hierarchy - Dark */
   --text-helper: #6B7280;
-  --text-muted: #4B5563;
+  --text-muted: #6B7280;
 
-  --accent: var(--color-primary-blue);
-  --color-info: #90CAF9;
+  --accent: #22C55E;
+  --color-info: #22C55E;
 }
 
 a {
@@ -146,6 +147,13 @@ a {
 }
 a:hover {
   color: var(--color-secondary-blue);
+}
+
+[data-theme="dark"] a {
+  color: #22C55E;
+}
+[data-theme="dark"] a:hover {
+  color: #F97316;
 }
 
 body {
