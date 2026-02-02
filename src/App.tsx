@@ -608,35 +608,50 @@ export default function App() {
 
   // Save encrypted token to database
   const handleSaveToken = async () => {
+    console.log('[handleSaveToken] Starting save process...');
+    console.log('[handleSaveToken] Token length:', uzumToken.trim().length);
+    console.log('[handleSaveToken] PIN length:', uzumPin.trim().length);
+    console.log('[handleSaveToken] PIN value:', uzumPin);
+    
     if (!uzumToken.trim()) {
       setUzumError('Введите токен');
+      console.error('[handleSaveToken] Token is empty');
       return;
     }
 
     if (!uzumPin.trim()) {
       setUzumError('Введите PIN');
+      console.error('[handleSaveToken] PIN is empty');
       return;
     }
 
     const pinValidation = validatePin(uzumPin);
+    console.log('[handleSaveToken] PIN validation result:', pinValidation);
+    
     if (!pinValidation.valid) {
       setUzumError(pinValidation.error || 'Неверный PIN');
+      console.error('[handleSaveToken] PIN validation failed:', pinValidation.error);
       return;
     }
 
     if (!isCryptoAvailable()) {
       setUzumError('WebCrypto API недоступен');
+      console.error('[handleSaveToken] WebCrypto not available');
       return;
     }
 
     const userId = getTelegramUserId();
+    console.log('[handleSaveToken] User ID:', userId, 'REQUIRE_TELEGRAM_ID:', REQUIRE_TELEGRAM_ID);
+    
     if (!userId && REQUIRE_TELEGRAM_ID) {
       setUzumError('Telegram user ID не найден');
+      console.error('[handleSaveToken] Telegram user ID required but not found');
       return;
     }
 
     setUzumLoading(true);
     setUzumError('');
+    console.log('[handleSaveToken] Starting encryption and save...');
 
     try {
       // Используем userId если есть, иначе используем фиксированный ID
@@ -2817,6 +2832,18 @@ export default function App() {
                       }}>
                         PIN используется для client-side шифрования токена
                       </div>
+                      {uzumPin && (uzumPin.length < 6 || uzumPin.length > 10 || !/^[0-9a-zA-Z]+$/.test(uzumPin)) && (
+                        <div style={{
+                          fontSize: "12px",
+                          color: "var(--accent-danger)",
+                          marginTop: "4px",
+                          fontWeight: 600
+                        }}>
+                          {uzumPin.length < 6 && '⚠️ PIN должен быть минимум 6 символов'}
+                          {uzumPin.length > 10 && '⚠️ PIN должен быть максимум 10 символов'}
+                          {uzumPin.length >= 6 && uzumPin.length <= 10 && !/^[0-9a-zA-Z]+$/.test(uzumPin) && '⚠️ PIN может содержать только буквы и цифры'}
+                        </div>
+                      )}
                     </div>
 
                     {/* Action Buttons */}
@@ -2832,8 +2859,17 @@ export default function App() {
                       <button
                         className="btnPrimary"
                         onClick={handleSaveToken}
-                        disabled={uzumLoading || !uzumToken.trim() || !uzumPin.trim()}
-                        style={{ flex: 1 }}
+                        disabled={
+                          uzumLoading || 
+                          !uzumToken.trim() || 
+                          !uzumPin.trim() ||
+                          uzumPin.length < 6 ||
+                          uzumPin.length > 10
+                        }
+                        style={{ 
+                          flex: 1,
+                          opacity: (uzumPin.length > 0 && (uzumPin.length < 6 || uzumPin.length > 10)) ? 0.5 : 1
+                        }}
                       >
                         {uzumLoading ? '⏳ Сохранение...' : '💾 Сохранить'}
                       </button>
