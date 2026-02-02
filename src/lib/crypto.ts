@@ -86,7 +86,50 @@ async function deriveKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
 }
 
 /**
- * Encrypt token with PIN
+ * Internal function to encrypt data with a passphrase (no length restrictions)
+ * Used for encrypting PIN with master key
+ */
+async function encryptWithPassphrase(
+  data: string,
+  passphrase: string
+): Promise<{
+  cipher: string;
+  iv: string;
+  salt: string;
+}> {
+  if (!data || data.trim().length === 0) {
+    throw new Error('Данные не могут быть пустыми');
+  }
+  if (!passphrase || passphrase.trim().length === 0) {
+    throw new Error('Passphrase не может быть пустым');
+  }
+
+  // Generate random salt and IV
+  const salt = randomBytes(SALT_LENGTH);
+  const iv = randomBytes(IV_LENGTH);
+
+  // Derive key from passphrase
+  const key = await deriveKey(passphrase, salt);
+
+  // Encrypt data
+  const cipherBuffer = await crypto.subtle.encrypt(
+    {
+      name: 'AES-GCM',
+      iv: iv.buffer as ArrayBuffer
+    },
+    key,
+    str2buf(data).buffer as ArrayBuffer
+  );
+
+  return {
+    cipher: buf2base64(cipherBuffer),
+    iv: buf2base64(iv.buffer as ArrayBuffer),
+    salt: buf2base64(salt.buffer as ArrayBuffer)
+  };
+}
+
+/**
+ * Encrypt token with PIN (user-facing, with PIN length validation)
  * Returns: { cipher, iv, salt } all as base64
  */
 export async function encryptToken(
@@ -148,7 +191,45 @@ export async function encryptToken(
 }
 
 /**
- * Decrypt token with PIN
+ * Internal function to decrypt data with a passphrase (no length restrictions)
+ * Used for decrypting PIN with master key
+ */
+async function decryptWithPassphrase(
+  cipher: string,
+  iv: string,
+  salt: string,
+  passphrase: string
+): Promise<string> {
+  if (!cipher || !iv || !salt) {
+    throw new Error('Отсутствуют данные шифрования');
+  }
+  if (!passphrase || passphrase.trim().length === 0) {
+    throw new Error('Passphrase не может быть пустым');
+  }
+
+  // Convert from base64
+  const cipherBuffer = base642buf(cipher);
+  const ivBuffer = base642buf(iv);
+  const saltBuffer = new Uint8Array(base642buf(salt));
+
+  // Derive key from passphrase
+  const key = await deriveKey(passphrase, saltBuffer);
+
+  // Decrypt
+  const decryptedBuffer = await crypto.subtle.decrypt(
+    {
+      name: 'AES-GCM',
+      iv: ivBuffer
+    },
+    key,
+    cipherBuffer
+  );
+
+  return buf2str(decryptedBuffer);
+}
+
+/**
+ * Decrypt token with PIN (user-facing, with PIN length validation)
  * Returns: decrypted token string
  * Throws: if PIN is wrong or data is corrupted
  */
@@ -246,7 +327,8 @@ export async function encryptPIN(
   console.log('[encryptPIN] Master key obtained, length:', masterKey.length);
   
   try {
-    const result = await encryptToken(pin, masterKey);
+    // Use internal function without PIN length restrictions
+    const result = await encryptWithPassphrase(pin, masterKey);
     console.log('[encryptPIN] PIN encryption successful');
     return result;
   } catch (error) {
@@ -265,5 +347,6 @@ export async function decryptPIN(
   salt: string
 ): Promise<string> {
   const masterKey = getMasterKey();
-  return decryptToken(cipher, iv, salt, masterKey);
+  // Use internal function without PIN length restrictions
+  return decryptWithPassphrase(cipher, iv, salt, masterKey);
 }
