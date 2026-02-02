@@ -199,3 +199,42 @@ export function isCryptoAvailable(): boolean {
          typeof crypto.subtle !== 'undefined' &&
          typeof crypto.getRandomValues !== 'undefined';
 }
+
+/**
+ * Get master key for PIN encryption from environment
+ * In production, this should come from KMS/Vault
+ */
+function getMasterKey(): string {
+  // Используем фиксированный ключ для разработки
+  // В продакшене это должно быть из безопасного хранилища (KMS, Vault)
+  const masterKey = import.meta.env.VITE_MASTER_KEY || 'DEFAULT_MASTER_KEY_CHANGE_IN_PRODUCTION';
+  return masterKey;
+}
+
+/**
+ * Encrypt PIN with master key (for persistent storage in DB)
+ * Returns: { cipher, iv, salt } all as base64
+ */
+export async function encryptPIN(
+  pin: string
+): Promise<{
+  cipher: string;
+  iv: string;
+  salt: string;
+}> {
+  const masterKey = getMasterKey();
+  return encryptToken(pin, masterKey);
+}
+
+/**
+ * Decrypt PIN with master key (from DB)
+ * Returns: decrypted PIN string
+ */
+export async function decryptPIN(
+  cipher: string,
+  iv: string,
+  salt: string
+): Promise<string> {
+  const masterKey = getMasterKey();
+  return decryptToken(cipher, iv, salt, masterKey);
+}

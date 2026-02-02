@@ -80,7 +80,7 @@ export async function checkIntegrationStatus(
 }
 
 /**
- * Load integration data and decrypt token with PIN from sessionStorage
+ * Load integration data and decrypt token with PIN from DB
  */
 export async function loadIntegrationWithSession(
   provider: string = 'uzum'
@@ -116,10 +116,29 @@ export async function loadIntegrationWithSession(
       return { success: false, error: 'Integration not found' };
     }
 
-    // Try to decrypt token with session PIN
-    const sessionPIN = sessionStorage.getItem(`${provider}_pin_temp`);
+    // Try to decrypt PIN from DB first
+    let pin: string | null = null;
     
-    if (!sessionPIN || !data.token_cipher || !data.token_iv || !data.token_salt) {
+    if (data.encrypted_pin_cipher && data.encrypted_pin_iv && data.encrypted_pin_salt) {
+      try {
+        const { decryptPIN } = await import('./crypto');
+        pin = await decryptPIN(
+          data.encrypted_pin_cipher,
+          data.encrypted_pin_iv,
+          data.encrypted_pin_salt
+        );
+        console.log('[Integration] ✓ PIN decrypted from DB');
+      } catch (pinError) {
+        console.error('[Integration] Failed to decrypt PIN from DB:', pinError);
+      }
+    }
+
+    // Fallback to session PIN if DB PIN not available
+    if (!pin) {
+      pin = sessionStorage.getItem(`${provider}_pin_temp`);
+    }
+    
+    if (!pin || !data.token_cipher || !data.token_iv || !data.token_salt) {
       return {
         success: true,
         integrationId: data.id,
@@ -135,7 +154,7 @@ export async function loadIntegrationWithSession(
         data.token_cipher,
         data.token_iv,
         data.token_salt,
-        sessionPIN
+        pin
       );
 
       if (!decrypted) {

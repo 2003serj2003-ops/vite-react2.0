@@ -644,6 +644,10 @@ export default function App() {
       
       // Encrypt token
       const encrypted = await encryptToken(uzumToken, uzumPin);
+      
+      // Encrypt PIN for persistent storage
+      const { encryptPIN } = await import('./lib/crypto');
+      const encryptedPIN = await encryptPIN(uzumPin);
 
       // Prepare metadata
       const metadata = {
@@ -664,6 +668,9 @@ export default function App() {
           token_cipher: encrypted.cipher,
           token_iv: encrypted.iv,
           token_salt: encrypted.salt,
+          encrypted_pin_cipher: encryptedPIN.cipher,
+          encrypted_pin_iv: encryptedPIN.iv,
+          encrypted_pin_salt: encryptedPIN.salt,
           kdf_iterations: 200000,
           telegram_user_id: tgUserId,
           metadata
