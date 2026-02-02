@@ -257,6 +257,52 @@ export async function getProducts(
 }
 
 /**
+ * GET /v1/product/shop/{shopId}/productId/{productId} - Получение деталей продукта с SKU
+ */
+export async function getProductDetails(
+  token: string,
+  shopId: number | string,
+  productId: number | string
+): Promise<{
+  success: boolean;
+  product?: any;
+  skus?: any[];
+  error?: string;
+}> {
+  const result = await apiRequest<any>(
+    `/v1/product/shop/${shopId}/productId/${productId}`,
+    token,
+    { method: 'GET' }
+  );
+
+  if (result.error) {
+    return { success: false, error: result.error };
+  }
+
+  console.log('📦 Product details API response:', result.data);
+  
+  // Структура может быть разной, пытаемся извлечь SKU
+  let skus = [];
+  let product = result.data;
+  
+  if (result.data) {
+    // Варианты структуры:
+    if (result.data.skuList) {
+      skus = result.data.skuList;
+    } else if (result.data.skus) {
+      skus = result.data.skus;
+    } else if (result.data.variants) {
+      skus = result.data.variants;
+    } else if (Array.isArray(result.data.characteristics)) {
+      // Иногда SKU в характеристиках
+      skus = result.data.characteristics;
+    }
+  }
+  
+  return { success: true, product, skus };
+}
+
+/**
  * POST /v1/product/{shopId}/sendPriceData - Изменение цен SKU
  */
 export async function updateProductPrices(
@@ -267,6 +313,8 @@ export async function updateProductPrices(
   success: boolean;
   error?: string;
 }> {
+  console.log('💰 Updating prices:', { shopId, prices });
+  
   const result = await apiRequest<any>(
     `/v1/product/${shopId}/sendPriceData`,
     token,
@@ -277,9 +325,11 @@ export async function updateProductPrices(
   );
 
   if (result.error) {
+    console.error('💰 Price update error:', result.error);
     return { success: false, error: result.error };
   }
 
+  console.log('💰 Price update success:', result.data);
   return { success: true };
 }
 
