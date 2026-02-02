@@ -523,93 +523,39 @@ export default function App() {
 
   // Load existing Uzum integration from DB
   const loadUzumIntegration = async () => {
-    const userId = getTelegramUserId();
-    if (!userId && REQUIRE_TELEGRAM_ID) {
-      console.log('[Uzum] No Telegram user ID');
-      return;
-    }
-
+    console.log('[Uzum] Loading integration...');
+    
     try {
-      // Используем userId если есть, иначе используем фиксированный ID
-      const actualUserId = userId || 'default_user';
+      const { loadIntegrationWithSession } = await import('./lib/integration-persistence');
+      const result = await loadIntegrationWithSession('uzum');
       
-      // Попытка поиска по telegram_user_id если доступно
-      const tgUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-      
-      let data = null;
-      let error = null;
-
-      // Сначала пытаемся найти по telegram_user_id
-      if (tgUserId) {
-        const result = await supabase
-          .from('integrations')
-          .select('*')
-          .eq('telegram_user_id', tgUserId)
-          .eq('provider', 'uzum')
-          .maybeSingle();
-        
-        data = result.data;
-        error = result.error;
-        
-        if (data) {
-          console.log('[Uzum] ✓ Integration found by Telegram ID:', tgUserId);
-        }
-      }
-
-      // Если не нашли по telegram_user_id, ищем по user_id
-      if (!data) {
-        const result = await supabase
-          .from('integrations')
-          .select('*')
-          .eq('user_id', actualUserId)
-          .eq('provider', 'uzum')
-          .maybeSingle();
-        
-        data = result.data;
-        error = result.error;
-      }
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('[Uzum] Load error:', error);
+      if (!result.success) {
+        console.log('[Uzum] No integration found or error:', result.error);
         return;
       }
-
-      if (data) {
-        setUzumIntegrationId(data.id);
-        
-        // Расшифровываем токен из базы данных
-        // Пробуем получить PIN из session storage
-        const sessionPIN = sessionStorage.getItem('uzum_pin_temp');
-        
-        if (sessionPIN && data.token_cipher && data.token_iv && data.token_salt) {
-          try {
-            const { decryptToken } = await import('./lib/crypto');
-            const decrypted = await decryptToken(
-              data.token_cipher,
-              data.token_iv,
-              data.token_salt,
-              sessionPIN
-            );
-            
-            if (decrypted) {
-              setUzumDecryptedToken(decrypted);
-              setUzumConnected(true);
-              console.log('[Уzum] ✓ Token decrypted from session');
-            } else {
-              // PIN неверный, требуется повторное подключение
-              console.log('[Uzum] Session PIN invalid, need reconnect');
-            }
-          } catch (err) {
-            console.error('[Uzum] Decryption error:', err);
-          }
-        } else {
-          // PIN нет в session storage, потребуется повторное подключение
-          console.log('[Uzum] No session PIN, need reconnect');
-        }
-        
-        setUzumShops(data.metadata?.shops || []);
-        setUzumSellerInfo(data.metadata?.sellerInfo || null);
-        console.log('[Uzum] ✓ Integration loaded');
+      
+      // Set integration data
+      if (result.integrationId) {
+        setUzumIntegrationId(result.integrationId);
+      }
+      
+      if (result.shops) {
+        setUzumShops(result.shops);
+      }
+      
+      if (result.sellerInfo) {
+        setUzumSellerInfo(result.sellerInfo);
+      }
+      
+      // If we have decrypted token, user is fully connected
+      if (result.decryptedToken) {
+        setUzumDecryptedToken(result.decryptedToken);
+        setUzumConnected(true);
+        console.log('[Uzum] ✓ Integration loaded with token');
+      } else {
+        // Integration exists but PIN needed
+        setUzumConnected(false);
+        console.log('[Uzum] Integration exists but PIN required:', result.error);
       }
     } catch (err) {
       console.error('[Uzum] Load exception:', err);
@@ -736,8 +682,8 @@ export default function App() {
       setUzumDecryptedToken(uzumToken); // Сохраняем для использования в API
       
       // Сохраняем PIN в session storage для автоматической расшифровки при перезагрузке
-      sessionStorage.setItem('uzum_pin_temp', uzumPin);
-      console.log('[Uzum] ✓ PIN saved to session storage');
+      const { persistPINInSession } = await import('./lib/integration-persistence');
+      persistPINInSession('uzum', uzumPin);
       
       // Проверяем, первое ли это подключение и показываем тур
       const tourCompleted = localStorage.getItem('uzum_tour_completed');
@@ -769,26 +715,14 @@ export default function App() {
       return;
     }
 
-    const userId = getTelegramUserId();
-    if (!userId && REQUIRE_TELEGRAM_ID) {
-      setUzumError('Telegram user ID не найден');
-      return;
-    }
-
     setUzumLoading(true);
 
     try {
-      // Используем userId если есть, иначе используем фиксированный ID
-      const actualUserId = userId || 'default_user';
-      
-      const { error } = await supabase
-        .from('integrations')
-        .delete()
-        .eq('user_id', actualUserId)
-        .eq('provider', 'uzum');
+      const { disconnectIntegration } = await import('./lib/integration-persistence');
+      const result = await disconnectIntegration('uzum');
 
-      if (error) {
-        throw new Error(error.message);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to disconnect');
       }
 
       // Clear state
@@ -819,6 +753,21 @@ export default function App() {
       loadUzumIntegration();
     }
   }, [route.name]);
+  
+  // Auto-load integration on app startup for persistent connection
+  useEffect(() => {
+    const autoLoadIntegration = async () => {
+      const { checkIntegrationStatus } = await import('./lib/integration-persistence');
+      const status = await checkIntegrationStatus('uzum');
+      
+      if (status.connected) {
+        console.log('[App] ✓ Integration detected on startup, auto-loading...');
+        await loadUzumIntegration();
+      }
+    };
+    
+    autoLoadIntegration();
+  }, []); // Run only once on mount
 
   // Get Telegram user info
   useEffect(() => {
@@ -1212,10 +1161,16 @@ export default function App() {
     localStorage.setItem("access_ok", "0");
     localStorage.setItem("admin_ok", "0");
     setAdminOk(false);
+    
     // Сохраняем историю комиссий перед выходом
     if (userName && commissionHistory.length > 0) {
       localStorage.setItem(`commission_history_${userName}`, JSON.stringify(commissionHistory));
     }
+    
+    // ВАЖНО: НЕ очищаем интеграцию при logout!
+    // Интеграция привязана к Telegram ID и сохраняется между сессиями
+    // Для отключения интеграции используйте отдельную кнопку "Disconnect"
+    
     setRoute({ name: "welcome" });
   };
 
