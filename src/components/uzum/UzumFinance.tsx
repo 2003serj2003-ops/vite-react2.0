@@ -114,19 +114,28 @@ export default function UzumFinance({ lang, token }: UzumFinanceProps) {
       // Затем загружаем данные с датами
       if (activeTab === 'orders') {
         console.log('[UzumFinance] Fetching orders...');
+        // НЕ передаем dateFrom и dateTo - API их не поддерживает
+        // Будем фильтровать на клиенте
         const result = await getFinanceOrders(token, currentShopId, {
           size: 100,
           page: 0,
-          dateFrom: dateFromMs,
-          dateTo: dateToMs,
+          // dateFrom и dateTo НЕ передаем
         });
         console.log('💰 [Finance] Orders result:', result);
         console.log('💰 [Finance] Orders count:', result.orders?.length || 0);
         
         if (result.success && result.orders) {
           const ordersArray = Array.isArray(result.orders) ? result.orders : [];
-          console.log('💰 [Finance] Setting orders:', ordersArray.length);
-          setOrders(ordersArray);
+          
+          // Фильтруем по датам на клиенте
+          const filteredOrders = ordersArray.filter(order => {
+            const orderDate = order.dateCreated || order.createdAt || order.date || 0;
+            return orderDate >= dateFromMs && orderDate <= dateToMs;
+          });
+          
+          console.log('💰 [Finance] Total orders:', ordersArray.length);
+          console.log('💰 [Finance] Filtered orders:', filteredOrders.length);
+          setOrders(filteredOrders);
         } else {
           console.error('💰 [Finance] Orders fetch failed or no orders');
           setOrders([]);
