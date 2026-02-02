@@ -279,7 +279,7 @@ export async function getProductDetails(
     return { success: false, error: result.error };
   }
 
-  console.log('📦 Product details API response:', result.data);
+  console.log('📦 [getProductDetails] Full API response:', JSON.stringify(result.data, null, 2));
   
   // Структура может быть разной, пытаемся извлечь SKU
   let skus = [];
@@ -287,17 +287,28 @@ export async function getProductDetails(
   
   if (result.data) {
     // Варианты структуры:
-    if (result.data.skuList) {
+    if (result.data.skuList && Array.isArray(result.data.skuList)) {
       skus = result.data.skuList;
-    } else if (result.data.skus) {
+      console.log('📦 [getProductDetails] Found skuList:', skus.length);
+    } else if (result.data.skus && Array.isArray(result.data.skus)) {
       skus = result.data.skus;
-    } else if (result.data.variants) {
+      console.log('📦 [getProductDetails] Found skus:', skus.length);
+    } else if (result.data.variants && Array.isArray(result.data.variants)) {
       skus = result.data.variants;
-    } else if (Array.isArray(result.data.characteristics)) {
+      console.log('📦 [getProductDetails] Found variants:', skus.length);
+    } else if (result.data.characteristics && Array.isArray(result.data.characteristics)) {
       // Иногда SKU в характеристиках
       skus = result.data.characteristics;
+      console.log('📦 [getProductDetails] Found characteristics:', skus.length);
+    } else if (result.data.productSkuList && Array.isArray(result.data.productSkuList)) {
+      skus = result.data.productSkuList;
+      console.log('📦 [getProductDetails] Found productSkuList:', skus.length);
+    } else {
+      console.warn('📦 [getProductDetails] No SKUs found. Response keys:', Object.keys(result.data));
     }
   }
+  
+  console.log('📦 [getProductDetails] Final SKUs count:', skus.length);
   
   return { success: true, product, skus };
 }

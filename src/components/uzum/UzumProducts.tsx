@@ -148,25 +148,64 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
     
     try {
       const productId = product.id || product.productId;
+      
+      console.log('📦 [openSkuModal] Opening modal for product:', {
+        productId,
+        sku: product.sku,
+        title: product.title
+      });
+      
+      // Сначала пытаемся получить детали продукта через API
       const result = await getProductDetails(token, shopId, productId);
       
-      console.log('📦 Product details result:', result);
+      console.log('📦 [openSkuModal] getProductDetails result:', result);
+      
+      let foundSkus: any[] = [];
       
       if (result.success && result.skus && result.skus.length > 0) {
-        setProductSkus(result.skus);
+        foundSkus = result.skus;
+        console.log('📦 [openSkuModal] Using SKUs from API:', foundSkus.length);
       } else {
-        // Если API не вернул SKU, создаем один SKU из данных продукта
-        setProductSkus([{
-          sku: product.sku,
-          skuId: product.sku,
-          price: product.price,
-          stock: product.stock || product.quantity || 0,
-          barcode: product.barcode,
-          title: product.title || product.name
-        }]);
+        // Альтернатива: ищем все SKU для этого productId в списке продуктов
+        const relatedProducts = products.filter(p => {
+          const pId = p.id || p.productId;
+          return pId === productId;
+        });
+        
+        console.log('📦 [openSkuModal] Related products found:', relatedProducts.length);
+        
+        if (relatedProducts.length > 1) {
+          // Несколько продуктов с одним productId = это разные SKU
+          foundSkus = relatedProducts.map(p => ({
+            sku: p.sku,
+            skuId: p.sku,
+            price: p.price,
+            stock: p.stock || p.quantity || 0,
+            barcode: p.barcode,
+            title: p.title || p.name,
+            productId: p.id || p.productId
+          }));
+          console.log('📦 [openSkuModal] Using SKUs from products list:', foundSkus.length);
+        } else {
+          // Единственный продукт - создаем один SKU
+          foundSkus = [{
+            sku: product.sku,
+            skuId: product.sku,
+            price: product.price,
+            stock: product.stock || product.quantity || 0,
+            barcode: product.barcode,
+            title: product.title || product.name,
+            productId: product.id || product.productId
+          }];
+          console.log('📦 [openSkuModal] Using single SKU from product data');
+        }
       }
+      
+      setProductSkus(foundSkus);
+      console.log('📦 [openSkuModal] Final SKUs set:', foundSkus.length);
+      
     } catch (error) {
-      console.error('Error loading SKUs:', error);
+      console.error('📦 [openSkuModal] Error loading SKUs:', error);
       setToast({ message: t.priceError, type: 'error' });
       // Fallback - показываем хотя бы один SKU
       setProductSkus([{
@@ -175,7 +214,8 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
         price: product.price,
         stock: product.stock || product.quantity || 0,
         barcode: product.barcode,
-        title: product.title || product.name
+        title: product.title || product.name,
+        productId: product.id || product.productId
       }]);
     } finally {
       setLoadingSkus(false);
