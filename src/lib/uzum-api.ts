@@ -1,6 +1,10 @@
 /**
  * Uzum Seller API Client
  * 
+ * @license MIT
+ * @author CloudGrove (@CloudGrove)
+ * @copyright 2026 CloudGrove
+ * 
  * Base URL: https://api-seller.uzum.uz/api/seller-openapi
  * Auth: RAW token without Bearer prefix
  * Authorization header: <token>

@@ -1,6 +1,10 @@
 /**
  * Cloudflare Function для проксирования запросов к Uzum API
  * Обходит CORS блокировку браузера
+ * 
+ * @license MIT
+ * @author CloudGrove (@CloudGrove)
+ * @copyright 2026 CloudGrove
  */
 
 // GET handler для диагностики

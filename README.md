@@ -9,6 +9,12 @@
 - 📚 Получать доступ к базе знаний
 - 💬 Общаться в чате поддержки
 
+---
+
+**Powered by [@CloudGrove](https://t.me/CloudGrove)**
+
+---
+
 ## 🚀 Структура проекта
 
 - `/src` - React приложение (MiniApp)
@@ -82,3 +88,13 @@ You can deploy your new Vite project with a single command from your terminal us
 ```shell
 $ vercel
 ```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Copyright © 2026 CloudGrove ([@CloudGrove](https://t.me/CloudGrove))**
+
+---
+
+Powered by [@CloudGrove](https://t.me/CloudGrove) 🚀

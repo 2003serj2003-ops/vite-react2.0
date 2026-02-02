@@ -1,3 +1,14 @@
+/**
+ * UZUM Market Integration Platform
+ * 
+ * @license MIT
+ * @author CloudGrove (@CloudGrove)
+ * @copyright 2026 CloudGrove
+ * @see https://t.me/CloudGrove
+ * 
+ * Powered by @CloudGrove
+ */
+
 import { type ReactNode, useEffect, useMemo, useState, useRef } from "react";
 import { supabase } from "./supabase";
 import "./App.css";

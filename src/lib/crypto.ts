@@ -1,6 +1,10 @@
 /**
  * Client-side encryption utilities using WebCrypto API
  * 
+ * @license MIT
+ * @author CloudGrove (@CloudGrove)
+ * @copyright 2026 CloudGrove
+ * 
  * Security model:
  * - PBKDF2(SHA-256) with 200k iterations for key derivation from PIN
  * - AES-GCM-256 for encryption (authenticated encryption)

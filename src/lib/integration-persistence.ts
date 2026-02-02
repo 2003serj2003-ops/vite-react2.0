@@ -1,6 +1,10 @@
 /**
  * Integration Persistence Layer
  * Manages persistent storage of integrations tied to Telegram user ID
+ * 
+ * @license MIT
+ * @author CloudGrove (@CloudGrove)
+ * @copyright 2026 CloudGrove
  */
 
 import { supabase } from '../supabase';
