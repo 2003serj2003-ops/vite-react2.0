@@ -120,20 +120,23 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
     
     setLoadingDetails(true);
     try {
+      console.log('📦 [loadInvoiceDetails] Fetching products for invoice:', invoiceId);
       const result = await getShopInvoiceProducts(token, shopId, { invoiceId });
-      console.log('📦 Invoice products API response:', result);
+      console.log('📦 [loadInvoiceDetails] Full API response:', JSON.stringify(result, null, 2));
+      
       if (result.success && result.products) {
-        console.log('📦 Products count:', result.products.length);
+        console.log('📦 [loadInvoiceDetails] Products count:', result.products.length);
         if (result.products.length > 0) {
-          console.log('📦 Sample product structure:', result.products[0]);
+          console.log('📦 [loadInvoiceDetails] Sample product (first item):', JSON.stringify(result.products[0], null, 2));
+          console.log('📦 [loadInvoiceDetails] Available keys in first product:', Object.keys(result.products[0]));
         }
         setInvoiceProducts(result.products);
       } else {
-        console.log('⚠️ No products found or error:', result.error);
+        console.warn('⚠️ [loadInvoiceDetails] No products found or error:', result.error);
         setInvoiceProducts([]);
       }
     } catch (error) {
-      console.error('❌ Error loading invoice details:', error);
+      console.error('❌ [loadInvoiceDetails] Error loading invoice details:', error);
       setInvoiceProducts([]);
     } finally {
       setLoadingDetails(false);
@@ -440,11 +443,65 @@ export default function UzumInvoices({ lang, token }: UzumInvoicesProps) {
                               gap: '8px',
                             }}>
                               {invoiceProducts.map((product: any, idx: number) => {
-                                // Попробуем разные варианты полей
-                                const productName = product.name || product.title || product.productName || product.sku || `Товар ${idx + 1}`;
-                                const quantity = product.quantity || product.amount || product.qty || product.count || 0;
-                                const price = product.price || product.unitPrice || product.sellPrice || 0;
-                                const totalPrice = product.totalPrice || product.total || (price * quantity) || 0;
+                                // Расширенное извлечение данных с логированием
+                                console.log(`📦 [Product ${idx}] Full data:`, JSON.stringify(product, null, 2));
+                                
+                                // Извлекаем имя продукта из возможных полей
+                                const productName = 
+                                  product.name || 
+                                  product.title || 
+                                  product.productName || 
+                                  product.product_name ||
+                                  product.itemName ||
+                                  product.item_name ||
+                                  product.description ||
+                                  product.sku ||
+                                  product.skuTitle ||
+                                  product.sku_title ||
+                                  `Товар ${idx + 1}`;
+                                
+                                // Извлекаем количество
+                                const quantity = 
+                                  product.quantity || 
+                                  product.amount || 
+                                  product.qty || 
+                                  product.count ||
+                                  product.itemQuantity ||
+                                  product.item_quantity ||
+                                  product.orderedQuantity ||
+                                  product.ordered_quantity ||
+                                  0;
+                                
+                                // Извлекаем цену
+                                const price = 
+                                  product.price || 
+                                  product.unitPrice || 
+                                  product.unit_price ||
+                                  product.sellPrice || 
+                                  product.sell_price ||
+                                  product.purchasePrice ||
+                                  product.purchase_price ||
+                                  product.itemPrice ||
+                                  product.item_price ||
+                                  0;
+                                
+                                // Извлекаем общую стоимость
+                                const totalPrice = 
+                                  product.totalPrice || 
+                                  product.total_price ||
+                                  product.total || 
+                                  product.totalAmount ||
+                                  product.total_amount ||
+                                  product.summa ||
+                                  (price * quantity) || 
+                                  0;
+                                
+                                console.log(`📦 [Product ${idx}] Extracted:`, {
+                                  productName,
+                                  quantity,
+                                  price,
+                                  totalPrice
+                                });
                                 
                                 return (
                                   <div

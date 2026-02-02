@@ -1013,14 +1013,29 @@ export async function getShopInvoiceProducts(
   if (params?.invoiceId) queryParams.append('invoiceId', String(params.invoiceId));
 
   const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
+  
+  console.log('📦 [getShopInvoiceProducts] Request:', {
+    endpoint: `/v1/shop/${shopId}/invoice/products${query}`,
+    shopId,
+    invoiceId: params?.invoiceId
+  });
+  
   const result = await apiRequest<any>(
     `/v1/shop/${shopId}/invoice/products${query}`,
     token,
     { method: 'GET' }
   );
 
+  console.log('📦 [getShopInvoiceProducts] Raw result:', JSON.stringify(result, null, 2));
+
   if (result.error) {
+    console.error('❌ [getShopInvoiceProducts] Error:', result.error);
     return { success: false, error: result.error };
+  }
+
+  console.log('📦 [getShopInvoiceProducts] Products count:', result.data?.length || 0);
+  if (result.data && result.data.length > 0) {
+    console.log('📦 [getShopInvoiceProducts] Sample product keys:', Object.keys(result.data[0]));
   }
 
   return { success: true, products: result.data };

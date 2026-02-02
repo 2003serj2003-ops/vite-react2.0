@@ -23,6 +23,7 @@ import UzumFinance from "./components/uzum/UzumFinance";
 import UzumInvoices from "./components/uzum/UzumInvoices";
 import UzumReports from "./components/uzum/UzumReports";
 import UzumStocks from "./components/uzum/UzumStocks";
+import UzumPrices from "./components/uzum/UzumPrices";
 import UzumOnboarding from "./components/UzumOnboarding";
 import UzumTour from "./components/UzumTour";
 import UzumNavigation from "./components/UzumNavigation";
@@ -387,7 +388,7 @@ export default function App() {
   const [uzumIntegrationId, setUzumIntegrationId] = useState<string | null>(null);
   const [showUzumToken, setShowUzumToken] = useState(false);
   const [showUzumPin, setShowUzumPin] = useState(false);
-  const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports' | 'stocks'>('dashboard');
+  const [uzumCurrentPage, setUzumCurrentPage] = useState<'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports' | 'stocks' | 'prices'>('dashboard');
   const [uzumDecryptedToken, setUzumDecryptedToken] = useState(""); // Для использования в API запросах
   const [showUzumOnboarding, setShowUzumOnboarding] = useState(false);
   const [showUzumTour, setShowUzumTour] = useState(false);
@@ -2558,6 +2559,7 @@ export default function App() {
                       token={uzumDecryptedToken}
                       onNavigateBack={() => setUzumCurrentPage('dashboard')}
                       onNavigateHome={() => setRoute({ name: 'home' })}
+                      onNavigateToPrices={() => setUzumCurrentPage('prices')}
                     />
                   )}
                   {uzumCurrentPage === 'orders' && (
@@ -2587,6 +2589,14 @@ export default function App() {
                   )}
                   {uzumCurrentPage === 'stocks' && (
                     <UzumStocks 
+                      lang={lang} 
+                      token={uzumDecryptedToken}
+                      shopId={uzumSellerInfo?.shopId}
+                      onNavigate={(page) => setUzumCurrentPage(page as any)}
+                    />
+                  )}
+                  {uzumCurrentPage === 'prices' && (
+                    <UzumPrices 
                       lang={lang} 
                       token={uzumDecryptedToken}
                       shopId={uzumSellerInfo?.shopId}

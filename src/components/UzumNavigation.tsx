@@ -9,8 +9,8 @@ import {
 } from 'react-icons/fi';
 
 interface UzumNavigationProps {
-  currentPage: 'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports' | 'stocks';
-  onNavigate: (page: 'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports' | 'stocks') => void;
+  currentPage: 'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports' | 'stocks' | 'prices';
+  onNavigate: (page: 'dashboard' | 'products' | 'orders' | 'finance' | 'invoices' | 'reports' | 'stocks' | 'prices') => void;
   lang: 'ru' | 'uz';
 }
 
@@ -23,7 +23,8 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
       finance: 'Финансы',
       stocks: 'Остатки',
       invoices: 'Накладные',
-      reports: 'Отчеты'
+      reports: 'Отчеты',
+      prices: 'Цены'
     },
     uz: {
       dashboard: 'Asosiy',
@@ -32,7 +33,8 @@ export default function UzumNavigation({ currentPage, onNavigate, lang }: UzumNa
       finance: 'Moliya',
       stocks: 'Qoldiqlar',
       invoices: 'Hujjatlar',
-      reports: 'Hisobotlar'
+      reports: 'Hisobotlar',
+      prices: 'Narxlar'
     }
   };
 

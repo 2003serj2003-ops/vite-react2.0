@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShops, getProducts, updateProductPrices } from '../../lib/uzum-api';
+import { getShops, getProducts } from '../../lib/uzum-api';
 import SmartLoader from '../SmartLoader';
 
 interface UzumProductsProps {
@@ -7,9 +7,10 @@ interface UzumProductsProps {
   token: string;
   onNavigateBack: () => void;
   onNavigateHome: () => void;
+  onNavigateToPrices?: () => void;
 }
 
-export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHome }: UzumProductsProps) {
+export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHome, onNavigateToPrices }: UzumProductsProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [shopId, setShopId] = useState<number | null>(null);
@@ -18,13 +19,10 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-  // SKU модальное окно
+  // SKU модальное окно (только просмотр)
   const [showSkuModal, setShowSkuModal] = useState(false);
   const [productSkus, setProductSkus] = useState<any[]>([]);
   const [loadingSkus, setLoadingSkus] = useState(false);
-  const [editingSkuId, setEditingSkuId] = useState<string | null>(null);
-  const [editingSkuPrice, setEditingSkuPrice] = useState<string>('');
-  const [savingSkuPrice, setSavingSkuPrice] = useState<string | null>(null);
   
   const [toast, setToast] = useState<{message: string; type: 'success' | 'error'} | null>(null);
 
@@ -55,6 +53,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       priceError: 'Ошибка обновления цены',
       invalidPrice: 'Некорректная цена',
       enterNewPrice: 'Введите новую цену',
+      updatePrices: 'Обновить цены',
     },
     uz: {
       title: 'Mahsulotlar',
@@ -82,6 +81,7 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       priceError: 'Narxni yangilashda xatolik',
       invalidPrice: 'Noto\'g\'ri narx',
       enterNewPrice: 'Yangi narxni kiriting',
+      updatePrices: 'Narxlarni yangilash',
     },
   };
 
@@ -232,88 +232,9 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
     setShowSkuModal(false);
     setSelectedProduct(null);
     setProductSkus([]);
-    setEditingSkuId(null);
-    setEditingSkuPrice('');
-  }
-
-  // Начать редактирование цены SKU
-  function startEditSkuPrice(skuItem: any) {
-    const skuId = skuItem.sku || skuItem.skuId;
-    setEditingSkuId(skuId);
-    setEditingSkuPrice(skuItem.price?.toString() || '');
-  }
-
-  // Отмена редактирования SKU
-  function cancelEditSkuPrice() {
-    setEditingSkuId(null);
-    setEditingSkuPrice('');
-  }
-
-  // Сохранение цены SKU
-  async function saveSkuPrice(skuItem: any) {
-    const newPrice = parseFloat(editingSkuPrice);
-    
-    // Валидация
-    if (isNaN(newPrice) || newPrice < 0) {
-      setToast({ message: t.invalidPrice, type: 'error' });
-      return;
-    }
-
-    const skuId = skuItem.sku || skuItem.skuId;
-    
-    console.log('💰 [saveSkuPrice] Saving price for SKU:', {
-      skuItem,
-      skuId,
-      newPrice
-    });
-    
-    if (!skuId) {
-      console.error('💰 [saveSkuPrice] SKU ID is missing!');
-      setToast({ message: 'SKU не найден', type: 'error' });
-      return;
-    }
-    
-    setSavingSkuPrice(skuId);
-
-    try {
-      if (!shopId) {
-        throw new Error('Shop ID not found');
-      }
-      
-      // Вызов API для обновления цены
-      const result = await updateProductPrices(token, shopId, [
-        { sku: skuId, price: newPrice }
-      ]);
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to update price');
-      }
-      
-      // Обновляем локально в списке SKU
-      const updatedSkus = productSkus.map(s => {
-        const sId = s.sku || s.skuId;
-        return sId === skuId ? { ...s, price: newPrice } : s;
-      });
-      setProductSkus(updatedSkus);
-      
-      // Обновляем в списке продуктов
-      const updatedProducts = products.map(p => {
-        if (p.sku === skuId) {
-          return { ...p, price: newPrice };
-        }
-        return p;
-      });
-      setProducts(updatedProducts);
-      setFilteredProducts(updatedProducts);
-      
-      setToast({ message: t.priceUpdated, type: 'success' });
-      setEditingSkuId(null);
-    } catch (error) {
-      console.error('SKU price update error:', error);
-      setToast({ message: t.priceError, type: 'error' });
-    } finally {
-      setSavingSkuPrice(null);
-    }
+    setShowSkuModal(false);
+    setSelectedProduct(null);
+    setProductSkus([]);
   }
 
   function formatPrice(price: number): string {
@@ -407,6 +328,36 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {onNavigateToPrices && (
+            <button
+              onClick={onNavigateToPrices}
+              className="uzum-btn-warning"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                backgroundColor: 'var(--accent-success)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              💰 {window.innerWidth > 640 ? t.updatePrices : '💰'}
+            </button>
+          )}
           <button
             onClick={() => {
               setLoading(true);
@@ -890,6 +841,25 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
               </div>
             </div>
 
+            {/* Info Banner */}
+            {onNavigateToPrices && (
+              <div style={{
+                padding: '12px 16px',
+                backgroundColor: 'rgba(30, 111, 219, 0.1)',
+                color: '#1E6FDB',
+                borderRadius: '10px',
+                marginBottom: '16px',
+                fontSize: '14px',
+                border: '1px solid rgba(30, 111, 219, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}>
+                <span style={{ fontSize: '20px' }}>💡</span>
+                <span>Для обновления цен используйте кнопку "Обновить цены" выше</span>
+              </div>
+            )}
+
             {/* SKU List */}
             {loadingSkus ? (
               <div style={{
@@ -913,19 +883,16 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
               <div style={{ marginBottom: '20px' }}>
                 {productSkus.map((skuItem: any) => {
                   const skuId = skuItem.sku || skuItem.skuId;
-                  const isEditing = editingSkuId === skuId;
-                  const isSaving = savingSkuPrice === skuId;
                   
                   return (
                     <div
                       key={skuId}
                       style={{
                         padding: '16px',
-                        backgroundColor: isEditing ? 'var(--accent-warning-bg)' : 'var(--bg-secondary)',
+                        backgroundColor: 'var(--bg-secondary)',
                         borderRadius: '12px',
                         marginBottom: '12px',
-                        border: `2px solid ${isEditing ? 'var(--accent-warning)' : 'var(--border-primary)'}`,
-                        transition: 'all 0.2s',
+                        border: '2px solid var(--border-primary)',
                       }}
                     >
                       {/* SKU Info */}
@@ -977,103 +944,14 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
                         )}
                       </div>
 
-                      {/* Price Editor */}
-                      {!isEditing ? (
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          gap: '12px',
-                        }}>
-                          <div style={{
-                            fontSize: '24px',
-                            fontWeight: 700,
-                            color: 'var(--text-primary)',
-                          }}>
-                            {skuItem.price ? formatPrice(skuItem.price) : 'N/A'}
-                          </div>
-                          <button
-                            onClick={() => startEditSkuPrice(skuItem)}
-                            style={{
-                              padding: '8px 16px',
-                              backgroundColor: 'var(--accent-warning)',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              fontSize: '13px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              transition: 'all 0.15s',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                            }}
-                          >
-                            ✏️ {t.editPrice}
-                          </button>
-                        </div>
-                      ) : (
-                        <div>
-                          <div style={{
-                            display: 'flex',
-                            gap: '8px',
-                            marginBottom: '8px',
-                          }}>
-                            <input
-                              type="number"
-                              value={editingSkuPrice}
-                              onChange={(e) => setEditingSkuPrice(e.target.value)}
-                              placeholder={t.enterNewPrice}
-                              autoFocus
-                              disabled={isSaving}
-                              style={{
-                                flex: 1,
-                                padding: '10px 14px',
-                                fontSize: '16px',
-                                fontWeight: 600,
-                                border: '2px solid var(--accent-warning)',
-                                borderRadius: '8px',
-                                outline: 'none',
-                                backgroundColor: 'white',
-                                color: 'var(--text-primary)',
-                              }}
-                            />
-                            <button
-                              onClick={() => saveSkuPrice(skuItem)}
-                              disabled={isSaving || !editingSkuPrice}
-                              style={{
-                                padding: '10px 16px',
-                                backgroundColor: isSaving || !editingSkuPrice ? '#e5e7eb' : 'var(--accent-success)',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                cursor: isSaving || !editingSkuPrice ? 'not-allowed' : 'pointer',
-                                minWidth: '80px',
-                              }}
-                            >
-                              {isSaving ? '⏳' : '✓ ' + t.savePrice}
-                            </button>
-                            <button
-                              onClick={cancelEditSkuPrice}
-                              disabled={isSaving}
-                              style={{
-                                padding: '10px 16px',
-                                backgroundColor: 'var(--bg-secondary)',
-                                color: 'var(--text-secondary)',
-                                border: '1px solid var(--border-primary)',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                cursor: isSaving ? 'not-allowed' : 'pointer',
-                              }}
-                            >
-                              × {t.cancel}
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                      {/* Price Display (read-only) */}
+                      <div style={{
+                        fontSize: '24px',
+                        fontWeight: 700,
+                        color: 'var(--accent-success)',
+                      }}>
+                        {skuItem.price ? formatPrice(skuItem.price) : 'N/A'}
+                      </div>
                     </div>
                   );
                 })}
