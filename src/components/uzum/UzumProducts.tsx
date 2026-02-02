@@ -13,16 +13,11 @@ interface UzumProductsProps {
 export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHome, onNavigateToPrices }: UzumProductsProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
-  const [shopId, setShopId] = useState<number | null>(null);
+  const [_shopId, setShopId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  // SKU модальное окно (только просмотр)
-  const [showSkuModal, setShowSkuModal] = useState(false);
-  const [productSkus, setProductSkus] = useState<any[]>([]);
-  const [loadingSkus, setLoadingSkus] = useState(false);
   
   const [toast, setToast] = useState<{message: string; type: 'success' | 'error'} | null>(null);
 
@@ -137,105 +132,6 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
       return () => clearTimeout(timer);
     }
   }, [toast]);
-
-  // Открыть модальное окно со списком SKU
-  async function openSkuModal(product: any) {
-    if (!shopId) return;
-    
-    setSelectedProduct(product);
-    setShowSkuModal(true);
-    setLoadingSkus(true);
-    
-    try {
-      const productId = product.id || product.productId;
-      
-      console.log('📦 [openSkuModal] Opening modal for product:', {
-        productId,
-        sku: product.sku,
-        title: product.title
-      });
-      
-      // Ищем все SKU для этого productId в списке продуктов
-      // В Uzum Market каждый SKU - это отдельная запись в products
-      const relatedProducts = products.filter(p => {
-        const pId = p.id || p.productId;
-        const pSku = p.sku;
-        
-        // Группируем по productId ИЛИ по общей части SKU (первые символы)
-        // Некоторые SKU одного товара могут иметь общий префикс
-        const skuPrefix = product.sku?.split('-')[0] || product.sku;
-        const currentSkuPrefix = pSku?.split('-')[0] || pSku;
-        
-        return pId === productId || (skuPrefix && currentSkuPrefix === skuPrefix);
-      });
-      
-      console.log('📦 [openSkuModal] Related products found:', relatedProducts.length);
-      
-      let foundSkus: any[] = [];
-      
-      if (relatedProducts.length > 0) {
-        // Создаем SKU из всех найденных продуктов
-        foundSkus = relatedProducts.map(p => ({
-          sku: p.sku,
-          skuId: p.sku,
-          price: p.price,
-          stock: p.stock || p.quantity || 0,
-          barcode: p.barcode,
-          title: p.title || p.name,
-          productId: p.id || p.productId,
-          // Дополнительные поля если есть
-          brand: p.brand,
-          category: p.category,
-          photo: p.photo || p.mainPhoto || p.image
-        }));
-        console.log('📦 [openSkuModal] Using SKUs from products list:', foundSkus.length);
-      } else {
-        // Если не нашли связанные - показываем хотя бы текущий продукт
-        foundSkus = [{
-          sku: product.sku,
-          skuId: product.sku,
-          price: product.price,
-          stock: product.stock || product.quantity || 0,
-          barcode: product.barcode,
-          title: product.title || product.name,
-          productId: product.id || product.productId,
-          brand: product.brand,
-          category: product.category,
-          photo: product.photo || product.mainPhoto || product.image
-        }];
-        console.log('📦 [openSkuModal] Using single SKU from product data');
-      }
-      
-      setProductSkus(foundSkus);
-      console.log('📦 [openSkuModal] Final SKUs set:', foundSkus);
-      
-    } catch (error) {
-      console.error('📦 [openSkuModal] Error loading SKUs:', error);
-      setToast({ message: t.priceError, type: 'error' });
-      // Fallback - показываем хотя бы один SKU
-      setProductSkus([{
-        sku: product.sku,
-        skuId: product.sku,
-        price: product.price,
-        stock: product.stock || product.quantity || 0,
-        barcode: product.barcode,
-        title: product.title || product.name,
-        productId: product.id || product.productId
-      }]);
-    } finally {
-      setLoadingSkus(false);
-    }
-  }
-
-  // Закрыть модальное окно SKU
-  function closeSkuModal() {
-    setShowSkuModal(false);
-    setSelectedProduct(null);
-    setProductSkus([]);
-    setShowSkuModal(false);
-    setSelectedProduct(null);
-    setProductSkus([]);
-  }
 
   function formatPrice(price: number): string {
     return new Intl.NumberFormat('ru-RU').format(price) + ' сум';
@@ -497,57 +393,17 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
                 <span style={{ fontWeight: 500 }}>{product.sku || 'N/A'}</span>
               </div>
               
-              {/* Price Section - кнопка для открытия SKU */}
+              {/* Price Section */}
               <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '8px',
+                fontSize: '20px',
+                fontWeight: 700,
+                color: 'var(--text-primary)',
                 marginBottom: '8px',
               }}>
-                {/* Цена - главный элемент */}
-                <div style={{
-                  fontSize: '20px',
-                  fontWeight: 700,
-                  color: 'var(--text-primary)',
-                  flex: 1,
-                }}>
-                  {product.price ? formatPrice(product.price) : 'N/A'}
-                </div>
-                {/* Кнопка редактирования - открывает модальное окно со SKU */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openSkuModal(product);
-                  }}
-                  style={{
-                    padding: '8px 14px',
-                    backgroundColor: 'var(--accent-warning-bg)',
-                    color: 'var(--accent-warning)',
-                    border: `1px solid var(--accent-warning-border)`,
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--accent-warning)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--accent-warning-bg)';
-                    e.currentTarget.style.color = 'var(--accent-warning)';
-                  }}
-                >
-                  ✏️ {t.editPrice}
-                </button>
+                {product.price ? formatPrice(product.price) : 'N/A'}
               </div>
               
-              {/* Stock - вторичный индикатор */}
+              {/* Stock - индикатор */}
               {product.stock !== undefined && (
                 <div style={{
                   display: 'inline-block',
@@ -779,190 +635,6 @@ export default function UzumProducts({ lang, token, onNavigateBack, onNavigateHo
             <button
               onClick={() => setSelectedProduct(null)}
               className="btnPrimary"
-            >
-              {t.close}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SKU Modal - для редактирования цен */}
-      {showSkuModal && selectedProduct && (
-        <div
-          onClick={closeSkuModal}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1100,
-            padding: '20px',
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="cardCream"
-            style={{
-              maxWidth: '700px',
-              maxHeight: '90vh',
-              overflow: 'auto',
-              width: '100%',
-            }}
-          >
-            {/* Header */}
-            <div style={{
-              marginBottom: '20px',
-              paddingBottom: '16px',
-              borderBottom: '2px solid var(--border-primary)',
-            }}>
-              <h3 style={{
-                margin: '0 0 8px 0',
-                fontSize: '20px',
-                fontWeight: 700,
-                color: 'var(--text-primary)',
-              }}>
-                {selectedProduct.title || selectedProduct.name || 'Продукт'}
-              </h3>
-              <div style={{
-                fontSize: '13px',
-                color: 'var(--text-secondary)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}>
-                <span>ID: {selectedProduct.id || selectedProduct.productId}</span>
-                <span>•</span>
-                <span>SKU: {selectedProduct.sku}</span>
-              </div>
-            </div>
-
-            {/* Info Banner */}
-            {onNavigateToPrices && (
-              <div style={{
-                padding: '12px 16px',
-                backgroundColor: 'rgba(30, 111, 219, 0.1)',
-                color: '#1E6FDB',
-                borderRadius: '10px',
-                marginBottom: '16px',
-                fontSize: '14px',
-                border: '1px solid rgba(30, 111, 219, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-              }}>
-                <span style={{ fontSize: '20px' }}>💡</span>
-                <span>Для обновления цен используйте кнопку "Обновить цены" выше</span>
-              </div>
-            )}
-
-            {/* SKU List */}
-            {loadingSkus ? (
-              <div style={{
-                textAlign: 'center',
-                padding: '40px 20px',
-                color: 'var(--text-secondary)',
-              }}>
-                <div style={{ fontSize: '32px', marginBottom: '12px' }}>⏳</div>
-                <div>Загрузка SKU...</div>
-              </div>
-            ) : productSkus.length === 0 ? (
-              <div style={{
-                textAlign: 'center',
-                padding: '40px 20px',
-                color: 'var(--text-secondary)',
-              }}>
-                <div style={{ fontSize: '32px', marginBottom: '12px' }}>📭</div>
-                <div>SKU не найдены</div>
-              </div>
-            ) : (
-              <div style={{ marginBottom: '20px' }}>
-                {productSkus.map((skuItem: any) => {
-                  const skuId = skuItem.sku || skuItem.skuId;
-                  
-                  return (
-                    <div
-                      key={skuId}
-                      style={{
-                        padding: '16px',
-                        backgroundColor: 'var(--bg-secondary)',
-                        borderRadius: '12px',
-                        marginBottom: '12px',
-                        border: '2px solid var(--border-primary)',
-                      }}
-                    >
-                      {/* SKU Info */}
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: '12px',
-                      }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: 'var(--text-primary)',
-                            marginBottom: '4px',
-                          }}>
-                            {skuItem.title || skuId}
-                          </div>
-                          <div style={{
-                            fontSize: '12px',
-                            color: 'var(--text-secondary)',
-                          }}>
-                            SKU: {skuId}
-                          </div>
-                          {skuItem.barcode && (
-                            <div style={{
-                              fontSize: '11px',
-                              color: 'var(--text-secondary)',
-                              marginTop: '2px',
-                            }}>
-                              Штрихкод: {skuItem.barcode}
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Stock Badge */}
-                        {skuItem.stock !== undefined && (
-                          <div style={{
-                            padding: '4px 10px',
-                            backgroundColor: skuItem.stock > 0 ? 'var(--accent-success-bg)' : 'var(--accent-danger-bg)',
-                            color: skuItem.stock > 0 ? 'var(--accent-success)' : 'var(--accent-danger)',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            whiteSpace: 'nowrap',
-                          }}>
-                            {t.stock}: {skuItem.stock}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Price Display (read-only) */}
-                      <div style={{
-                        fontSize: '24px',
-                        fontWeight: 700,
-                        color: 'var(--accent-success)',
-                      }}>
-                        {skuItem.price ? formatPrice(skuItem.price) : 'N/A'}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Close Button */}
-            <button
-              onClick={closeSkuModal}
-              className="btnPrimary"
-              style={{ width: '100%' }}
             >
               {t.close}
             </button>

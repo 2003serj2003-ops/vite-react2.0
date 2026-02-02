@@ -320,6 +320,7 @@ export async function getProductDetails(
 
 /**
  * POST /v1/product/{shopId}/sendPriceData - Изменение цен SKU
+ * Формат API: { productId, skuList: [{ fullPrice, sellPrice, skuId, skuTitle }] }
  */
 export async function updateProductPrices(
   token: string,
@@ -338,14 +339,87 @@ export async function updateProductPrices(
     return { success: false, error: 'SKU обязателен для всех цен' };
   }
 
-  // Получаем полные данные о продуктах для обогащения информации
+  // Получаем полные данные о продуктах для формирования правильной структуры
   const productsResult = await getProducts(token, shopId);
   
   if (!productsResult.success || !productsResult.products) {
-    console.warn('💰 [updateProductPrices] Could not fetch products, using minimal format');
-    // Если не удалось получить продукты, отправляем минимальный формат
-    const requestBody = { prices };
-    console.log('💰 [updateProductPrices] Request body (minimal):', JSON.stringify(requestBody, null, 2));
+    console.error('💰 [updateProductPrices] Could not fetch products');
+    return { success: false, error: 'Не удалось загрузить данные продуктов' };
+  }
+
+  // Создаём карту SKU -> полные данные
+  const skuMap = new Map<string, any>();
+  
+  for (const product of productsResult.products) {
+    // Uzum Market: каждый SKU - это отдельный продукт
+    if (product.sku) {
+      skuMap.set(product.sku, {
+        skuId: product.skuId || product.id,
+        skuTitle: product.title || product.name || '',
+        productId: product.id || product.productId,
+        productTitle: product.title || product.name || ''
+      });
+    }
+    
+    // Также проверяем skuList если есть
+    if (product.skuList && Array.isArray(product.skuList)) {
+      for (const sku of product.skuList) {
+        const skuIdStr = sku.sku || sku.skuId?.toString();
+        if (skuIdStr) {
+          skuMap.set(skuIdStr, {
+            skuId: sku.skuId || Number(skuIdStr),
+            skuTitle: sku.title || sku.skuTitle || '',
+            productId: product.id || product.productId,
+            productTitle: product.title || product.name || ''
+          });
+        }
+      }
+    }
+  }
+
+  console.log('💰 [updateProductPrices] Found SKUs in products:', skuMap.size);
+
+  // Группируем SKU по productId
+  const productGroups = new Map<number, any[]>();
+  
+  for (const item of prices) {
+    const skuData = skuMap.get(item.sku);
+    
+    if (!skuData) {
+      console.warn(`💰 [updateProductPrices] SKU ${item.sku} not found in products`);
+      continue;
+    }
+    
+    const productId = skuData.productId;
+    if (!productGroups.has(productId)) {
+      productGroups.set(productId, []);
+    }
+    
+    // Цены в тийинах (умножаем на 100)
+    const priceInTiyin = Math.round(item.price * 100);
+    
+    productGroups.get(productId)!.push({
+      skuId: skuData.skuId,
+      skuTitle: skuData.skuTitle,
+      fullPrice: priceInTiyin,
+      sellPrice: priceInTiyin
+    });
+  }
+
+  console.log('💰 [updateProductPrices] Grouped into products:', productGroups.size);
+
+  // Отправляем запросы для каждого productId
+  let successCount = 0;
+  let errorCount = 0;
+  const errors: string[] = [];
+
+  for (const [productId, skuList] of productGroups) {
+    const requestBody = {
+      productId,
+      skuList
+    };
+    
+    console.log(`💰 [updateProductPrices] Updating product ${productId}:`, JSON.stringify(requestBody, null, 2));
     
     const result = await apiRequest<any>(
       `/v1/product/${shopId}/sendPriceData`,
@@ -357,88 +431,23 @@ export async function updateProductPrices(
     );
 
     if (result.error) {
-      console.error('💰 [updateProductPrices] API error:', result.error);
-      return { success: false, error: result.error };
-    }
-
-    console.log('💰 [updateProductPrices] Success:', result.data);
-    return { success: true };
-  }
-
-  // Создаём карту SKU -> полные данные
-  const skuMap = new Map<string, any>();
-  
-  for (const product of productsResult.products) {
-    // Uzum Market: каждый SKU - это отдельный продукт
-    if (product.sku) {
-      skuMap.set(product.sku, {
-        sku: product.sku,
-        skuTitle: product.title || product.name || '',
-        productTitle: product.title || product.name || '',
-        barcode: product.barcode || '',
-        productId: product.id || product.productId
-      });
-    }
-    
-    // Также проверяем skuList если есть
-    if (product.skuList && Array.isArray(product.skuList)) {
-      for (const sku of product.skuList) {
-        const skuId = sku.sku || sku.skuId?.toString();
-        if (skuId) {
-          skuMap.set(skuId, {
-            sku: skuId,
-            skuTitle: sku.title || sku.skuTitle || '',
-            productTitle: product.title || product.name || '',
-            barcode: sku.barcode || product.barcode || '',
-            productId: product.id || product.productId
-          });
-        }
-      }
-    }
-  }
-
-  console.log('💰 [updateProductPrices] Found SKUs in products:', skuMap.size);
-
-  // Формируем массив с полными данными
-  const enrichedPrices = [];
-  
-  for (const item of prices) {
-    const skuData = skuMap.get(item.sku);
-    
-    if (skuData) {
-      // Полный формат с данными продукта
-      enrichedPrices.push({
-        ...skuData,
-        price: item.price
-      });
+      console.error(`💰 [updateProductPrices] API error for product ${productId}:`, result.error);
+      errorCount++;
+      errors.push(`Product ${productId}: ${result.error}`);
     } else {
-      // Минимальный формат если данные не найдены
-      console.warn(`💰 [updateProductPrices] SKU ${item.sku} not found in products, using minimal format`);
-      enrichedPrices.push({
-        sku: item.sku,
-        price: item.price
-      });
+      console.log(`💰 [updateProductPrices] Success for product ${productId}:`, result.data);
+      successCount++;
     }
   }
-  
-  const requestBody = { prices: enrichedPrices };
-  console.log('💰 [updateProductPrices] Request body (enriched):', JSON.stringify(requestBody, null, 2));
-  
-  const result = await apiRequest<any>(
-    `/v1/product/${shopId}/sendPriceData`,
-    token,
-    {
-      method: 'POST',
-      body: JSON.stringify(requestBody)
-    }
-  );
 
-  if (result.error) {
-    console.error('💰 [updateProductPrices] API error:', result.error);
-    return { success: false, error: result.error };
+  if (errorCount > 0) {
+    return { 
+      success: false, 
+      error: `Обновлено: ${successCount}, ошибок: ${errorCount}. ${errors.join('; ')}` 
+    };
   }
 
-  console.log('💰 [updateProductPrices] Success:', result.data);
+  console.log(`💰 [updateProductPrices] All updates successful: ${successCount} products`);
   return { success: true };
 }
 
